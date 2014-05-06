@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-
+#### Version 0.0.7 ####
 ##Socket library
 import select
 import socket
