@@ -163,9 +163,9 @@ def checkMods(chatData, modList, channelName):
         chatData = chatData[0]
         channelName = channelName[1:]
         if ( len(modList) > 0 ):
-                if ( chatData in modList ):
+                if ( chatData == channelName ):
                         return(1)
-                elif (chatData == channelName ):
+                elif ( chatData in modList ):
                         return(2)
                 else:
                         return(0)
