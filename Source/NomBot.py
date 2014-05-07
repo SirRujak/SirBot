@@ -6,7 +6,6 @@ import select
 import socket
 import string
 import time
-import sys
 
 
 
@@ -17,31 +16,11 @@ import sys
 
 
 ## These must currently start with ! for commands.
-def checkChatOwner(socket, channelName, chatData):
-        if( chatData=="Go to sleep, Nomneija." or "!sleep"):
-                message = "Yes, milady. Wake me if you need me."
-                status=2
-                return(message)
-        elif(chatData=="Wake up, Nomneija." or "!wake"):
-                message = "I am at your service."
-                status=1
-                return(message)
-        elif(chatData=="Open the console, Nomneija." or "!console"):
-                message = "I am presently unable to comply."
-                return(message)
-        elif(chatData=="Shut down, Nomneija." ):
-                message = "Terminating processes."
-                status=0
-                return(message)
-        else:
-                return(checkChatCommand(socket, channelName, chatData))
-
-
 def checkChatCommand(socket, channelName, chatData):
         if( chatData=="!info" ):
                 message = "Watch both of us play WildStar here!: "
                 return(message)
-        elif( chatData[:5]=="!boop"):
+        elif( chatData[:5]=="!bop"):
                 command = ".timeout " + chatData[6:] + " 30"
                 return(command)
         else:
@@ -60,7 +39,7 @@ def checkChatStandard(chatData):
 
 
 def checkChatWelcome(socket, channelName, userName):
-        welcomeMessage = "Hello there " + userName + ", welcome to the stream!"
+        welcomeMessage = "Hello there " + userName + " welcome to the stream!"
         return(welcomeMessage)
 
 
@@ -123,10 +102,6 @@ def checkChatType(socket, channelName, chatData, modList):
                                 chatData = chatData[2]
                                 print("test")
                                 return(checkChatCommand(socket, channelName, chatData), 1)
-                        elif( checkMods( chatData[1], modList, channelName) == 2 ):
-                                chatData = chatData[2]
-                                print("elevated test")
-                                return(checkChatCommand(socket, channelName, chatData), 1)
                         else:
                                 if( checkSpam(chatData[2]) == 0):
                                         chatData = chatData[2]
@@ -163,10 +138,8 @@ def checkMods(chatData, modList, channelName):
         chatData = chatData[0]
         channelName = channelName[1:]
         if ( len(modList) > 0 ):
-                if ( chatData in modList ):
+                if ( chatData in modList or chatData == channelName ):
                         return(1)
-                elif (chatData == channelName ):
-                        return(2)
                 else:
                         return(0)
         else:
@@ -192,7 +165,7 @@ def checkSpam(chatText):
                 or "◕" in chatText
                 or "┌∩┐" in chatText
                 or "_̅(" in chatText
-                or "www." in chatText
+                or "www" in chatText
                 or "http" in chatText
 		or b"\xe5\x8d\x90".decode("utf8") in chatText ):
                 return( 1 )
@@ -223,43 +196,23 @@ class baseTimer():
 ################################################################
 ##IRC connection data
 
-try:
-        configFile = open("config","rb+")
-        userInfo = (configFile.read()).decode()
-        userInfo = userInfo.strip().split("\n")
-        for param in range(len(userInfo)):
-                userInfo[param] = userInfo[param].strip().split("%")
-                if( userInfo[param][0] == "USER" ):
-                        NICK = userInfo[param][1]
-                        IDENT = userInfo[param][1]
-                        REALNAME = userInfo[param][1]
-                elif( userInfo[param][0] == "CHANNEL" ):
-                        channelName = userInfo[param][1]
-                        CHANNEL = channelName
-                elif( userInfo[param][0] == "PASSWORD" ):
-                        PASS = "oauth:" + userInfo[param][1]
-        configFile.close()
+configFile = open("config","rb+")
+userInfo = (configFile.read()).decode()
+userInfo = userInfo.strip().split("\n")
+for param in range(len(userInfo)):
+        userInfo[param] = userInfo[param].strip().split("%")
+        if( userInfo[param][0] == "USER" ):
+                NICK = userInfo[param][1]
+                IDENT = userInfo[param][1]
+                REALNAME = userInfo[param][1]
+        elif( userInfo[param][0] == "CHANNEL" ):
+                channelName = userInfo[param][1]
+                CHANNEL = channelName
+        elif( userInfo[param][0] == "PASSWORD" ):
+                PASS = "oauth:" + userInfo[param][1]
+HOST="irc.twitch.tv" ##This is the Twitch IRC ip, don't change it.
 
-        HOST="irc.twitch.tv" ##Twitch IRC url
-
-        PORT=6667 ##Twitch IRC port
-except FileNotFoundError as configErr:
-        print('Warning! - config file not found!\nCreating template file.\n')
-        print('Edit config with appropriate credentials and restart program.\n')
-        configFile = open("config","w+")
-        configFile.write('USER%Your_User_Name\n')
-        configFile.write('CHANNEL%#your_channel_name\n')
-        configFile.write('PASSWORD%your_oauth_token\n')
-        ##configFile = open("config","wb+")
-        ##configFile.write(bytes('USER%Your_User_Name\r\n','UTF-8'))
-        ##configFile.write(bytes('CHANNEL%#your_channel_name\n','UTF-8'))
-        ##configFile.write(bytes('PASSWORD%your_oauth_token\n','UTF-8'))
-        configFile.close()
-        print('Success!\n')
-        print('Shutting down...')
-        time.sleep(4)
-        sys.exit()
-
+PORT=6667 ##Same with this port, leave it be.
 
 ################################################################
 
@@ -288,7 +241,6 @@ socketReady = []
 socketReady.append(select.select([s], [], [], 3))
 
 ####################
-status = 1
 chatInformation = []
 modList = []
 modList.append(channelName[1:])
@@ -300,7 +252,7 @@ fastResponse = []
 slowResponse = []
 ####################
 
-while (status >= 1):
+while (1):
         if( socketReady[0][0][0] ):
                 
                 chatInformation.extend(readData(socketReady[0][0][0]))
@@ -353,6 +305,3 @@ while (status >= 1):
                 readbuffer = []
                 
         time.sleep(0.1)
-
-print('Farewell.')
-time.sleep(3)
