@@ -1,3 +1,4 @@
-USER%Your_User_Name
-CHANNEL%#your_channel_name
-PASSWORD%your_oauth_token
+{"USERNAME":"Your_User_Name",
+"CHANNEL":"#your_channel_name",
+"PASSWORD":"your_oauth_password"
+}

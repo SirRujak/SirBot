@@ -100,7 +100,6 @@ def checkChatType(socket, channelName, chatData, modList):
                 if( len(chatData) == 3):
                         if( checkMods( chatData[1], modList, channelName) == 1 ):
                                 chatData = chatData[2]
-                                print("test")
                                 return(checkChatCommand(socket, channelName, chatData), 1)
                         else:
                                 if( checkSpam(chatData[2]) == 0):
@@ -144,6 +143,25 @@ def checkMods(chatData, modList, channelName):
                         return(0)
         else:
                 return(0)
+
+def createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT):
+        s = socket.socket( ) ##Creating the socket variable
+
+        s.connect((HOST, PORT)) ##Connecting to Twitch
+        Password = "PASS " + PASS + "\r\n"
+        s.send(Password.encode()) ##Notice how I'm sending the password BEFORE the username!
+
+        ##Just sending the rest of the data now.
+        Nickname = "Nick " + NICK + "\r\n"
+        s.send(Nickname.encode())
+        Username = "USER " + IDENT + " " + HOST + "bla :" + REALNAME + "\r\n"
+        s.send(Username.encode())
+
+        ##Connecting to the channel.
+        Channel = "JOIN " + CHANNEL + "\r\n"
+        s.send(Channel.encode() )
+        s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
+        return(s)
 
 def checkSpam(chatText):
         if ("░" in chatText
@@ -197,11 +215,13 @@ class baseTimer():
 ##IRC connection data
 
 configFile = open("config","rb+")
-userInfo = (configFile.read()).decode()
-userInfo = userInfo.strip().split("\n")
+userInfo = configFile.read().decode()
+userInfo = userInfo.strip("\n").strip("{").strip("}").split(",")
 for param in range(len(userInfo)):
-        userInfo[param] = userInfo[param].strip().split("%")
-        if( userInfo[param][0] == "USER" ):
+        userInfo[param] = userInfo[param].split(":")
+        userInfo[param][0] = userInfo[param][0].strip("\n").strip('"')
+        userInfo[param][1] = userInfo[param][1].strip("\n").strip('"')
+        if( userInfo[param][0] == "USERNAME" ):
                 NICK = userInfo[param][1]
                 IDENT = userInfo[param][1]
                 REALNAME = userInfo[param][1]
@@ -216,29 +236,32 @@ PORT=6667 ##Same with this port, leave it be.
 
 ################################################################
 
-s = socket.socket( ) ##Creating the socket variable
-
-s.connect((HOST, PORT)) ##Connecting to Twitch
-Password = "PASS " + PASS + "\r\n"
-s.send(Password.encode()) ##Notice how I'm sending the password BEFORE the username!
-
-##Just sending the rest of the data now.
-Nickname = "Nick " + NICK + "\r\n"
-s.send(Nickname.encode())
-Username = "USER " + IDENT + " " + HOST + "bla :" + REALNAME + "\r\n"
-s.send(Username.encode())
-
-##Connecting to the channel.
-Channel = "JOIN " + CHANNEL + "\r\n"
-s.send(Channel.encode() )
+##s = socket.socket( ) ##Creating the socket variable
+##
+##s.connect((HOST, PORT)) ##Connecting to Twitch
+##Password = "PASS " + PASS + "\r\n"
+##s.send(Password.encode()) ##Notice how I'm sending the password BEFORE the username!
+##
+####Just sending the rest of the data now.
+##Nickname = "Nick " + NICK + "\r\n"
+##s.send(Nickname.encode())
+##Username = "USER " + IDENT + " " + HOST + "bla :" + REALNAME + "\r\n"
+##s.send(Username.encode())
+##
+####Connecting to the channel.
+##Channel = "JOIN " + CHANNEL + "\r\n"
+##s.send(Channel.encode() )
 
 readbuffer = []
 
-s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
+##s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
 
 
 socketReady = []
-socketReady.append(select.select([s], [], [], 3))
+socketReady.append(select.select([createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT)], [], [], 3))
+##socketReady.append(select.select([createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT)], [], [], 3))
+currSocket = 0
+maxSocket = 0
 
 ####################
 chatInformation = []
@@ -246,7 +269,7 @@ modList = []
 modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), 0.05)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
-sendResponse(socketReady[0][0][0], channelName, ".mods")
+sendResponse(createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT), channelName, ".mods")
 
 fastResponse = []
 slowResponse = []
@@ -277,8 +300,6 @@ while (1):
                                 modList = []
                                 modList.append(channelName[1:])
                                 modList.extend(respDat)
-                                print("Mods")
-                                print(modList)
                 ## to check and see if we can send stuff        
                 sendTimer.setCurrTime(time.time())
                 sendTimer.checkIfTimePassed()
@@ -286,14 +307,17 @@ while (1):
                         sendTimer.prevTime =time.time()
                         if( len(fastResponse) == 0 and len(slowResponse) != 0 ):
                                 currResponse = slowResponse.pop(0)
-                                sendResponse(socketReady[0][0][0], channelName, currResponse)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse)
                         elif( len(fastResponse) != 0 ):
                                 currResponse = fastResponse.pop(0)
-                                sendResponse(socketReady[0][0][0], channelName, currResponse)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse)
                         else:
                                 pass
+                        currSocket+=1
+                        if( currSocket > maxSocket ):
+                                currSocket = 0
 
-                ## to check and see if we need to check the mods
+                ## to check and see if we need to check the mods  FIX THIS
                 checkModTimer.setCurrTime(time.time())
                 checkModTimer.checkIfTimePassed()
                 if( checkModTimer.timePassed == 1 ):
@@ -304,4 +328,4 @@ while (1):
                 
                 readbuffer = []
                 
-        time.sleep(0.1)
+        time.sleep(0.075)
