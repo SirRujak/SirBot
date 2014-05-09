@@ -31,9 +31,11 @@ def getStreamInfo(userName):
     return(streamData,errFlag)
 
 
-def getTwitchStatus(streamData):
+def getTwitchStatus(userName):
     errFlag = 0
     
+    streamData = getStreamInfo(userName)
+
     try:
         streamData = str(streamData)
         streamData = streamData.split(':')
@@ -176,3 +178,55 @@ def getNewFollowsNames(userName,limit,offset):
         followers = ['null']
 
     return(followers,errFlag)
+
+
+
+def getLiveViewerCount(userName):
+    errFlag = 0
+
+    streamData = getStreamInfo(userName)
+
+    try:
+        streamData = str(streamData)
+        currentlyViewing = int(streamData.split(':')[9].split(',')[0])
+
+    except:
+        errFlag = 1
+        currentlyViewing = 'null'
+
+    return(currentlyViewing,errFlag)
+
+
+def getGameTitle(userName):
+    errFlag = 0
+
+    streamData = getStreamInfo(userName)
+
+    try:
+        streamData = str(streamData)
+        gameTitle = streamData.split(':')[8].split(',')[0].strip('"')
+
+    except:
+        errFlag = 1
+        gameTitle = 0
+
+    return(gameTitle,errFlag)
+
+def getAuthorization(userName):
+    errFlag = 0
+
+    try:
+        passToken = str(open("config","rb+").read().decode().split("\n")[2].split('%')[1])
+        passToken = 'oauth:' + passToken
+
+    except:
+        errFlag = 1
+        passToken = 0
+
+    return(passToken,errFlag)
+
+
+
+    
+
+    
