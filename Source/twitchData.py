@@ -31,11 +31,9 @@ def getStreamInfo(userName):
     return(streamData,errFlag)
 
 
-def getTwitchStatus(userName):
+def getTwitchStatus(streamData):
     errFlag = 0
     
-    streamData = getStreamInfo(userName)
-
     try:
         streamData = str(streamData)
         streamData = streamData.split(':')
@@ -60,6 +58,7 @@ def getTwitchFollowCount(userName):
         try:
             followData = urllib.request.urlopen(url)
             followData = followData.read()
+            followData = str(followData)
             follows = int(followData.split(':')[1].split(',')[0])
 
         except:
@@ -109,13 +108,16 @@ def getNewFollows(userName,lastCheck,newCheck):
             followers = getNewFollowsNames(userName,delta,0)[0:delta-1]
         else:
             followers = getNewFollowsNames(userName,100,0)[0:99]
+    else:
+        errFlag = 3
 
-    return(followers,errFlag)
+    return(followers,errFlag,delta)
             
 
 
 def getNewFollowsNames(userName,limit,offset):
     errFlag = 0
+    followers = []
 
     if(limit == 0):
         followers = 'null'
@@ -129,7 +131,7 @@ def getNewFollowsNames(userName,limit,offset):
             return(followers,errFlag)
         else:
             try:
-                url = 'https://api.twtich.tv/kraken/channels/'
+                url = 'https://api.twitch.tv/kraken/channels/'
                 url = url + userName + '/follows?limit='
                 url = url + limit
                 url = url + '&offset='
@@ -150,7 +152,7 @@ def getNewFollowsNames(userName,limit,offset):
                     
 
             except TypeError:
-                url = 'https://api.twtich.tv/kraken/channels/'
+                url = 'https://api.twitch.tv/kraken/channels/'
                 url = url + str(userName) + '/follows?limit='
                 url = url + str(limit)
                 url = url + '&offset='
@@ -181,10 +183,8 @@ def getNewFollowsNames(userName,limit,offset):
 
 
 
-def getLiveViewerCount(userName):
+def getLiveViewerCount(streamData):
     errFlag = 0
-
-    streamData = getStreamInfo(userName)
 
     try:
         streamData = str(streamData)
@@ -197,10 +197,8 @@ def getLiveViewerCount(userName):
     return(currentlyViewing,errFlag)
 
 
-def getGameTitle(userName):
+def getGameTitle(streamData):
     errFlag = 0
-
-    streamData = getStreamInfo(userName)
 
     try:
         streamData = str(streamData)
