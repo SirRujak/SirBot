@@ -17,7 +17,7 @@ import time
 
 
 ## These must currently start with ! for commands.
-def checkChatCommand(socket, channelName, chatData):
+def checkChatCommand(channelName, chatData):
         if( chatData=="!info" ):
                 message = "Watch both of us play WildStar here!: "
                 return(message)
@@ -39,7 +39,7 @@ def checkChatStandard(chatData):
                 return("None")
 
 
-def checkChatWelcome(socket, channelName, userName):
+def checkChatWelcome(channelName, userName):
         welcomeMessage = "Hello there " + userName + " welcome to the stream!"
         return(welcomeMessage)
 
@@ -70,16 +70,16 @@ def sendResponse(socket, channelName, data):
                 messageToSend = messageToSend.encode()
                 socket.send(messageToSend)
 
-def pingPong(socket, channelName):
+def pingPong(channelName):
         pongLine = "PONG tmi.twitch.tv\r\n"
         localTime = time.asctime( time.localtime(time.time()) )
         print(localTime + " - Sent Data:")
         print(pongLine)
         return(pongLine)
 
-def checkChatType(socket, channelName, chatData, modList):
+def checkChatType(channelName, chatData, modList):
         if (chatData[0]=="PING "):
-                return(pingPong(socket, channelName), 1)
+                return(pingPong(channelName), 1)
 
         elif (len(chatData) == 2):
                 chatData = chatData[1].split(" ")
@@ -88,7 +88,7 @@ def checkChatType(socket, channelName, chatData, modList):
                                 chatData = chatData[0].split("!")
                                 chatData = chatData[0]
                                 chatData = chatData[0].upper() + chatData[1:]
-                                return(checkChatWelcome(socket, channelName, chatData), 2)
+                                return(checkChatWelcome(channelName, chatData), 2)
                 else:
                         return("None", 0)
 
@@ -101,7 +101,7 @@ def checkChatType(socket, channelName, chatData, modList):
                 if( len(chatData) == 3):
                         if( checkMods( chatData[1], modList, channelName) == 1 ):
                                 chatData = chatData[2]
-                                return(checkChatCommand(socket, channelName, chatData), 1)
+                                return(checkChatCommand(channelName, chatData), 1)
                         else:
                                 if( checkSpam(chatData[2]) == 0):
                                         chatData = chatData[2]
@@ -304,7 +304,7 @@ while (1):
                         print(localTime + " - Recieved Data:")
                         print(temp)
                         print("\n")
-                        (respDat, respLev) = checkChatType(socketReady[0][0][0], channelName, temp, modList)
+                        (respDat, respLev) = checkChatType(channelName, temp, modList)
                         if( respDat == "None" ):
                                 respLev = 0
                         if( respLev == 1 ):
