@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #### Version 0.0.7 ####
 ##Socket library
+import json
 import select
 import socket
 import string
@@ -144,21 +145,22 @@ def checkMods(chatData, modList, channelName):
         else:
                 return(0)
 
-def createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT):
+def createSocket(connectionData):#PASS, NICK, IDENT, CHANNEL, HOST, PORT):
         s = socket.socket( ) ##Creating the socket variable
+        print(connectionData)
 
-        s.connect((HOST, PORT)) ##Connecting to Twitch
-        Password = "PASS " + PASS + "\r\n"
+        s.connect((connectionData[4], connectionData[5]))#HOST, PORT)) ##Connecting to Twitch
+        Password = "PASS " + connectionData[0] + "\r\n"#PASS + "\r\n"
         s.send(Password.encode()) ##Notice how I'm sending the password BEFORE the username!
 
         ##Just sending the rest of the data now.
-        Nickname = "Nick " + NICK + "\r\n"
+        Nickname = "Nick " + connectionData[1] + "\r\n"#NICK + "\r\n"
         s.send(Nickname.encode())
-        Username = "USER " + IDENT + " " + HOST + "bla :" + REALNAME + "\r\n"
+        Username = "USER " + connectionData[2] + " " + connectionData[4] + " bla :" +connectionData[1]+"\r\n"#IDENT + " " + HOST + "bla :" + REALNAME + "\r\n"
         s.send(Username.encode())
 
         ##Connecting to the channel.
-        Channel = "JOIN " + CHANNEL + "\r\n"
+        Channel = "JOIN " + connectionData[3] + "\r\n"
         s.send(Channel.encode() )
         s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
         return(s)
@@ -213,26 +215,38 @@ class baseTimer():
 
 ################################################################
 ##IRC connection data
+def getConnectionData():
+        configFile = open("config","rb+")
+        userInfo = configFile.read().decode()
+        userInfo = json.loads(userInfo)
+        print(userInfo)
+        NICK = userInfo['USERNAME']
+        IDENT = userInfo['USERNAME']
+        REALNAME = userInfo['USERNAME']
+        channelName = userInfo['CHANNEL']
+        CHANNEL = channelName
+        PASS = "oauth:" + userInfo['PASSWORD']
+##userInfo = userInfo.strip("\n").strip("{").strip("}").split(",")
+##for param in range(len(userInfo)):
+##        userInfo[param] = userInfo[param].split(":")
+##        userInfo[param][0] = userInfo[param][0].strip("\n").strip('"')
+##        userInfo[param][1] = userInfo[param][1].strip("\n").strip('"')
+##        if( userInfo[param][0] == "USERNAME" ):
+##                NICK = userInfo[param][1]
+##                IDENT = userInfo[param][1]
+##                REALNAME = userInfo[param][1]
+##        elif( userInfo[param][0] == "CHANNEL" ):
+##                channelName = userInfo[param][1]
+##                CHANNEL = channelName
+##        elif( userInfo[param][0] == "PASSWORD" ):
+##                PASS = "oauth:" + userInfo[param][1]
+        HOST="irc.twitch.tv" ##This is the Twitch IRC ip, don't change it.
 
-configFile = open("config","rb+")
-userInfo = configFile.read().decode()
-userInfo = userInfo.strip("\n").strip("{").strip("}").split(",")
-for param in range(len(userInfo)):
-        userInfo[param] = userInfo[param].split(":")
-        userInfo[param][0] = userInfo[param][0].strip("\n").strip('"')
-        userInfo[param][1] = userInfo[param][1].strip("\n").strip('"')
-        if( userInfo[param][0] == "USERNAME" ):
-                NICK = userInfo[param][1]
-                IDENT = userInfo[param][1]
-                REALNAME = userInfo[param][1]
-        elif( userInfo[param][0] == "CHANNEL" ):
-                channelName = userInfo[param][1]
-                CHANNEL = channelName
-        elif( userInfo[param][0] == "PASSWORD" ):
-                PASS = "oauth:" + userInfo[param][1]
-HOST="irc.twitch.tv" ##This is the Twitch IRC ip, don't change it.
+        PORT=6667 ##Same with this port, leave it be.
+        connectionData = [PASS, NICK, IDENT, CHANNEL, HOST, PORT]
+        return(connectionData)
 
-PORT=6667 ##Same with this port, leave it be.
+
 
 ################################################################
 
@@ -256,9 +270,10 @@ readbuffer = []
 
 ##s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
 
+channelName = getConnectionData()[3]
 
 socketReady = []
-socketReady.append(select.select([createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT)], [], [], 3))
+socketReady.append(select.select([createSocket(getConnectionData())], [], [], 3))
 ##socketReady.append(select.select([createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT)], [], [], 3))
 currSocket = 0
 maxSocket = 0
@@ -269,7 +284,7 @@ modList = []
 modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), 0.05)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
-sendResponse(createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT), channelName, ".mods")
+sendResponse(socketReady[0][0][0], channelName, ".mods")
 
 fastResponse = []
 slowResponse = []
