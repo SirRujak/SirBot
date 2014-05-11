@@ -1,4 +1,3 @@
-This is a Twitch chat bot. It is in very early alpha right now. It will probably not work in any form or fashion and may destroy everything you have ever worked on. Be warned. Passwords are currently saved unencrypted. If you want to really be safe remake the config file every time. Eventually a password system may be implemented, but really there is very little that can make it safe other than keeping your computer safe.
 ##########################################
 INTRO
 
