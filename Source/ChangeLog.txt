@@ -44,6 +44,16 @@ Version 0.0.8 - Implementation of Follower Notification System
 	Allow each type of response to be toggled.
 
 Version 0.0.9 - 
+	To Do:
+	Move from using hard coded commands to using a json answer file.
+	Make it where timed events can occur based on json answer file.
+	Add functionality to timer class to count number of lines since last call.
 
 Version 0.1.0 - Basic User Interface
+	To Do:
+	Be able to start, stop, silence the bot from the interface.
+	Be able to add and remove commands and timed commands.
+	Be able to open help files, error logs, link to donate.
+	
+Be able to close the program.
 	
