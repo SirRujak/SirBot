@@ -59,16 +59,26 @@ def checkChatWelcome(channelName, userName):
 
 
 
-def sendResponse(socket, channelName, data):
+def sendResponse(socket, channelName, data, logFile):
         if( data == "PONG tmi.twitch.tv\r\n" ):
                 socket.send(data.encode())
         else:
                 messageToSend = "PRIVMSG " + channelName + " :" + data + "\r\n"
                 localTime = time.asctime( time.localtime(time.time()) )
-                print(localTime + " - Sent Data:")
-                print(messageToSend)
                 messageToSend = messageToSend.encode()
-                socket.send(messageToSend)
+                try:
+                        
+                        socket.send(messageToSend)
+                        logFile.write(localTime + ' - Sent Data:')
+                        logFile.write(messageToSend.decode())
+                        print(localTime + " - Sent Data:")
+                        print(messageToSend)
+                except:
+                        logFile.write(localTime + 'Unable to send:')
+                        logFile.write(messageToSend.decode() + "\r\n")
+                        print(localTime + " - Unable to send:")
+                        print(messageToSend)
+                        
 
 def pingPong(channelName):
         pongLine = "PONG tmi.twitch.tv\r\n"
@@ -219,7 +229,6 @@ def getConnectionData():
         configFile = open("config","rb+")
         userInfo = configFile.read().decode()
         userInfo = json.loads(userInfo)
-        print(userInfo)
         NICK = userInfo['USERNAME']
         IDENT = userInfo['USERNAME']
         REALNAME = userInfo['USERNAME']
@@ -266,6 +275,13 @@ def getConnectionData():
 ##Channel = "JOIN " + CHANNEL + "\r\n"
 ##s.send(Channel.encode() )
 
+try:
+        nomLog = open('logs/NomLog.txt', 'a')
+        nomLog.write('\n--------------------------------------------\n')
+        nomLog.write('\nSession Start: ' + time.asctime( time.localtime(time.time()) ) + '\n' )
+except:
+        print("Unable to begin logging. Please report!")
+
 readbuffer = []
 
 ##s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
@@ -284,37 +300,49 @@ modList = []
 modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), 0.05)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
-sendResponse(socketReady[0][0][0], channelName, ".mods")
+shutdownTimer = baseTimer(time.time(), time.time(), 20)
+sendResponse(socketReady[0][0][0], channelName, ".mods", nomLog)
 
 fastResponse = []
 slowResponse = []
 ####################
-
-while (1):
+poweredOn = 1
+while( poweredOn == 1 ):
         if( socketReady[0][0][0] ):
                 
-                chatInformation.extend(readData(socketReady[0][0][0]))
+                try:
+                        chatInformation.extend(readData(socketReady[0][0][0]))
+                except:
+                        nomLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
+                        print(time.localtime(time.time()) + " - Unable to read data.")
                 
                 if( len(chatInformation) > 0 ):
                         
+                        localTime = time.asctime( time.localtime(time.time()) )
                         temp = chatInformation.pop(0)
+                        temp = temp.strip('\n')
+                        nomLog.write(localTime + ' - Recieved Data:')
+                        nomLog.write(temp + '\n')
                         temp = temp.strip().split("\n")
                         temp = temp[0].strip().split(":")
-                        localTime = time.asctime( time.localtime(time.time()) )
                         print(localTime + " - Recieved Data:")
                         print(temp)
                         print("\n")
-                        (respDat, respLev) = checkChatType(channelName, temp, modList)
-                        if( respDat == "None" ):
-                                respLev = 0
-                        if( respLev == 1 ):
-                                fastResponse.append(respDat)
-                        elif( respLev == 2 ):
-                                slowResponse.append(respDat)
-                        elif( respLev == 3 ):
-                                modList = []
-                                modList.append(channelName[1:])
-                                modList.extend(respDat)
+                        try:
+                                (respDat, respLev) = checkChatType(channelName, temp, modList)
+                                if( respDat == "None" ):
+                                        respLev = 0
+                                if( respLev == 1 ):
+                                        fastResponse.append(respDat)
+                                elif( respLev == 2 ):
+                                        slowResponse.append(respDat)
+                                elif( respLev == 3 ):
+                                        modList = []
+                                        modList.append(channelName[1:])
+                                        modList.extend(respDat)
+                        except:
+                                print('\nAn error occured when checking recieved data.\n')
+                                nomLog.write('\nAn error occured when checking recieved data.\n')
                 ## to check and see if we can send stuff        
                 sendTimer.setCurrTime(time.time())
                 sendTimer.checkIfTimePassed()
@@ -322,10 +350,10 @@ while (1):
                         sendTimer.prevTime =time.time()
                         if( len(fastResponse) == 0 and len(slowResponse) != 0 ):
                                 currResponse = slowResponse.pop(0)
-                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
                         elif( len(fastResponse) != 0 ):
                                 currResponse = fastResponse.pop(0)
-                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
                         else:
                                 pass
                         currSocket+=1
@@ -337,10 +365,18 @@ while (1):
                 checkModTimer.checkIfTimePassed()
                 if( checkModTimer.timePassed == 1 ):
                         checkModTimer.prevTime = time.time()
-                        sendResponse(socketReady[0][0][0], channelName, ".mods")
+                        sendResponse(socketReady[0][0][0], channelName, ".mods", nomLog)
+
+                shutdownTimer.setCurrTime(time.time())
+                shutdownTimer.checkIfTimePassed()
+                if( shutdownTimer.timePassed == 1 ):
+                        poweredOn = 0
                         
 
                 
                 readbuffer = []
                 
         time.sleep(0.075)
+
+
+nomLog.close()

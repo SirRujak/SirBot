@@ -32,10 +32,10 @@ Version 0.0.6 - Implementation of Timer System
 	
 Version 0.0.7 - Chat Logging
 	To Do:
-	Log messages and errors.
 	Add more sockets and make it cycle through them.
 	Done:
 	Fix command system. (change it to check for mods on a timer)
+	Preliminary logging, will now log sent and recieved msg's and errors.
 
 Version 0.0.8 - Implementation of Follower Notification System
 	To Do:
