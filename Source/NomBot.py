@@ -13,7 +13,6 @@ import time
 
 ###############################################################
 ###############################################################
-#Person Edits this part. One day to be in its own file.
 
 
 ## These must currently start with ! for commands.
@@ -72,12 +71,12 @@ def sendResponse(socket, channelName, data, logFile):
                         logFile.write(localTime + ' - Sent Data:')
                         logFile.write(messageToSend.decode())
                         print(localTime + " - Sent Data:")
-                        print(messageToSend)
+                        print(messageToSend.decode() + "\r\n")
                 except:
                         logFile.write(localTime + 'Unable to send:')
                         logFile.write(messageToSend.decode() + "\r\n")
                         print(localTime + " - Unable to send:")
-                        print(messageToSend)
+                        print(messageToSend.decode() + "\r\n")
                         
 
 def pingPong(channelName):
@@ -130,7 +129,6 @@ def checkChatType(channelName, chatData, modList):
 
 
 def readData(socket):
-        ##Receiving data from IRC and spitting it into manageable lines.
         readbuffer = []
         localChatInfo = []
         try:
@@ -159,7 +157,7 @@ def createSocket(connectionData):#PASS, NICK, IDENT, CHANNEL, HOST, PORT):
         s = socket.socket( ) ##Creating the socket variable
         print(connectionData)
 
-        s.connect((connectionData[4], connectionData[5]))#HOST, PORT)) ##Connecting to Twitch
+        s.connect((connectionData[4], connectionData[5]))##Connecting to Twitch
         Password = "PASS " + connectionData[0] + "\r\n"#PASS + "\r\n"
         s.send(Password.encode()) ##Notice how I'm sending the password BEFORE the username!
 
@@ -174,6 +172,25 @@ def createSocket(connectionData):#PASS, NICK, IDENT, CHANNEL, HOST, PORT):
         s.send(Channel.encode() )
         s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
         return(s)
+
+
+def checkForMods(modTimer):
+        modTimer.setCurrTime(time.time())
+        modTimer.checkIfTimePassed()
+        if( modTimer.timePassed == 1 ):
+                modTimer.prevTime = time.time()
+                return( 1 )
+        else:
+                return( 0 )
+
+def checkSendTimer(sendTimer):
+        sendTimer.setCurrTime(time.time())
+        sendTimer.checkIfTimePassed()
+        if( sendTimer.timePassed == 1):
+                sendTimer.prevTime =time.time()
+                return( 1 )
+        else:
+                return( 0 )
 
 def checkSpam(chatText):
         if ("░" in chatText
@@ -235,45 +252,18 @@ def getConnectionData():
         channelName = userInfo['CHANNEL']
         CHANNEL = channelName
         PASS = "oauth:" + userInfo['PASSWORD']
-##userInfo = userInfo.strip("\n").strip("{").strip("}").split(",")
-##for param in range(len(userInfo)):
-##        userInfo[param] = userInfo[param].split(":")
-##        userInfo[param][0] = userInfo[param][0].strip("\n").strip('"')
-##        userInfo[param][1] = userInfo[param][1].strip("\n").strip('"')
-##        if( userInfo[param][0] == "USERNAME" ):
-##                NICK = userInfo[param][1]
-##                IDENT = userInfo[param][1]
-##                REALNAME = userInfo[param][1]
-##        elif( userInfo[param][0] == "CHANNEL" ):
-##                channelName = userInfo[param][1]
-##                CHANNEL = channelName
-##        elif( userInfo[param][0] == "PASSWORD" ):
-##                PASS = "oauth:" + userInfo[param][1]
         HOST="irc.twitch.tv" ##This is the Twitch IRC ip, don't change it.
 
         PORT=6667 ##Same with this port, leave it be.
         connectionData = [PASS, NICK, IDENT, CHANNEL, HOST, PORT]
+        configFile.close()
+        
         return(connectionData)
 
 
 
 ################################################################
 
-##s = socket.socket( ) ##Creating the socket variable
-##
-##s.connect((HOST, PORT)) ##Connecting to Twitch
-##Password = "PASS " + PASS + "\r\n"
-##s.send(Password.encode()) ##Notice how I'm sending the password BEFORE the username!
-##
-####Just sending the rest of the data now.
-##Nickname = "Nick " + NICK + "\r\n"
-##s.send(Nickname.encode())
-##Username = "USER " + IDENT + " " + HOST + "bla :" + REALNAME + "\r\n"
-##s.send(Username.encode())
-##
-####Connecting to the channel.
-##Channel = "JOIN " + CHANNEL + "\r\n"
-##s.send(Channel.encode() )
 
 try:
         nomLog = open('logs/NomLog.txt', 'a')
@@ -282,29 +272,28 @@ try:
 except:
         print("Unable to begin logging. Please report!")
 
-readbuffer = []
-
-##s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
 
 channelName = getConnectionData()[3]
 
 socketReady = []
-socketReady.append(select.select([createSocket(getConnectionData())], [], [], 3))
+socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
+##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
 ##socketReady.append(select.select([createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT)], [], [], 3))
 currSocket = 0
 maxSocket = 0
 
 ####################
+fastResponse = []
+slowResponse = []
 chatInformation = []
 modList = []
 modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), 0.05)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
 shutdownTimer = baseTimer(time.time(), time.time(), 20)
-sendResponse(socketReady[0][0][0], channelName, ".mods", nomLog)
+slowResponse.append(".mods")
 
-fastResponse = []
-slowResponse = []
+
 ####################
 poweredOn = 1
 while( poweredOn == 1 ):
@@ -343,38 +332,36 @@ while( poweredOn == 1 ):
                         except:
                                 print('\nAn error occured when checking recieved data.\n')
                                 nomLog.write('\nAn error occured when checking recieved data.\n')
-                ## to check and see if we can send stuff        
-                sendTimer.setCurrTime(time.time())
-                sendTimer.checkIfTimePassed()
-                if( sendTimer.timePassed == 1):
-                        sendTimer.prevTime =time.time()
-                        if( len(fastResponse) == 0 and len(slowResponse) != 0 ):
-                                currResponse = slowResponse.pop(0)
-                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
-                        elif( len(fastResponse) != 0 ):
-                                currResponse = fastResponse.pop(0)
-                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
-                        else:
-                                pass
-                        currSocket+=1
-                        if( currSocket > maxSocket ):
-                                currSocket = 0
+
+
 
                 ## to check and see if we need to check the mods  FIX THIS
-                checkModTimer.setCurrTime(time.time())
-                checkModTimer.checkIfTimePassed()
-                if( checkModTimer.timePassed == 1 ):
-                        checkModTimer.prevTime = time.time()
-                        sendResponse(socketReady[0][0][0], channelName, ".mods", nomLog)
+                if( checkForMods(checkModTimer) == 1 ):
+                        slowResponse.append(".mods")
 
+                ## New timer check for sending to chat.
+                if( len(fastResponse) > 0):
+                        if( checkSendTimer(sendTimer) == 1 ):
+                                currResponse = fastResponse.pop(0)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
+                                currSocket+=1
+                                if( currSocket > maxSocket ):
+                                        currSocket = 0
+                elif( len(slowResponse) > 0):
+                        if( checkSendTimer(sendTimer) == 1 ):
+                                currResponse = slowResponse.pop(0)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
+                                currSocket+=1
+                                if( currSocket > maxSocket ):
+                                        currSocket = 0
+
+                ## Remove for actual use, just helpful if testing times.
                 shutdownTimer.setCurrTime(time.time())
                 shutdownTimer.checkIfTimePassed()
                 if( shutdownTimer.timePassed == 1 ):
                         poweredOn = 0
                         
 
-                
-                readbuffer = []
                 
         time.sleep(0.075)
 
