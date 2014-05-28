@@ -36,6 +36,7 @@ Version 0.0.7 - Chat Logging
 	Done:
 	Fix command system. (change it to check for mods on a timer)
 	Preliminary logging, will now log sent and recieved msg's and errors.
+	Changed name from NomBot to SirBot.
 
 Version 0.0.8 - Implementation of Follower Notification System
 	To Do:

@@ -6,7 +6,7 @@ INTRO
 #########################################
 REQUIREMENTS
 
-	The NomBot currently uses the base Python 3.4 package. We are working to ensure that no extra dependancies are needed so only the base installation is needed. You can get the necessary version of python here:
+	The SirBot currently uses the base Python 3.4 package. We are working to ensure that no extra dependancies are needed so only the base installation is needed. You can get the necessary version of python here:
 
 https://www.python.org/downloads/release/python-340/
 
@@ -14,14 +14,14 @@ Also, it is required to create an OAuth password for your account. Go to the fol
 
 http://twitchapps.com/tmi/
 
-Once you have that go to the NomBot/Source folder and rename the "sample_config" file to "config" and then replace the information inside. The OAuth portion needs only the number and letter combination found after "OAuth:" from the link.
+Once you have that go to the SirBot/Source folder and rename the "sample_config" file to "config" and then replace the information inside. The OAuth portion needs only the number and letter combination found after "OAuth:" from the link.
 
-Then either through the python shell or in a terminal/prompt navigate to the Source folder and type "python3 NomBot.py" without the quotes to start the bot.
+Then either through the python shell or in a terminal/prompt navigate to the Source folder and type "python3 SirBot.py" without the quotes to start the bot.
 
 #######################################
 HOW TO USE
 
-	Within the source file open NomBot.py with any text editor(Python ships with its own editor if you are having troubles) and edit the three functions checkChatCommand, checkChatStandard, and checkChatWelcome with checks and responses for any command you want the bot to answer. The format for commands is as follows:
+	Within the source file open SirBot.py with any text editor(Python ships with its own editor if you are having troubles) and edit the three functions checkChatCommand, checkChatStandard, and checkChatWelcome with checks and responses for any command you want the bot to answer. The format for commands is as follows:
 
 elif( chatData=="COMMAND_MESSAGE"):
 	message = "MESSAGE_FOR_BOT_TO_SEND"

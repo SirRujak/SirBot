@@ -155,7 +155,6 @@ def checkMods(chatData, modList, channelName):
 
 def createSocket(connectionData):#PASS, NICK, IDENT, CHANNEL, HOST, PORT):
         s = socket.socket( ) ##Creating the socket variable
-        print(connectionData)
 
         s.connect((connectionData[4], connectionData[5]))##Connecting to Twitch
         Password = "PASS " + connectionData[0] + "\r\n"#PASS + "\r\n"
@@ -266,9 +265,9 @@ def getConnectionData():
 
 
 try:
-        nomLog = open('logs/NomLog.txt', 'a')
-        nomLog.write('\n--------------------------------------------\n')
-        nomLog.write('\nSession Start: ' + time.asctime( time.localtime(time.time()) ) + '\n' )
+        sirLog = open('logs/SirLog.txt', 'a')
+        sirLog.write('\n--------------------------------------------\n')
+        sirLog.write('\nSession Start: ' + time.asctime( time.localtime(time.time()) ) + '\n' )
 except:
         print("Unable to begin logging. Please report!")
 
@@ -302,7 +301,7 @@ while( poweredOn == 1 ):
                 try:
                         chatInformation.extend(readData(socketReady[0][0][0]))
                 except:
-                        nomLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
+                        sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
                         print(time.localtime(time.time()) + " - Unable to read data.")
                 
                 if( len(chatInformation) > 0 ):
@@ -310,8 +309,8 @@ while( poweredOn == 1 ):
                         localTime = time.asctime( time.localtime(time.time()) )
                         temp = chatInformation.pop(0)
                         temp = temp.strip('\n')
-                        nomLog.write(localTime + ' - Recieved Data:')
-                        nomLog.write(temp + '\n')
+                        sirLog.write(localTime + ' - Recieved Data:')
+                        sirLog.write(temp + '\n')
                         temp = temp.strip().split("\n")
                         temp = temp[0].strip().split(":")
                         print(localTime + " - Recieved Data:")
@@ -331,7 +330,7 @@ while( poweredOn == 1 ):
                                         modList.extend(respDat)
                         except:
                                 print('\nAn error occured when checking recieved data.\n')
-                                nomLog.write('\nAn error occured when checking recieved data.\n')
+                                sirLog.write('\nAn error occured when checking recieved data.\n')
 
 
 
@@ -343,14 +342,14 @@ while( poweredOn == 1 ):
                 if( len(fastResponse) > 0):
                         if( checkSendTimer(sendTimer) == 1 ):
                                 currResponse = fastResponse.pop(0)
-                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, sirLog)
                                 currSocket+=1
                                 if( currSocket > maxSocket ):
                                         currSocket = 0
                 elif( len(slowResponse) > 0):
                         if( checkSendTimer(sendTimer) == 1 ):
                                 currResponse = slowResponse.pop(0)
-                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, nomLog)
+                                sendResponse(socketReady[currSocket][0][0], channelName, currResponse, sirLog)
                                 currSocket+=1
                                 if( currSocket > maxSocket ):
                                         currSocket = 0
@@ -366,4 +365,4 @@ while( poweredOn == 1 ):
         time.sleep(0.075)
 
 
-nomLog.close()
+sirLog.close()
