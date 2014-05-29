@@ -1,4 +1,6 @@
-{"USERNAME":"Your_User_Name",
+{"CHANNEL-INFO":{
+"USERNAME":"Your_User_Name",
 "CHANNEL":"#your_channel_name",
-"PASSWORD":"your_oauth_password"
-}
+"PASSWORD":"your_oauth_password"},
+"SOCKET-INFO":{
+"MAX-SOCKETS":"3"}

@@ -191,6 +191,15 @@ def checkSendTimer(sendTimer):
         else:
                 return( 0 )
 
+def clearSecondarySocket(sockets, maxSockets, currSocket, channelName, logFile):
+        pings = []
+        for i in range(maxSockets):
+                if( i != currSocket ):
+                        chatInfo = readData(i)
+                        if( chatInfo[:4] == 'PING' ):
+                                pings.extend('PING')
+                                sendResponse(i, channelName, "PONG tmi.twitch.tv\r\n".encode(), logFile)
+
 def checkSpam(chatText):
         if ("░" in chatText
                 or "█" in chatText
@@ -245,12 +254,12 @@ def getConnectionData():
         configFile = open("config","rb+")
         userInfo = configFile.read().decode()
         userInfo = json.loads(userInfo)
-        NICK = userInfo['USERNAME']
-        IDENT = userInfo['USERNAME']
-        REALNAME = userInfo['USERNAME']
-        channelName = userInfo['CHANNEL']
+        NICK = userInfo['CHANNEL-INFO']['USERNAME']
+        IDENT = userInfo['CHANNEL-INFO']['USERNAME']
+        REALNAME = userInfo['CHANNEL-INFO']['USERNAME']
+        channelName = userInfo['CHANNEL-INFO']['CHANNEL']
         CHANNEL = channelName
-        PASS = "oauth:" + userInfo['PASSWORD']
+        PASS = "oauth:" + userInfo['CHANNEL-INFO']['PASSWORD']
         HOST="irc.twitch.tv" ##This is the Twitch IRC ip, don't change it.
 
         PORT=6667 ##Same with this port, leave it be.
@@ -258,6 +267,16 @@ def getConnectionData():
         configFile.close()
         
         return(connectionData)
+
+def getSocketInfo():
+        configFile = open("config","rb+")
+        socketInfo = configFile.read().decode()
+        socketInfo = json.loads(socketInfo)
+        maxSockets = socketInfo['SOCKET-INFO']['MAX-SOCKETS']
+        maxSockets = int(maxSockets)
+        configFile.close()
+        return(maxSockets)
+        
 
 
 
@@ -275,11 +294,17 @@ except:
 channelName = getConnectionData()[3]
 
 socketReady = []
-socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
+
+maxSocket = getSocketInfo() - 1
+minSendTime = 32 / (16*maxSocket)
+for socks in range(maxSocket+1):
+        socketReady.append(select.select([createSocket(getConnectionData())], [], [], 3))
+print(socketReady)
+##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
 ##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
 ##socketReady.append(select.select([createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT)], [], [], 3))
 currSocket = 0
-maxSocket = 0
+##maxSocket = 1 ## one less than there actually is
 
 ####################
 fastResponse = []
@@ -287,7 +312,7 @@ slowResponse = []
 chatInformation = []
 modList = []
 modList.append(channelName[1:])
-sendTimer = baseTimer(time.time(), time.time(), 0.05)
+sendTimer = baseTimer(time.time(), time.time(), minSendTime)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
 shutdownTimer = baseTimer(time.time(), time.time(), 20)
 slowResponse.append(".mods")
@@ -303,6 +328,8 @@ while( poweredOn == 1 ):
                 except:
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
                         print(time.localtime(time.time()) + " - Unable to read data.")
+
+                clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
                 
                 if( len(chatInformation) > 0 ):
                         
