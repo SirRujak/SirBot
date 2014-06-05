@@ -37,9 +37,13 @@ Version 0.0.7 - Chat Logging and Socket System
 	Changed name from NomBot to SirBot.
 
 Version 0.0.8 - Implementation of Follower Notification System (where name come from?)
+	Done:
+	Added the ability to add different levels of chat filter.
+	Added chat filter setting where non-ascii characters are banned.
+	Made it where it will promt to make a config file if one doesn't exist.
 	To Do:
 	Move from using channelName to botName.(maybe?)
-	Add functionality to the spam filter.
+	Move chat filter to a json file.
 	Allow each type of response to be toggled.
 
 Version 0.0.9 - Move Settings to JSON Files
