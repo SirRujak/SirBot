@@ -86,7 +86,7 @@ def pingPong(channelName):
         print(pongLine)
         return(pongLine)
 
-def checkChatType(channelName, chatData, modList):
+def checkChatType(channelName, chatData, modList, spamLevel):
         if (chatData[0]=="PING "):
                 return(pingPong(channelName), 1)
 
@@ -112,7 +112,7 @@ def checkChatType(channelName, chatData, modList):
                                 chatData = chatData[2]
                                 return(checkChatCommand(channelName, chatData), 1)
                         else:
-                                if( checkSpam(chatData[2]) == 0):
+                                if( checkSpam(chatData[2], spamLevel) == 0):
                                         chatData = chatData[2]
                                         return(checkChatStandard(chatData), 1)
                                 else:
@@ -200,32 +200,74 @@ def clearSecondarySocket(sockets, maxSockets, currSocket, channelName, logFile):
                                 pings.extend('PING')
                                 sendResponse(i, channelName, "PONG tmi.twitch.tv\r\n".encode(), logFile)
 
-def checkSpam(chatText):
-        if ("░" in chatText
-                or "█" in chatText
-                or "▓" in chatText 
-		or "▀" in chatText 
-		or "▄" in chatText 
-		or "▐" in chatText
-		or "▌" in chatText
-                or "▬" in chatText
-		or "===" in chatText
-		or "...." in chatText
-                or "……" in chatText
-                or "___" in chatText
-                or "D~" in chatText
-                or "┃┃" in chatText
-                or "༼ " in chatText
-                or "’̀-’́" in chatText
-                or "◕" in chatText
-                or "┌∩┐" in chatText
-                or "_̅(" in chatText
-                or "www" in chatText
-                or "http" in chatText
-		or b"\xe5\x8d\x90".decode("utf8") in chatText ):
-                return( 1 )
+def getConfigInfo():
+##        configFile = open('config', a)
+        userName = input("Enter the twitch username your bot will use: ")
+        channelName = input("Enter the channel that your bot will be on (of form #channelname): ")
+        password = input("Enter the oauth password characters after 'oauth:' for connecting: ")
+        socketInfo = 3
+        spamLevel = input("Enter the desired spam level: ")
+        try:
+                createConfigFile(userName, channelName, password, socketInfo, spamLevel)
+        except:
+                print("Could not create a config file. Please check that you have permission.")
+
+def createConfigFile(userName, channelName, password, socketInfo, spamLevel):
+        configDict = {}
+        configDict["CHANNEL-INFO"] = {"USERNAME":userName, "CHANNEL":channelName, "PASSWORD":password}
+        configDict["SOCKET-INFO"] = {"MAX-SOCKETS":socketInfo}
+        configDict["SPAM-INFO"] = {"SPAM-LEVEL":spamLevel}
+        print(configDict)
+        configFile = open('config', 'w')
+        json.dump(configDict, configFile)
+        configFile.close()
+        configFile = open('config', 'rb+')
+        return(configFile)
+##        userName = input("Enter the twitch username your bot will use: ")
+##        channelName = input("Enter the channel that your bot will be on (of form #channelname): ")
+##        password = input("Enter the oauth password characters after 'oauth:' for connecting: ")
+##        socketInfo = 3
+##        spamLevel = input("Enter the desired spam level: ")
+        
+        
+        
+        
+
+def checkSpam(chatText, spamLevel):
+        if (spamLevel >= 2):
+                try:
+                        chatText.encode('ascii')
+                except:
+                        return(1)
+        if (spamLevel >= 1):
+                if ("░" in chatText
+                        or "█" in chatText
+                        or "▓" in chatText 
+                        or "▀" in chatText 
+                        or "▄" in chatText 
+                        or "▐" in chatText
+                        or "▌" in chatText
+                        or "▬" in chatText
+                        or "===" in chatText
+                        or "...." in chatText
+                        or "……" in chatText
+                        or "___" in chatText
+                        or "D~" in chatText
+                        or "┃┃" in chatText
+                        or "༼ " in chatText
+                        or "’̀-’́" in chatText
+                        or "◕" in chatText
+                        or "┌∩┐" in chatText
+                        or "_̅(" in chatText
+                        or "www" in chatText
+                        or "http" in chatText
+                        or "****" in chatText
+                        or b"\xe5\x8d\x90".decode("utf8") in chatText ):
+                        return( 1 )
+                else:
+                        return( 0 )
         else:
-                return( 0 )
+                return ( 0 )
 
 class baseTimer():
         def __init__(self, prevTime, currTime, timerLen):
@@ -251,7 +293,10 @@ class baseTimer():
 ################################################################
 ##IRC connection data
 def getConnectionData():
-        configFile = open("config","rb+")
+        try:
+                configFile = open("config","rb+")
+        except FileNotFoundError:
+                configFile = getConfigInfo()
         userInfo = configFile.read().decode()
         userInfo = json.loads(userInfo)
         NICK = userInfo['CHANNEL-INFO']['USERNAME']
@@ -276,6 +321,22 @@ def getSocketInfo():
         maxSockets = int(maxSockets)
         configFile.close()
         return(maxSockets)
+
+def getSpamLevel():
+        configFile = open("config","rb+")
+        configInfo = configFile.read().decode()
+        configInfo = json.loads(configInfo)
+        spamLevel = configInfo['SPAM-INFO']['SPAM-LEVEL']
+        spamLevel = int(spamLevel)
+        configFile.close()
+        return(spamLevel)
+
+def readConfigInfo():
+        connectionData = getConnectionData()
+        maxSockets = getSocketInfo()
+        spamLevel = getSpamLevel()
+        configData = [connectionData, maxSockets, spamLevel]
+        return( configData )
         
 
 
@@ -292,13 +353,14 @@ except:
 
 
 channelName = getConnectionData()[3]
+spamLevel = getSpamLevel()
 
 socketReady = []
 
 maxSocket = getSocketInfo() - 1
 minSendTime = 32 / (16*maxSocket)
 for socks in range(maxSocket+1):
-        socketReady.append(select.select([createSocket(getConnectionData())], [], [], 3))
+        socketReady.append(select.select([createSocket(getConnectionData())], [], [], 10))
 print(socketReady)
 ##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
 ##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
@@ -314,7 +376,7 @@ modList = []
 modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), minSendTime)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
-shutdownTimer = baseTimer(time.time(), time.time(), 20)
+shutdownTimer = baseTimer(time.time(), time.time(), 200)
 slowResponse.append(".mods")
 
 
@@ -322,6 +384,8 @@ slowResponse.append(".mods")
 poweredOn = 1
 while( poweredOn == 1 ):
         if( socketReady[0][0][0] ):
+                clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
+                
                 
                 try:
                         chatInformation.extend(readData(socketReady[0][0][0]))
@@ -329,7 +393,6 @@ while( poweredOn == 1 ):
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
                         print(time.localtime(time.time()) + " - Unable to read data.")
 
-                clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
                 
                 if( len(chatInformation) > 0 ):
                         
@@ -344,7 +407,7 @@ while( poweredOn == 1 ):
                         print(temp)
                         print("\n")
                         try:
-                                (respDat, respLev) = checkChatType(channelName, temp, modList)
+                                (respDat, respLev) = checkChatType(channelName, temp, modList, spamLevel)
                                 if( respDat == "None" ):
                                         respLev = 0
                                 if( respLev == 1 ):
@@ -389,7 +452,7 @@ while( poweredOn == 1 ):
                         
 
                 
-        time.sleep(0.075)
+        time.sleep(0.001)
 
 
 sirLog.close()

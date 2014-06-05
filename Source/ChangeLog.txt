@@ -36,7 +36,7 @@ Version 0.0.7 - Chat Logging and Socket System
 	Preliminary logging, will now log sent and recieved msg's and errors.
 	Changed name from NomBot to SirBot.
 
-Version 0.0.8 - Implementation of Follower Notification System
+Version 0.0.8 - Implementation of Follower Notification System (where name come from?)
 	To Do:
 	Move from using channelName to botName.(maybe?)
 	Add functionality to the spam filter.
