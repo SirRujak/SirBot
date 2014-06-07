@@ -86,7 +86,7 @@ def pingPong(channelName):
         print(pongLine)
         return(pongLine)
 
-def checkChatType(channelName, chatData, modList, spamLevel):
+def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
         if (chatData[0]=="PING "):
                 return(pingPong(channelName), 1)
 
@@ -112,7 +112,7 @@ def checkChatType(channelName, chatData, modList, spamLevel):
                                 chatData = chatData[2]
                                 return(checkChatCommand(channelName, chatData), 1)
                         else:
-                                if( checkSpam(chatData[2], spamLevel) == 0):
+                                if( checkSpam(chatData[2], spamLevel, spamFilter) == 0):
                                         chatData = chatData[2]
                                         return(checkChatStandard(chatData), 1)
                                 else:
@@ -192,13 +192,18 @@ def checkSendTimer(sendTimer):
                 return( 0 )
 
 def clearSecondarySocket(sockets, maxSockets, currSocket, channelName, logFile):
-        pings = []
-        for i in range(maxSockets):
+        for i in range(maxSockets+1):
                 if( i != currSocket ):
-                        chatInfo = readData(i)
+##                        print("Socket " + str(i) + " cleared.")
+                        chatInfo = readData(sockets[i][0][0])
+                        ## Need to check for all server responses. What happens is that one of the non-current
+                        ## sockets gets a response from something like .mods and then it has two in the socket
+                        ## while the current only has one. This means it clears the .mods command and then
+                        ## recieves the same chat data as the other just responded to making it respond twice.
+                        ## Therefore if one of these is found we need to clear that socket again. Probably
+                        ## need to separate the clearing and checking parts.
                         if( chatInfo[:4] == 'PING' ):
-                                pings.extend('PING')
-                                sendResponse(i, channelName, "PONG tmi.twitch.tv\r\n".encode(), logFile)
+                                sendResponse(sockets[i][0][0], channelName, "PONG tmi.twitch.tv\r\n".encode(), logFile)
 
 def getConfigInfo():
 ##        configFile = open('config', a)
@@ -207,16 +212,17 @@ def getConfigInfo():
         password = input("Enter the oauth password characters after 'oauth:' for connecting: ")
         socketInfo = 3
         spamLevel = input("Enter the desired spam level: ")
+        spamFileName = input("Enter a file name for storing your spam data: ")
         try:
-                createConfigFile(userName, channelName, password, socketInfo, spamLevel)
+                createConfigFile(userName, channelName, password, socketInfo, spamLevel, spamFileName)
         except:
                 print("Could not create a config file. Please check that you have permission.")
 
-def createConfigFile(userName, channelName, password, socketInfo, spamLevel):
+def createConfigFile(userName, channelName, password, socketInfo, spamLevel, spamFileName):
         configDict = {}
         configDict["CHANNEL-INFO"] = {"USERNAME":userName, "CHANNEL":channelName, "PASSWORD":password}
         configDict["SOCKET-INFO"] = {"MAX-SOCKETS":socketInfo}
-        configDict["SPAM-INFO"] = {"SPAM-LEVEL":spamLevel}
+        configDict["SPAM-INFO"] = {"SPAM-LEVEL":spamLevel, "SPAM-FILE-NAME":spamFileName}
         print(configDict)
         configFile = open('config', 'w')
         json.dump(configDict, configFile)
@@ -229,45 +235,67 @@ def createConfigFile(userName, channelName, password, socketInfo, spamLevel):
 ##        socketInfo = 3
 ##        spamLevel = input("Enter the desired spam level: ")
         
-        
+def loadSpamFile(currLevel, spamFileName):
+        spamFilterStuff = spamFilter(currLevel)
+        spamFilterStuff.loadLevels(spamFileName)
+        return(spamFilterStuff)
         
         
 
-def checkSpam(chatText, spamLevel):
-        if (spamLevel >= 2):
+##def checkSpam(chatText, spamLevel):
+##        if (spamLevel >= 2):
+##                try:
+##                        chatText.encode('ascii')
+##                except:
+##                        return(1)
+##        if (spamLevel >= 1):
+##                if ("░" in chatText
+##                        or "█" in chatText
+##                        or "▓" in chatText 
+##                        or "▀" in chatText 
+##                        or "▄" in chatText 
+##                        or "▐" in chatText
+##                        or "▌" in chatText
+##                        or "▬" in chatText
+##                        or "===" in chatText
+##                        or "...." in chatText
+##                        or "……" in chatText
+##                        or "___" in chatText
+##                        or "D~" in chatText
+##                        or "┃┃" in chatText
+##                        or "༼ " in chatText
+##                        or "’̀-’́" in chatText
+##                        or "◕" in chatText
+##                        or "┌∩┐" in chatText
+##                        or "_̅(" in chatText
+##                        or "www" in chatText
+##                        or "http" in chatText
+##                        or "****" in chatText
+##                        or b"\xe5\x8d\x90".decode("utf8") in chatText ):
+##                        return( 1 )
+##                else:
+##                        return( 0 )
+##        else:
+##                return ( 0 )
+
+def checkSpam(chatText, spamLevel, spamFilter):
+        if (spamLevel > 21):
+                spamLevel = 21
+        elif (spamLevel < 0):
+                spamLevel = 0
+        if (spamLevel == 21):
                 try:
                         chatText.encode('ascii')
                 except:
                         return(1)
-        if (spamLevel >= 1):
-                if ("░" in chatText
-                        or "█" in chatText
-                        or "▓" in chatText 
-                        or "▀" in chatText 
-                        or "▄" in chatText 
-                        or "▐" in chatText
-                        or "▌" in chatText
-                        or "▬" in chatText
-                        or "===" in chatText
-                        or "...." in chatText
-                        or "……" in chatText
-                        or "___" in chatText
-                        or "D~" in chatText
-                        or "┃┃" in chatText
-                        or "༼ " in chatText
-                        or "’̀-’́" in chatText
-                        or "◕" in chatText
-                        or "┌∩┐" in chatText
-                        or "_̅(" in chatText
-                        or "www" in chatText
-                        or "http" in chatText
-                        or "****" in chatText
-                        or b"\xe5\x8d\x90".decode("utf8") in chatText ):
-                        return( 1 )
-                else:
-                        return( 0 )
-        else:
-                return ( 0 )
+##        else:
+        for i in range(spamLevel, 0, -1):
+                tempSpamLevel = "LEVEL-" + str(i)
+                if (tempSpamLevel in spamFilter.filterHolder):
+                        if (chatText in spamFilter.filterHolder[tempSpamLevel]):
+                                        return(1)
+        return(0)
+        
 
 class baseTimer():
         def __init__(self, prevTime, currTime, timerLen):
@@ -285,6 +313,29 @@ class baseTimer():
                         self.timePassed = 1
                 else:
                         self.timePassed = 0
+
+class spamFilter():
+        def __init__(self, currentLevel, filterHolder = {'zero':[]}):
+                self.currentLevel = currentLevel
+                self.filterHolder = filterHolder
+        def addNewLevel(self, newLevel, levelData): ## Make sure to pass a string "LEVEL-*" and a list [level,data]
+                self.filterHolder[newLevel] = levelData
+        def loadLevels(self, spamFileName):
+                try:
+                        spamFile = open(spamFileName, 'r')
+                except FileNotFoundError:
+                        print("Your spam filter information has not been found. Check in the config file to make sure the names match.")
+                        return()
+                spamDict = json.load(spamFile)
+                spamFile.close()
+                self.filterHolder.update(spamDict)
+        def delLevels(self, levelToDelete):
+                del self.filterHolder[levelToDelete]
+        def saveLevels(self, spamFileName):
+                spamFile = open(spamFileName, 'w')
+                json.dumps(self.filterHolder, spamFile)
+                spamFile.close()
+                
 
 
 
@@ -327,9 +378,10 @@ def getSpamLevel():
         configInfo = configFile.read().decode()
         configInfo = json.loads(configInfo)
         spamLevel = configInfo['SPAM-INFO']['SPAM-LEVEL']
+        spamFileName = configInfo['SPAM-INFO']['SPAM-FILE-NAME']
         spamLevel = int(spamLevel)
         configFile.close()
-        return(spamLevel)
+        return(spamLevel, spamFileName)
 
 def readConfigInfo():
         connectionData = getConnectionData()
@@ -352,16 +404,19 @@ except:
         print("Unable to begin logging. Please report!")
 
 
+
 channelName = getConnectionData()[3]
-spamLevel = getSpamLevel()
+(spamLevel, spamFileName) = getSpamLevel()
+
+spamFilter = loadSpamFile(spamLevel, spamFileName)
+print(spamFilter.filterHolder)
 
 socketReady = []
 
 maxSocket = getSocketInfo() - 1
 minSendTime = 32 / (16*maxSocket)
 for socks in range(maxSocket+1):
-        socketReady.append(select.select([createSocket(getConnectionData())], [], [], 10))
-print(socketReady)
+        socketReady.append(select.select([createSocket(getConnectionData())], [], [], 2))
 ##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
 ##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
 ##socketReady.append(select.select([createSocket(PASS, NICK, IDENT, CHANNEL, HOST, PORT)], [], [], 3))
@@ -384,11 +439,11 @@ slowResponse.append(".mods")
 poweredOn = 1
 while( poweredOn == 1 ):
         if( socketReady[0][0][0] ):
-                clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
                 
                 
                 try:
-                        chatInformation.extend(readData(socketReady[0][0][0]))
+                        chatInformation.extend(readData(socketReady[currSocket][0][0]))
+                        clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
                 except:
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
                         print(time.localtime(time.time()) + " - Unable to read data.")
@@ -407,7 +462,7 @@ while( poweredOn == 1 ):
                         print(temp)
                         print("\n")
                         try:
-                                (respDat, respLev) = checkChatType(channelName, temp, modList, spamLevel)
+                                (respDat, respLev) = checkChatType(channelName, temp, modList, spamLevel, spamFilter)
                                 if( respDat == "None" ):
                                         respLev = 0
                                 if( respLev == 1 ):
