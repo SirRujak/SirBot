@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-#### Version 0.0.7 ####
-##Socket library
+#### Version 0.0.8 ####
+## Importing Libraries
 import json
 import select
 import socket

@@ -41,7 +41,6 @@ Version 0.0.8 - Implementation of Follower Notification System (where name come 
 	Added the ability to add different levels of chat filter.
 	Added chat filter setting where non-ascii characters are banned.
 	Made it where it will promt to make a config file if one doesn't exist.
-	To Do:
 	Move chat filter to a json file.
 
 Version 0.0.9 - Move Settings to JSON Files
