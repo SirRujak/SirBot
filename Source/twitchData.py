@@ -1,3 +1,4 @@
+##TODO:rewrite using python json library
 import urllib.request
 ##import time
 
