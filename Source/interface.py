@@ -1,19 +1,27 @@
 #
 
 import tkinter as tk
+from tkinter import ttk
+#import tkinter.ttk
+#import os
 
-botName = 'Nombot'
+
+botName = 'SirBot'
 botVersion = '0.0.*'
 msgID = 'Console:'
 defaultState = 1
 
 class botGUI(tk.Frame):
+
+    
+
     def __init__(self,master=None):
 
         tk.Frame.__init__(self,master)
 
         self.grid()
         self.createWidgets()
+        
 
     #global class variables
         
@@ -21,22 +29,28 @@ class botGUI(tk.Frame):
     def createWidgets(self):
 
         ##status variables
+        top = self.winfo_toplevel()
+        self.autoMod = tk.IntVar()
+        self.autoMod.set(defaultState)
+        self.childOpen = tk.IntVar()
+        self.childOpen.set(0)
+        self.newChannelName = tk.StringVar()
+        self.newChannelName.set('')
 
         #user variables
-        self.autoMod = tk.IntVar()
         self.channel = tk.StringVar()
         self.owner = tk.StringVar()
         self.users = tk.StringVar()
-
-        self.autoMod.set(defaultState)
+        
         self.users.set('1v13G4_DEATH oddba11 whiskerzzzzzzzzzzzzzzzzxyz dopey a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 00')
         self.owner.set('id')
-        self.channel.set('MINE')
+        self.channel.set('MINEcraft5')
 
-        #active IRC users declare
+        #active IRC declare
         self.statusFrame = tk.LabelFrame(self,labelanchor='nw',text='Status')
         self.channelFrame = tk.LabelFrame(self,labelanchor='nw',text='Current Channel')
         self.channelName = tk.Label(self,bg='white',fg='black',textvariable=self.channel)
+        self.channelChange = tk.Button(self,text='Change',command=self.editChannel)
         self.usersFrame = tk.Frame(self,background='white')
         self.sendAs = tk.LabelFrame(self,labelanchor='nw',text='Send As:')
         self.sendAsText = tk.Label(self,bg='white',fg='black',textvariable=self.owner)
@@ -44,10 +58,11 @@ class botGUI(tk.Frame):
         self.usersScroll = tk.Scrollbar(self,orient=tk.VERTICAL)
         self.usersListText = tk.Listbox(self,activestyle='dotbox',bg='white',cursor='xterm',fg='black',height=15,listvariable=self.users,yscrollcommand=self.usersScroll.set)
         
-        #active IRC users add to grid
+        #active IRC add to grid
         self.statusFrame.grid(column=0,row=1,sticky='NSEW')
         self.channelFrame.grid(in_=self.statusFrame,row=0,sticky='EW')
-        self.channelName.grid(in_=self.channelFrame,sticky='EW')
+        self.channelName.grid(in_=self.channelFrame,sticky='EW',column=0,row=0)
+        self.channelChange.grid(in_=self.channelFrame,sticky='EW',column=1,row=0)
         self.usersFrame.grid(in_=self.statusFrame,row=1,sticky='EW')
         self.sendAs.grid(in_=self.usersFrame,row=0,sticky='EW')
         self.sendAsText.grid(in_=self.sendAs,sticky='EW')
@@ -88,7 +103,6 @@ class botGUI(tk.Frame):
         self.chatScroll['command'] = self.chatHistory.yview
         
         #menu bar
-        top = self.winfo_toplevel()
         self.menuBar = tk.Menu(top)
         top['menu'] = self.menuBar
         #menu bar items
@@ -100,7 +114,7 @@ class botGUI(tk.Frame):
         self.menuBar.add_cascade(label='Chat',menu=self.chatMenu)
         self.menuBar.add_cascade(label='Options',menu=self.optionsMenu)
         self.menuBar.add_cascade(label='Help',menu=self.helpMenu)
-        self.optionsMenu.add_command(label='Quit',command=self.destroy)
+        self.optionsMenu.add_command(label='Configure',command=self.openOptions)
         self.helpMenu.add_command(label='About',command=self.refreshUsers)
         self.helpMenu.add_command(label='Help',command=self.refreshUsers)
 
@@ -145,7 +159,7 @@ class botGUI(tk.Frame):
         self.modAutomation = tk.LabelFrame(self,labelanchor='nw',text='Automated Moderator')
         self.activateAutomation = tk.Radiobutton(self,text='On',value=1,variable=self.autoMod,relief=tk.GROOVE)
         self.deactivateAutomation = tk.Radiobutton(self,text='Off',value=0,variable=self.autoMod,relief=tk.GROOVE)
-        self.customAutomation = tk.Button(self,text='Custom',command=self.refreshUsers,relief=tk.GROOVE)
+        self.customAutomation = tk.Button(self,text='Custom',command=self.customAutomatedModerator,relief=tk.GROOVE)
         
         self.modAutomation.grid(in_=self.statusFrame,column=0,row=3)
         self.activateAutomation.grid(in_=self.modAutomation,column=0,row=0)
@@ -170,12 +184,7 @@ class botGUI(tk.Frame):
         self.chatInput.focus_set()
 
     def sendChat2(self,event):
-        self.chatHistory.config(state='normal')
-        self.chatHistory.insert(tk.END,self.timeStamp() +msgID+ self.chatInput.get()+"\n")
-        self.chatInput.delete(0,tk.END)
-        self.chatHistory.yview(tk.END)
-        self.chatHistory.config(state='disabled')
-        self.chatInput.focus_set()
+        self.sendChat()
 
     def timeStamp(self):
         #get time and format appropriately
@@ -203,8 +212,10 @@ class botGUI(tk.Frame):
         #maybe do this to verified lines:
         #self.chatInput.insert(tk.END,'>')
         ##temporarily this:
-        print(self.autoMod.get())
-
+        print('AutoModON/OFF:'+str(self.autoMod.get()))
+        #print('Top window:'+self.createWidgets.top)
+        print('IsChildOpen:'+str(self.childOpen.get()))
+        #print('
 
     def goToUser(self):
         #search for username in list: if it exists, select it; otherwise do nothing(notify?)
@@ -214,6 +225,96 @@ class botGUI(tk.Frame):
         #self.users
         #insert headings for various tiers
         pass
+
+    def editChannel(self):
+        #tk.messagebox
+        if(self.childOpen.get() == 0):
+            self.childOpen.set(1)
+            self.channelEdit = tk.Toplevel()
+            self.channelEdit.title('Join Channel')
+            self.channelEdit.transient(self)
+            #self.channelEdit.geometry(wxh+x+y)
+            #self.channelEdit.geometry("+%d+%d" % (self.winfo_rootx()+50,self.winfo_rooty()+50))
+            self.channelEdit.geometry('+'+str(self.winfo_rootx()+50)+'+'+str(self.winfo_rooty()+50))
+
+            self.channelEntry = tk.Entry(self.channelEdit,bg='white',fg='black',cursor='xterm',textvariable=self.newChannelName)
+            self.channelEntry.bind("<Return>",self.editChannelClose2)
+            self.joinChannelButton = tk.Button(self.channelEdit,text='Join',command=self.editChannelClose)
+            
+            self.channelEntry.grid(row=0,column=0,sticky='EW')
+            self.joinChannelButton.grid(row=1,column=0)
+
+            self.channelEntry.focus_set()
+
+            self.channelEdit.protocol("WM_DELETE_WINDOW", self.editChannelCloseWM)
+
+    def openOptions(self):
+
+        if(self.childOpen.get() == 0):
+            self.childOpen.set(1)
+            self.optionsDialog = tk.Toplevel()
+            self.optionsDialog.title('Options')
+            self.optionsDialog.transient(self)
+            self.optionsDialog.bind("<Esc>",self.optionsDialogClose)
+            #self.optionsDialog.geometry(wxh+x+y)
+            self.optionsDialog.geometry('+'+str(self.winfo_rootx()+50)+'+'+str(self.winfo_rooty()+50))
+
+
+            #self.testButton = tk.Button(self.optionsDialog,text='Close',command=self.optionsDialogClose)
+            #self.testButton.pack()
+
+            self.fortrial = tk.Frame(self.optionsDialog)
+            self.fortrial.pack(side=tk.TOP,fill=tk.BOTH,expand=tk.Y)
+            self.trial = ttk.Notebook(self.fortrial)
+            self.trial.pack(fill=tk.BOTH,expand=tk.Y,padx=2,pady=3)
+            self.trial.enable_traversal()
+            self.trialframe1 = ttk.Frame(self.trial)
+            #self.trial.add(self.trialframe1)
+            #self.trialframe1.grid()
+            self.trialbutton1=tk.Button(self.trialframe1,text='testing')
+            self.trialbutton1.grid()
+            #ADD WIDGETS HERE
+            self.trialframe1.rowconfigure(1,weight=1)
+            self.trialframe1.columnconfigure((0,1),weight=1,uniform=1)
+            self.trial.add(self.trialframe1,text='Tab1',padding=2)
+            #self.trialframe2 = ttk.Frame(self.trial)
+            #self.trial.insert(tk.END,self.trialframe2)
+            #self.trialframe2.grid()
+            #self.trialbutton2=ttk.Button(self.trialframe2,text='testing2')
+            #self.trialbutton2.grid()
+            #self.trialframe3 = ttk.Frame(self.trial)
+            #self.trial.insert(tk.END,self.trialframe3)
+            #self.trialframe3.grid()
+            #self.trialbutton3=ttk.Button(self.trialframe1,text='testing3')
+            #self.trialbutton3.grid()
+            
+            
+            
+                
+
+            self.optionsDialog.protocol("WM_DELETE_WINDOW", self.optionsDialogClose)
+
+    def optionsDialogClose(self):
+        self.childOpen.set(0)
+        self.optionsDialog.destroy()
+
+    def editChannelClose(self):
+        if(self.newChannelName.get()!=''):
+            self.channel.set(self.newChannelName.get())
+            self.newChannelName.set('')
+            #attempt to join new channel
+        self.childOpen.set(0)
+        self.channelEdit.destroy()
+
+    def editChannelClose2(self,event):
+        self.editChannelClose()
+
+    def editChannelCloseWM(self):
+        self.newChannelName.set('')
+        self.editChannelClose()
+
+    def customAutomatedModerator(self):
+        self.openOptions()
         
     
 
