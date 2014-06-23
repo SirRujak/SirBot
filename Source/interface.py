@@ -18,7 +18,7 @@ class botGUI(tk.Frame):
     def __init__(self,master=None):
 
         tk.Frame.__init__(self,master)
-
+#        ttkwm_iconbitmap(default='ouricon.ico')
         self.grid()
         self.createWidgets()
         
@@ -30,6 +30,8 @@ class botGUI(tk.Frame):
 
         ##status variables
         top = self.winfo_toplevel()
+        self.editConfig = tk.IntVar()
+        self.editConfig.set(0)
         self.autoMod = tk.IntVar()
         self.autoMod.set(defaultState)
         self.childOpen = tk.IntVar()
@@ -40,6 +42,8 @@ class botGUI(tk.Frame):
         #user variables
         self.channel = tk.StringVar()
         self.owner = tk.StringVar()
+        self.ownerUpdate = tk.StringVar()
+        self.password = tk.StringVar()
         self.users = tk.StringVar()
         
         self.users.set('1v13G4_DEATH oddba11 whiskerzzzzzzzzzzzzzzzzxyz dopey a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 00')
@@ -54,6 +58,7 @@ class botGUI(tk.Frame):
         self.usersFrame = tk.Frame(self,background='white')
         self.sendAs = tk.LabelFrame(self,labelanchor='nw',text='Send As:')
         self.sendAsText = tk.Label(self,bg='white',fg='black',textvariable=self.owner)
+        self.sendAsChange = tk.Button(self,text='Change',command=self.configQuery)
         self.usersList = tk.LabelFrame(self,labelanchor='nw',text='Users')
         self.usersScroll = tk.Scrollbar(self,orient=tk.VERTICAL)
         self.usersListText = tk.Listbox(self,activestyle='dotbox',bg='white',cursor='xterm',fg='black',height=15,listvariable=self.users,yscrollcommand=self.usersScroll.set)
@@ -62,10 +67,11 @@ class botGUI(tk.Frame):
         self.statusFrame.grid(column=0,row=1,sticky='NSEW')
         self.channelFrame.grid(in_=self.statusFrame,row=0,sticky='EW')
         self.channelName.grid(in_=self.channelFrame,sticky='EW',column=0,row=0)
-        self.channelChange.grid(in_=self.channelFrame,sticky='EW',column=1,row=0)
+        self.channelChange.grid(in_=self.channelFrame,sticky='E',column=1,row=0)
         self.usersFrame.grid(in_=self.statusFrame,row=1,sticky='EW')
-        self.sendAs.grid(in_=self.usersFrame,row=0,sticky='EW')
-        self.sendAsText.grid(in_=self.sendAs,sticky='EW')
+        self.sendAs.grid(in_=self.usersFrame,row=0,sticky='EW',column=0)
+        self.sendAsText.grid(in_=self.sendAs,sticky='EW',column=0,row=0)
+        self.sendAsChange.grid(in_=self.sendAs,sticky='E',column=1,row=0)
         self.usersList.grid(in_=self.usersFrame,row=1,sticky='EW')
         self.usersListText.grid(in_=self.usersList,row=0,column=0,sticky='EW')
         self.usersScroll.grid(in_=self.usersList,row=0,column=1,sticky='NS')
@@ -166,9 +172,8 @@ class botGUI(tk.Frame):
         self.deactivateAutomation.grid(in_=self.modAutomation,column=1,row=0)
         self.customAutomation.grid(in_=self.modAutomation,column=2,row=0)
         
-        #temporary refresh button
-        self.refreshButton = tk.Button(self,text='VOID',command=self.refreshUsers)
-
+        #temporary function test button
+        self.refreshButton = ttk.Button(self,text='VOID',command=self.configQuery)
         self.refreshButton.grid(in_=self.statusFrame,column=0,row=4)
 
 
@@ -215,6 +220,7 @@ class botGUI(tk.Frame):
         print('AutoModON/OFF:'+str(self.autoMod.get()))
         #print('Top window:'+self.createWidgets.top)
         print('IsChildOpen:'+str(self.childOpen.get()))
+        print('IsConfiginEdit:'+str(self.editConfig.get()))
         #print('
 
     def goToUser(self):
@@ -226,6 +232,49 @@ class botGUI(tk.Frame):
         #insert headings for various tiers
         pass
 
+    def configQuery(self):
+        #popup window to ask for config file info
+        if(self.editConfig.get() == 0):
+            self.editConfig.set(1)
+            #find current config username and set as self.ownerUpdate
+            self.configInput = tk.Toplevel()
+            self.configInput.title('Configure Account')
+            self.configInput.transient(self)
+            self.configInput.geometry('+'+str(self.winfo_rootx()+50)+'+'+str(self.winfo_rooty()+50))
+            self.inputUserFrame = tk.LabelFrame(self.configInput,text='Owner Account',labelanchor='nw')
+            self.inputUser = tk.Entry(self.inputUserFrame,textvariable=self.ownerUpdate,cursor='xterm')
+            self.inputOauthFrame = tk.LabelFrame(self.configInput,text='Oauth Password',labelanchor='nw')
+            self.inputOauth = tk.Entry(self.inputOauthFrame,textvariable=self.password,cursor='xterm')
+            self.getOauthButton = ttk.Button(self.inputOauthFrame,text='Find Oauth',command=self.getOauth)
+            self.inputConfigFrame = ttk.Frame(self.configInput)
+            self.inputConfigConfirmButton = ttk.Button(self.inputConfigFrame,text='Confirm',command=self.confirmConfigQuery)
+            self.inputConfigDiscardButton = ttk.Button(self.inputConfigFrame,text='Discard',command=self.closeConfigQuery)
+
+            self.inputUserFrame.grid(in_=self.configInput,row=0,sticky='EW',columnspan=2)
+            self.inputUser.grid(in_=self.inputUserFrame,sticky='EW',columnspan=3)
+            self.inputOauthFrame.grid(in_=self.configInput,row=1,sticky='EW',columnspan=2)
+            self.inputOauth.grid(in_=self.inputOauthFrame,sticky='EW',columnspan=2,row=0)
+            self.getOauthButton.grid(in_=self.inputOauthFrame,sticky='EW',column=2,row=0)
+            self.inputConfigFrame.grid(in_=self.configInput,row=2,sticky='E',columnspan=2)
+            self.inputConfigConfirmButton.grid(in_=self.inputConfigFrame,column=0,row=0)
+            self.inputConfigDiscardButton.grid(in_=self.inputConfigFrame,column=1,row=0)
+
+            self.inputUser.select_range(0,tk.END)
+            self.inputUser.focus_set()
+
+            self.configInput.protocol("WM_DELETE_WINDOW",self.closeConfigQuery)
+    def navConfigQuery(self):
+        #make pressing enter move to the next entry field
+        pass
+
+    def confirmConfigQuery(self):
+        #make changes to config file with data from entry fields
+        self.closeConfigQuery()
+
+    def closeConfigQuery(self):
+        self.editConfig.set(0)
+        self.configInput.destroy()
+    
     def editChannel(self):
         #tk.messagebox
         if(self.childOpen.get() == 0):
@@ -239,7 +288,7 @@ class botGUI(tk.Frame):
 
             self.channelEntry = tk.Entry(self.channelEdit,bg='white',fg='black',cursor='xterm',textvariable=self.newChannelName)
             self.channelEntry.bind("<Return>",self.editChannelClose2)
-            self.joinChannelButton = tk.Button(self.channelEdit,text='Join',command=self.editChannelClose)
+            self.joinChannelButton = ttk.Button(self.channelEdit,text='Join',command=self.editChannelClose)
             
             self.channelEntry.grid(row=0,column=0,sticky='EW')
             self.joinChannelButton.grid(row=1,column=0)
@@ -255,7 +304,7 @@ class botGUI(tk.Frame):
             self.optionsDialog = tk.Toplevel()
             self.optionsDialog.title('Options')
             self.optionsDialog.transient(self)
-            self.optionsDialog.bind("<Esc>",self.optionsDialogClose)
+            self.optionsDialog.bind("<Escape>",self.optionsDialogClose2)
             #self.optionsDialog.geometry(wxh+x+y)
             self.optionsDialog.geometry('+'+str(self.winfo_rootx()+50)+'+'+str(self.winfo_rooty()+50))
 
@@ -268,15 +317,22 @@ class botGUI(tk.Frame):
             self.trial = ttk.Notebook(self.fortrial)
             self.trial.pack(fill=tk.BOTH,expand=tk.Y,padx=2,pady=3)
             self.trial.enable_traversal()
+            #tab1
             self.trialframe1 = ttk.Frame(self.trial)
-            #self.trial.add(self.trialframe1)
-            #self.trialframe1.grid()
-            self.trialbutton1=tk.Button(self.trialframe1,text='testing')
-            self.trialbutton1.grid()
             #ADD WIDGETS HERE
+            self.trialbutton1=tk.Button(self.trialframe1,text='submenu1')
+            self.trialbutton1.grid()
             self.trialframe1.rowconfigure(1,weight=1)
             self.trialframe1.columnconfigure((0,1),weight=1,uniform=1)
+            #display tab1
             self.trial.add(self.trialframe1,text='Tab1',padding=2)
+            #tab2
+            self.trialframe2=ttk.Frame(self.trial)
+            self.trialbutton2=ttk.Button(self.trialframe2,text='submenu2')
+            self.trialbutton2.grid()
+            #add widgets
+            self.trial.add(self.trialframe2,text='Tab2')
+
             #self.trialframe2 = ttk.Frame(self.trial)
             #self.trial.insert(tk.END,self.trialframe2)
             #self.trialframe2.grid()
@@ -298,6 +354,9 @@ class botGUI(tk.Frame):
         self.childOpen.set(0)
         self.optionsDialog.destroy()
 
+    def optionsDialogClose2(self,event):
+        self.optionsDialogClose()
+
     def editChannelClose(self):
         if(self.newChannelName.get()!=''):
             self.channel.set(self.newChannelName.get())
@@ -315,11 +374,17 @@ class botGUI(tk.Frame):
 
     def customAutomatedModerator(self):
         self.openOptions()
-        
+
+    def getOauth(self):
+        #get that pass somehow
+        pass
     
 
 UI = botGUI()
 
+
+#UI.call('wm', 'iconbitmap', self._w, '-default', 'iconfile.ico')
+#UI.iconbitmap(default='ouricon.ico')
 UI.master.title(botName + ' v.' + botVersion)
 
 UI.mainloop()
