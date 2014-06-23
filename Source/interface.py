@@ -18,7 +18,6 @@ class botGUI(tk.Frame):
     def __init__(self,master=None):
 
         tk.Frame.__init__(self,master)
-#        ttkwm_iconbitmap(default='ouricon.ico')
         self.grid()
         self.createWidgets()
         
@@ -272,6 +271,7 @@ class botGUI(tk.Frame):
         self.closeConfigQuery()
 
     def closeConfigQuery(self):
+        self.ownerUpdate.set('')
         self.editConfig.set(0)
         self.configInput.destroy()
     
@@ -378,14 +378,10 @@ class botGUI(tk.Frame):
     def getOauth(self):
         #get that pass somehow
         pass
+
+    def userValidate(self,username):
+        #check to see if entered username is valid twitch username
+        pass
     
 
-UI = botGUI()
-
-
-#UI.call('wm', 'iconbitmap', self._w, '-default', 'iconfile.ico')
-#UI.iconbitmap(default='ouricon.ico')
-UI.master.title(botName + ' v.' + botVersion)
-
-UI.mainloop()
 

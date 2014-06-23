@@ -8,8 +8,15 @@ import socket
 import string
 import time
 
+import interface
 
+###############################################################
+###############################################################
 
+botName = 'SirBot'
+botVersion = '0.0.8'
+msgID = 'Console:'
+defaultState = 1
 
 ###############################################################
 ###############################################################
@@ -437,7 +444,16 @@ slowResponse.append(".mods")
 
 ####################
 poweredOn = 1
+
+UI=interface.botGUI()
+UI.master.iconbitmap(default='ouricon.ico')
+UI.master.title(botName + ' v.' + botVersion)
+
 while( poweredOn == 1 ):
+
+        UI.update()
+        UI.update_idletasks()
+        
         if( socketReady[0][0][0] ):
                 
                 
