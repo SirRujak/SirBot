@@ -77,15 +77,15 @@ def sendResponse(socket, channelName, data, logFile):
                         socket.send(messageToSend)
                         logFile.write(localTime + ' - Sent Data:')
                         logFile.write(messageToSend.decode())
-                        print(localTime + " - Sent Data:")
-                        print(messageToSend.decode() + "\r\n")
+#                        print(localTime + " - Sent Data:")
+#                        print(messageToSend.decode() + "\r\n")
 ##
                         UI.terminalOutput(data)
                 except:
                         logFile.write(localTime + 'Unable to send:')
                         logFile.write(messageToSend.decode() + "\r\n")
-                        print(localTime + " - Unable to send:")
-                        print(messageToSend.decode() + "\r\n")
+#                        print(localTime + " - Unable to send:")
+#                        print(messageToSend.decode() + "\r\n")
 ##
                         UI.terminalOutput("Unable to send message!")
                         
@@ -93,8 +93,8 @@ def sendResponse(socket, channelName, data, logFile):
 def pingPong(channelName):
         pongLine = "PONG tmi.twitch.tv\r\n"
         localTime = time.asctime( time.localtime(time.time()) )
-        print(localTime + " - Sent Data:")
-        print(pongLine)
+#        print(localTime + " - Sent Data:")
+#        print(pongLine)
 ##
         UI.terminalOutput(pongLine)
         return(pongLine)
@@ -236,7 +236,7 @@ def createConfigFile(userName, channelName, password, socketInfo, spamLevel, spa
         configDict["CHANNEL-INFO"] = {"USERNAME":userName, "CHANNEL":channelName, "PASSWORD":password}
         configDict["SOCKET-INFO"] = {"MAX-SOCKETS":socketInfo}
         configDict["SPAM-INFO"] = {"SPAM-LEVEL":spamLevel, "SPAM-FILE-NAME":spamFileName}
-        print(configDict)
+#        print(configDict)
 ##
         UI.terminalOutput(configDict)
         configFile = open('config', 'w')
@@ -418,7 +418,7 @@ try:
         sirLog.write('\n--------------------------------------------\n')
         sirLog.write('\nSession Start: ' + time.asctime( time.localtime(time.time()) ) + '\n' )
 except:
-        print("Unable to begin logging. Please report!")
+#        print("Unable to begin logging. Please report!")
 ##
         UI.terminalOutput("Unable to begin logging. Please report!")
         
@@ -429,7 +429,7 @@ channelName = sessionData[3]
 (spamLevel, spamFileName) = getSpamLevel()
 
 spamFilter = loadSpamFile(spamLevel, spamFileName)
-print(spamFilter.filterHolder)
+#print(spamFilter.filterHolder)
 
 socketReady = []
 
@@ -464,6 +464,8 @@ UI.master.title(botName + ' v.' + botVersion)
 UI.owner.set(sessionData[1])
 UI.channel.set(sessionData[3])
 
+UI.terminalOutput(str(spamFilter.filterHolder))
+
 while( poweredOn == 1 ):
 
         UI.update()
@@ -477,7 +479,7 @@ while( poweredOn == 1 ):
                         clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
                 except:
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
-                        print(time.localtime(time.time()) + " - Unable to read data.")
+#                        print(time.localtime(time.time()) + " - Unable to read data.")
 ##
                         UI.terminalOutput("Unable to read socket data.")
 
@@ -491,11 +493,11 @@ while( poweredOn == 1 ):
                         sirLog.write(temp + '\n')
                         temp = temp.strip().split("\n")
                         temp = temp[0].strip().split(":")
-                        print(localTime + " - Recieved Data:")
-                        print(temp)
+#                        print(localTime + " - Recieved Data:")
+#                        print(temp)
 ##
                         UI.terminalInput(str(temp))
-                        print("\n")
+#                        print("\n")
                         try:
                                 (respDat, respLev) = checkChatType(channelName, temp, modList, spamLevel, spamFilter)
                                 if( respDat == "None" ):
@@ -509,9 +511,9 @@ while( poweredOn == 1 ):
                                         modList.append(channelName[1:])
                                         modList.extend(respDat)
                         except:
-                                print('\nAn error occured when checking recieved data.\n')
+#                                print('\nAn error occured when checking recieved data.\n')
 ##
-                                interface.terminalOutput("An error occured when checking received data.")
+                                UI.terminalOutput("An error occured when checking received data.")
                                 sirLog.write('\nAn error occured when checking recieved data.\n')
 
 
