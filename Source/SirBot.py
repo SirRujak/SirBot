@@ -79,11 +79,15 @@ def sendResponse(socket, channelName, data, logFile):
                         logFile.write(messageToSend.decode())
                         print(localTime + " - Sent Data:")
                         print(messageToSend.decode() + "\r\n")
+##
+                        UI.terminalOutput(data)
                 except:
                         logFile.write(localTime + 'Unable to send:')
                         logFile.write(messageToSend.decode() + "\r\n")
                         print(localTime + " - Unable to send:")
                         print(messageToSend.decode() + "\r\n")
+##
+                        UI.terminalOutput("Unable to send message!")
                         
 
 def pingPong(channelName):
@@ -91,6 +95,8 @@ def pingPong(channelName):
         localTime = time.asctime( time.localtime(time.time()) )
         print(localTime + " - Sent Data:")
         print(pongLine)
+##
+        UI.terminalOutput(pongLine)
         return(pongLine)
 
 def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
@@ -231,6 +237,8 @@ def createConfigFile(userName, channelName, password, socketInfo, spamLevel, spa
         configDict["SOCKET-INFO"] = {"MAX-SOCKETS":socketInfo}
         configDict["SPAM-INFO"] = {"SPAM-LEVEL":spamLevel, "SPAM-FILE-NAME":spamFileName}
         print(configDict)
+##
+        UI.terminalOutput(configDict)
         configFile = open('config', 'w')
         json.dump(configDict, configFile)
         configFile.close()
@@ -332,6 +340,8 @@ class spamFilter():
                         spamFile = open(spamFileName, 'r')
                 except FileNotFoundError:
                         print("Your spam filter information has not been found. Check in the config file to make sure the names match.")
+##
+                        UI.terminalOutput("Your spam filter information has not been found.")
                         return()
                 spamDict = json.load(spamFile)
                 spamFile.close()
@@ -409,10 +419,13 @@ try:
         sirLog.write('\nSession Start: ' + time.asctime( time.localtime(time.time()) ) + '\n' )
 except:
         print("Unable to begin logging. Please report!")
+##
+        UI.terminalOutput("Unable to begin logging. Please report!")
+        
 
 
-
-channelName = getConnectionData()[3]
+sessionData = getConnectionData()
+channelName = sessionData[3]
 (spamLevel, spamFileName) = getSpamLevel()
 
 spamFilter = loadSpamFile(spamLevel, spamFileName)
@@ -448,6 +461,8 @@ poweredOn = 1
 UI=interface.botGUI()
 UI.master.iconbitmap(default='ouricon.ico')
 UI.master.title(botName + ' v.' + botVersion)
+UI.owner.set(sessionData[1])
+UI.channel.set(sessionData[3])
 
 while( poweredOn == 1 ):
 
@@ -463,6 +478,8 @@ while( poweredOn == 1 ):
                 except:
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
                         print(time.localtime(time.time()) + " - Unable to read data.")
+##
+                        UI.terminalOutput("Unable to read socket data.")
 
                 
                 if( len(chatInformation) > 0 ):
@@ -476,6 +493,8 @@ while( poweredOn == 1 ):
                         temp = temp[0].strip().split(":")
                         print(localTime + " - Recieved Data:")
                         print(temp)
+##
+                        UI.terminalInput(str(temp))
                         print("\n")
                         try:
                                 (respDat, respLev) = checkChatType(channelName, temp, modList, spamLevel, spamFilter)
@@ -491,6 +510,8 @@ while( poweredOn == 1 ):
                                         modList.extend(respDat)
                         except:
                                 print('\nAn error occured when checking recieved data.\n')
+##
+                                interface.terminalOutput("An error occured when checking received data.")
                                 sirLog.write('\nAn error occured when checking recieved data.\n')
 
 

@@ -1,15 +1,16 @@
 #
 
+import time
 import tkinter as tk
 from tkinter import ttk
 #import tkinter.ttk
 #import os
 
 
-botName = 'SirBot'
-botVersion = '0.0.*'
-msgID = 'Console:'
-defaultState = 1
+##botName = 'SirBot'
+##botVersion = '0.0.*'
+##msgID = 'Console:'
+##defaultState = 1
 
 class botGUI(tk.Frame):
 
@@ -23,6 +24,11 @@ class botGUI(tk.Frame):
         
 
     #global class variables
+
+    botName = ''
+    botVersion = ''
+    msgID = ''
+    defaultState = 1
         
 
     def createWidgets(self):
@@ -32,7 +38,7 @@ class botGUI(tk.Frame):
         self.editConfig = tk.IntVar()
         self.editConfig.set(0)
         self.autoMod = tk.IntVar()
-        self.autoMod.set(defaultState)
+        self.autoMod.set(self.defaultState)
         self.childOpen = tk.IntVar()
         self.childOpen.set(0)
         self.newChannelName = tk.StringVar()
@@ -179,21 +185,46 @@ class botGUI(tk.Frame):
     def refreshUsers(self):
         pass
 
-    def sendChat(self):
+    def terminalOutput(self,message):
+        self.msgID = 'Console:'
+#        self.chatHistory.config(state='normal')
+#        self.chatHistory.insert(tk.END,self.timeStamp()+self.msgID+message+'\n')
+#        self.chatHistory.yview(tk.END)
+#        self.chatHistory.config(state='disabled')
+        self.terminalWrite(message)
+
+    def terminalInput(self,message):
+        self.msgID = 'Channel:'
+        self.terminalWrite(message)
+
+    def terminalWrite(self,message):
         self.chatHistory.config(state='normal')
-        self.chatHistory.insert(tk.END,self.timeStamp() +msgID+ self.chatInput.get()+"\n")
-        self.chatInput.delete(0,tk.END)
+        self.chatHistory.insert(tk.END,self.timeStamp()+self.msgID+message+'\n')
         self.chatHistory.yview(tk.END)
         self.chatHistory.config(state='disabled')
-        self.chatInput.focus_set()
+
+    def sendChat(self):
+        inputData = self.chatInput.get()
+        if(inputData != ''):
+            self.msgID = self.owner.get() + ':'
+            self.terminalWrite(inputData)
+#            self.chatHistory.config(state='normal')
+#            self.chatHistory.insert(tk.END,self.timeStamp() +self.msgID+ inputData+"\n")
+            self.chatInput.delete(0,tk.END)
+#            self.chatHistory.yview(tk.END)
+#            self.chatHistory.config(state='disabled')
+            self.chatInput.focus_set()
 
     def sendChat2(self,event):
         self.sendChat()
 
     def timeStamp(self):
         #get time and format appropriately
-        time = '[00:00:00]'
-        return time
+        times = time.asctime(time.localtime(time.time()))
+        times = times[11:19]
+        times = '['+times+']'
+        #time = '[00:00:00]'
+        return times
 
     def contextMenu(self,event):
         #try:
