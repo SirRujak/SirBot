@@ -210,7 +210,7 @@ class botGUI(tk.Frame):
         if(inputData != ''):
             self.msgID = self.owner.get() + ':'
             self.terminalWrite(inputData)
-            chatStack.append(inputData)
+            self.chatStack.append(inputData)
 #            self.chatHistory.config(state='normal')
 #            self.chatHistory.insert(tk.END,self.timeStamp() +self.msgID+ inputData+"\n")
             self.chatInput.delete(0,tk.END)
@@ -418,7 +418,7 @@ class botGUI(tk.Frame):
         pass
 
     def stackSend(self):
-        if(len(self.chatStack > 0)):
+        if(len(self.chatStack)):
             output = self.chatStack.pop()
         else:
             output=['']
