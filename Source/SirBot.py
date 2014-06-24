@@ -459,7 +459,8 @@ slowResponse.append(".mods")
 poweredOn = 1
 
 UI=interface.botGUI()
-UI.master.iconbitmap(default='ouricon.ico')
+#UI.master.iconbitmap(default='ouricon.ico')
+#platform specific
 UI.master.title(botName + ' v.' + botVersion)
 UI.owner.set(sessionData[1])
 UI.channel.set(sessionData[3])

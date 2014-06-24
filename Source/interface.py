@@ -418,8 +418,8 @@ class botGUI(tk.Frame):
         pass
 
     def stackSend(self):
-        if(len(chatStack > 0)):
-            output = chatStack.pop()
+        if(len(self.chatStack > 0)):
+            output = self.chatStack.pop()
         else:
             output=['']
         return(output)
