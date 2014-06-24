@@ -29,6 +29,8 @@ class botGUI(tk.Frame):
     botVersion = ''
     msgID = ''
     defaultState = 1
+
+    chatStack = []
         
 
     def createWidgets(self):
@@ -208,6 +210,7 @@ class botGUI(tk.Frame):
         if(inputData != ''):
             self.msgID = self.owner.get() + ':'
             self.terminalWrite(inputData)
+            chatStack.append(inputData)
 #            self.chatHistory.config(state='normal')
 #            self.chatHistory.insert(tk.END,self.timeStamp() +self.msgID+ inputData+"\n")
             self.chatInput.delete(0,tk.END)
@@ -413,6 +416,13 @@ class botGUI(tk.Frame):
     def userValidate(self,username):
         #check to see if entered username is valid twitch username
         pass
-    
+
+    def stackSend(self):
+        if(len(chatStack > 0)):
+            output = chatStack.pop()
+        else:
+            output=['']
+        return(output)
+            
 
 
