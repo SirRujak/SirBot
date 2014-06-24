@@ -296,6 +296,7 @@ class botGUI(tk.Frame):
             self.inputUser.focus_set()
 
             self.configInput.protocol("WM_DELETE_WINDOW",self.closeConfigQuery)
+
     def navConfigQuery(self):
         #make pressing enter move to the next entry field
         pass

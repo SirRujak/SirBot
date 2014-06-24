@@ -462,7 +462,8 @@ UI=interface.botGUI()
 try:
         UI.master.iconbitmap(default='ouricon.ico')
 except:
-        UI.master.tk.call('wm','iconbitmap',UI.master._w, 'ouricon.ico')
+##        UI.master.tk.call('wm','iconbitmap',UI.master._w, 'ouricon.ico')
+        pass
 #platform specific
 UI.master.title(botName + ' v.' + botVersion)
 UI.owner.set(sessionData[1])
@@ -474,6 +475,9 @@ while( poweredOn == 1 ):
 
         UI.update()
         UI.update_idletasks()
+
+        if(UI.chatStack):
+                fastResponse.append(UI.chatStack.pop())
         
         if( socketReady[0][0][0] ):
                 
