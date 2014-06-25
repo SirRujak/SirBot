@@ -188,28 +188,39 @@ class botGUI(tk.Frame):
         pass
 
     def terminalOutput(self,message):
-        self.msgID = 'Console:'
+        msgID = 'Console:'
 #        self.chatHistory.config(state='normal')
 #        self.chatHistory.insert(tk.END,self.timeStamp()+self.msgID+message+'\n')
 #        self.chatHistory.yview(tk.END)
 #        self.chatHistory.config(state='disabled')
-        self.terminalWrite(message)
+        self.terminalWrite(msgID,message)
 
     def terminalInput(self,message):
-        self.msgID = 'Channel:'
-        self.terminalWrite(message)
+        msgID = str(self.identifyChat(message))+':'
+        #msgID=message.split(' ')[3]
+        #message=str(message.split(' ')[5:]).strip(']').strip("'")
+        self.terminalWrite(msgID,message)
 
-    def terminalWrite(self,message):
+    def combinedWrite(self,msgID,message):
+        self.allHistory.config(state='normal')
+        self.allHistory.insert(tk.END,self.timeStamp()+msgID+message+'\n')
+        self.allHistory.yview(tk.END)
+        self.allHistory.config(state='disabled')
+
+    def terminalWrite(self,msgID,message):
         self.chatHistory.config(state='normal')
-        self.chatHistory.insert(tk.END,self.timeStamp()+self.msgID+message+'\n')
+        #message = self.timeStamp()+self.msgID+message[2]+'\n'
+        self.chatHistory.insert(tk.END,self.timeStamp()+msgID+message+'\n')
         self.chatHistory.yview(tk.END)
         self.chatHistory.config(state='disabled')
+
+
 
     def sendChat(self):
         inputData = self.chatInput.get()
         if(inputData != ''):
-            self.msgID = self.owner.get() + ':'
-            self.terminalWrite(inputData)
+            msgID = self.owner.get() + ':'
+            self.terminalWrite(msgID,inputData)
             self.chatStack.append(inputData)
 #            self.chatHistory.config(state='normal')
 #            self.chatHistory.insert(tk.END,self.timeStamp() +self.msgID+ inputData+"\n")
@@ -424,6 +435,113 @@ class botGUI(tk.Frame):
         else:
             output=['']
         return(output)
-            
-
-
+    
+    def identifyChat(self,message):
+        Error='Error.identifyChat '
+        try:
+            if(message[1:4] == "'',"):
+                msg = message.split("', '")
+                if(len(msg) == 3):
+                    msg = msg[1].split(' ')[1]
+                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    if(message == 'tmi'):
+                        return("Server")
+                    elif(message == 'jtv'):
+                        return("Server")
+                    elif(msg == 'PRIVMSG'):
+                        return(message)
+                    elif(msg == '353'):
+                        return("Server")
+                    elif(msg == '366'):
+                        return("Server")
+                    else:
+                        return(Error +"004: -("+msg+')'+message)
+                elif(len(msg) == 2):
+                    msg=msg[1].split(' ')[1] 
+                    if(msg == 'PART'):
+                        return("Server")
+                    elif(msg == 'JOIN'):
+                        return("Server")
+                    elif(msg == 'PRIVMSG'):
+                        return(message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0])
+                    else:
+                        return(Error +"001: -" + message)
+                elif(len(msg) == 4):
+                    #not exactly sure what this one means yet
+                    msg = msg[1].split(' ')[1]
+                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    if(message == 'tmi'):
+                        return("Server")
+                    elif(message == 'jtv'):
+                        return("Server")
+                    elif(msg == 'PRIVMSG'):
+                        return(message)
+                    else:
+                        return(Error +"006: -("+msg+')'+message)
+                else:
+                    return(Error +"005: -("+msg+')'+message)
+            elif(message[2:6] == "PING"):
+                if(message[11:24] == "tmi.twitch.tv"):
+                    return("Server")
+                else:
+                    return(Error +"002: -" + message)
+            else:
+                #further contingencies go here someday
+                return(Error +"003: -"+message)
+        except:
+            return(Error +"000: -"+message)
+                    
+    def extractChat(self,message):
+        Error = 'Error.extractChat '
+##        try:
+##            if(message[1:4] == "'',"):
+##                msg = message.split("', '")
+##                if(len(msg) == 3):
+##                    msg = msg[1].split(' ')[1]
+##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+##                    if(message == 'tmi'):
+##                        return("Server")
+##                    elif(message == 'jtv'):
+##                        return("Server")
+##                    elif(msg == 'PRIVMSG'):
+##                        return(message)
+##                    elif(msg == '353'):
+##                        return("Server")
+##                    elif(msg == '366'):
+##                        return("Server")
+##                    else:
+##                        return("Error 004: -("+msg+')'+message)
+##                elif(len(msg) == 2):
+##                    msg=msg[1].split(' ')[1] 
+##                    if(msg == 'PART'):
+##                        return("Server")
+##                    elif(msg == 'JOIN'):
+##                        return("Server")
+##                    elif(msg == 'PRIVMSG'):
+##                        return(message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0])
+##                    else:
+##                        return("Error 001: -" + message)
+##                elif(len(msg) == 4):
+##                    #not exactly sure what this one means yet
+##                    msg = msg[1].split(' ')[1]
+##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+##                    if(message == 'tmi'):
+##                        return("Server")
+##                    elif(message == 'jtv'):
+##                        return("Server")
+##                    elif(msg == 'PRIVMSG'):
+##                        return(message)
+##                    else:
+##                        return("Error 006: -("+msg+')'+message)
+##                else:
+##                    return("Error 005: -("+msg+')'+message)
+##            elif(message[2:6] == "PING"):
+##                if(message[11:24] == "tmi.twitch.tv"):
+##                    return("Server")
+##                else:
+##                    return("Error 002: -" + message)
+##            else:
+##                #further contingencies go here someday
+##                return("Error 003: -"+message)
+##        except:
+##            return("Error 000: -"+message)

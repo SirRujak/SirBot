@@ -139,8 +139,6 @@ def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
                 return( "None", 0 )
         
 
-
-
 def readData(socket):
         readbuffer = []
         localChatInfo = []
@@ -434,7 +432,7 @@ spamFilter = loadSpamFile(spamLevel, spamFileName)
 socketReady = []
 
 maxSocket = getSocketInfo() - 1
-minSendTime = 32 / (16*maxSocket)
+minSendTime = 32 / (16*(maxSocket))
 for socks in range(maxSocket+1):
         socketReady.append(select.select([createSocket(getConnectionData())], [], [], 2))
 ##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
@@ -451,7 +449,7 @@ modList = []
 modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), minSendTime)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
-shutdownTimer = baseTimer(time.time(), time.time(), 200)
+shutdownTimer = baseTimer(time.time(), time.time(), 3600)
 slowResponse.append(".mods")
 
 
@@ -469,7 +467,7 @@ UI.master.title(botName + ' v.' + botVersion)
 UI.owner.set(sessionData[1])
 UI.channel.set(sessionData[3])
 
-UI.terminalOutput(str(spamFilter.filterHolder))
+#UI.terminalOutput(str(spamFilter.filterHolder))
 
 while( poweredOn == 1 ):
 
