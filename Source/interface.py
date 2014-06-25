@@ -197,6 +197,7 @@ class botGUI(tk.Frame):
 
     def terminalInput(self,message):
         msgID = str(self.identifyChat(message))+':'
+        message = str(self.extractChat(message))
         #msgID=message.split(' ')[3]
         #message=str(message.split(' ')[5:]).strip(']').strip("'")
         self.terminalWrite(msgID,message)
@@ -437,111 +438,133 @@ class botGUI(tk.Frame):
         return(output)
     
     def identifyChat(self,message):
-        Error='Error.identifyChat '
-        try:
-            if(message[1:4] == "'',"):
-                msg = message.split("', '")
-                if(len(msg) == 3):
-                    msg = msg[1].split(' ')[1]
-                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                    if(message == 'tmi'):
-                        return("Server")
-                    elif(message == 'jtv'):
-                        return("Server")
-                    elif(msg == 'PRIVMSG'):
-                        return(message)
-                    elif(msg == '353'):
-                        return("Server")
-                    elif(msg == '366'):
-                        return("Server")
-                    else:
-                        return(Error +"004: -("+msg+')'+message)
-                elif(len(msg) == 2):
-                    msg=msg[1].split(' ')[1] 
-                    if(msg == 'PART'):
-                        return("Server")
-                    elif(msg == 'JOIN'):
-                        return("Server")
-                    elif(msg == 'PRIVMSG'):
-                        return(message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0])
-                    else:
-                        return(Error +"001: -" + message)
-                elif(len(msg) == 4):
-                    #not exactly sure what this one means yet
-                    msg = msg[1].split(' ')[1]
-                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                    if(message == 'tmi'):
-                        return("Server")
-                    elif(message == 'jtv'):
-                        return("Server")
-                    elif(msg == 'PRIVMSG'):
-                        return(message)
-                    else:
-                        return(Error +"006: -("+msg+')'+message)
-                else:
-                    return(Error +"005: -("+msg+')'+message)
-            elif(message[2:6] == "PING"):
-                if(message[11:24] == "tmi.twitch.tv"):
+        Error='Error.identifyChat x'
+##        try:
+        if(message[1:4] == "'',"):
+            msg = message.split("', '")
+            if(len(msg) == 3):
+                msg = msg[1].split(' ')[1]
+                message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                if(message == 'tmi'):
+                    return("Server")
+                elif(message == 'jtv'):
+                    return("Server")
+                elif(msg == 'PRIVMSG'):
+                    return(message)
+                elif(msg == '353'):
+                    return("Server")
+                elif(msg == '366'):
                     return("Server")
                 else:
-                    return(Error +"002: -" + message)
+                    return(Error +"004: -("+msg+')'+message)
+            elif(len(msg) == 2):
+                msg=msg[1].split(' ')[1] 
+                if(msg == 'PART'):
+                    return("Server")
+                elif(msg == 'JOIN'):
+                    return("Server")
+                elif(msg == 'PRIVMSG'):
+                    return(message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0])
+                else:
+                    return(Error +"001: -" + message)
+            elif(len(msg) == 4):
+                #not exactly sure what this one means yet
+                msg = msg[1].split(' ')[1]
+                message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                if(message == 'tmi'):
+                    return("Server")
+                elif(message == 'jtv'):
+                    return("Server")
+                elif(msg == 'PRIVMSG'):
+                    return(message)
+                else:
+                    return(Error +"006: -("+msg+')'+message)
             else:
-                #further contingencies go here someday
-                return(Error +"003: -"+message)
-        except:
-            return(Error +"000: -"+message)
+                return(Error +"005: -("+str(msg)+')'+str(message))
+        elif(message[2:6] == "PING"):
+            if(message[11:24] == "tmi.twitch.tv"):
+                return("Server")
+            else:
+                return(Error +"002: -("+msg+')' + message)
+        else:
+            #further contingencies go here someday
+            return(Error +"003: -"+message)
+##        except TypeError:
+##            return(Error+"007: -"+message)
+##        except AttributeError:
+##            return(Error+"008: -"+message)
+##        except IndexError:
+##            return(Error+"009: -"+message)
+##        except:
+##            return(Error +"000: -"+message)
                     
     def extractChat(self,message):
-        Error = 'Error.extractChat '
+        Error = 'Error.extractChat x'
 ##        try:
-##            if(message[1:4] == "'',"):
-##                msg = message.split("', '")
-##                if(len(msg) == 3):
-##                    msg = msg[1].split(' ')[1]
-##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-##                    if(message == 'tmi'):
-##                        return("Server")
-##                    elif(message == 'jtv'):
-##                        return("Server")
-##                    elif(msg == 'PRIVMSG'):
-##                        return(message)
-##                    elif(msg == '353'):
-##                        return("Server")
-##                    elif(msg == '366'):
-##                        return("Server")
-##                    else:
-##                        return("Error 004: -("+msg+')'+message)
-##                elif(len(msg) == 2):
-##                    msg=msg[1].split(' ')[1] 
-##                    if(msg == 'PART'):
-##                        return("Server")
-##                    elif(msg == 'JOIN'):
-##                        return("Server")
-##                    elif(msg == 'PRIVMSG'):
-##                        return(message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0])
-##                    else:
-##                        return("Error 001: -" + message)
-##                elif(len(msg) == 4):
-##                    #not exactly sure what this one means yet
-##                    msg = msg[1].split(' ')[1]
-##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-##                    if(message == 'tmi'):
-##                        return("Server")
-##                    elif(message == 'jtv'):
-##                        return("Server")
-##                    elif(msg == 'PRIVMSG'):
-##                        return(message)
-##                    else:
-##                        return("Error 006: -("+msg+')'+message)
-##                else:
-##                    return("Error 005: -("+msg+')'+message)
-##            elif(message[2:6] == "PING"):
-##                if(message[11:24] == "tmi.twitch.tv"):
-##                    return("Server")
-##                else:
-##                    return("Error 002: -" + message)
-##            else:
-##                #further contingencies go here someday
-##                return("Error 003: -"+message)
+        if(message[1:4] == "'',"):
+            msg = message.split("', '")
+            if(len(msg) == 3):
+                msg = msg[1].split(' ')[1]
+                #message = message.split(',')[2:].strip(' ').strip("]").strip("'")
+                if(msg == 'PRIVMSG'):                     
+                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    return(message)
+                elif(msg == 'JOIN'):
+                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    return(message+' has joined.')
+                elif(msg == 'PART'):
+                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    return(message+' has left.')
+                elif(msg =='001'or'002'or'003'or'004'or'375'or'372'or'376'):
+                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    return('"'+message+'"')
+                elif(msg == '353'):
+                    message =  "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    return("NAMES-"+message)
+                elif(msg == '366'):
+                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    return("--"+message+"--")
+                elif(msg == 'MODE'):
+                    message = "".join(message.split("', '")[1][9:])
+                    return(message)
+                else:
+                    return(Error +"004: -("+msg+')'+message)
+            elif(len(msg) == 2):
+                msg=msg[1].split(' ')[1] 
+                if(msg == 'PART'):
+                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    return(message+" has left.")
+                elif(msg == 'JOIN'):
+                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    return(message+" has joined.")
+                elif(msg == 'MODE'):
+                    message = "".join(message.split("', '")[1][9:])
+                    return(message)
+                elif(msg == 'PRIVMSG'):
+                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
+                    return(message)
+                else:
+                    return(Error +"001: -("+msg+')' + message)
+            elif(len(msg) >= 4):
+                #not exactly sure what this one means yet
+                msg = msg[1].split(' ')[1]
+                if(msg == 'PRIVMSG'):                     
+                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    return(message)
+                else:
+                    return(Error +"006: -("+msg+')'+message)
+            else:
+                msg = msg[1].split(' ')[1]
+                return(Error +"005: -("+msg+')'+message)
+        elif(message[2:6] == "PING"):
+            msg = message.split("', '")[1].split(' ')[1]
+            if(message[11:24] == "tmi.twitch.tv"):
+                return('PING!')
+            else:
+                return(Error +"002: -("+msg+')'+ message)
+        else:
+            #further contingencies go here someday
+            msg = message.split("', '")[1].split(' ')[1]
+            return(Error +"003: -("+msg+')'+message)
 ##        except:
-##            return("Error 000: -"+message)
+##            return(Error +"000: -"+message)
