@@ -458,15 +458,23 @@ class botGUI(tk.Frame):
                 else:
                     return(Error +"004: -("+msg+')'+message)
             elif(len(msg) == 2):
-                msg=msg[1].split(' ')[1] 
-                if(msg == 'PART'):
-                    return("Server")
-                elif(msg == 'JOIN'):
-                    return("Server")
-                elif(msg == 'PRIVMSG'):
-                    return(message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0])
+                if(len(msg)>=2):
+                    if(len(msg[1].split(' '))>=2):
+                        msg=msg[1].split(' ')[1] 
+                        if(msg == 'PART'):
+                            return("Server")
+                        elif(msg == 'JOIN'):
+                            return("Server")
+                        elif(msg == 'MODE'):
+                            return("Server")
+                        elif(msg == 'PRIVMSG'):
+                            return(message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0])
+                        else:
+                            return(Error +"001: -" + message)
+                    else:
+                        return(Error+"010: -"+message)
                 else:
-                    return(Error +"001: -" + message)
+                    return(Error+"011: -"+message)
             elif(len(msg) == 4):
                 #not exactly sure what this one means yet
                 msg = msg[1].split(' ')[1]
@@ -525,26 +533,32 @@ class botGUI(tk.Frame):
                     message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return("--"+message+"--")
                 elif(msg == 'MODE'):
-                    message = "".join(message.split("', '")[1][9:])
+                    message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
                     return(message)
                 else:
                     return(Error +"004: -("+msg+')'+message)
             elif(len(msg) == 2):
-                msg=msg[1].split(' ')[1] 
-                if(msg == 'PART'):
-                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                    return(message+" has left.")
-                elif(msg == 'JOIN'):
-                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                    return(message+" has joined.")
-                elif(msg == 'MODE'):
-                    message = "".join(message.split("', '")[1][9:])
-                    return(message)
-                elif(msg == 'PRIVMSG'):
-                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
-                    return(message)
+                if(len(msg)>=2):
+                    if(len(msg[1].split(' '))>=2):
+                        msg=msg[1].split(' ')[1] 
+                        if(msg == 'PART'):
+                            message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                            return(message+" has left.")
+                        elif(msg == 'JOIN'):
+                            message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                            return(message+" has joined.")
+                        elif(msg == 'MODE'):
+                            message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
+                            return(message)
+                        elif(msg == 'PRIVMSG'):
+                            message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
+                            return(message)
+                        else:
+                            return(Error +"001: -("+msg+')' + message)
+                    else:
+                        return(Error+"010: -"+message)
                 else:
-                    return(Error +"001: -("+msg+')' + message)
+                    return(Error+'011: -'+message)
             elif(len(msg) >= 4):
                 #not exactly sure what this one means yet
                 msg = msg[1].split(' ')[1]
@@ -557,14 +571,19 @@ class botGUI(tk.Frame):
                 msg = msg[1].split(' ')[1]
                 return(Error +"005: -("+msg+')'+message)
         elif(message[2:6] == "PING"):
-            msg = message.split("', '")[1].split(' ')[1]
             if(message[11:24] == "tmi.twitch.tv"):
                 return('PING!')
             else:
-                return(Error +"002: -("+msg+')'+ message)
+                return(Error +"002: -"+ message)
         else:
             #further contingencies go here someday
-            msg = message.split("', '")[1].split(' ')[1]
-            return(Error +"003: -("+msg+')'+message)
+            #msg = message.split("', '")[1].split(' ')[1]
+            return(Error +"003: -"+message)
+##        except TypeError:
+##            return(Error+"007: -"+message)
+##        except AttributeError:
+##            return(Error+"008: -"+message)
+##        except IndexError:
+##            return(Error+"009: -"+message)
 ##        except:
 ##            return(Error +"000: -"+message)

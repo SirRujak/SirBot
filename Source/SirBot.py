@@ -46,7 +46,8 @@ def checkChatStandard(chatData):
 
 
 def checkChatWelcome(channelName, userName):
-        welcomeMessage = "Hello there " + userName + " welcome to the stream!"
+        #welcomeMessage = "Hello there " + userName + " welcome to the stream!"
+        welcomeMessage = "A"
         return(welcomeMessage)
 
 
@@ -496,7 +497,10 @@ while( poweredOn == 1 ):
                         temp = chatInformation.pop(0)
                         temp = temp.strip('\n')
                         sirLog.write(localTime + ' - Recieved Data:')
-                        sirLog.write(temp + '\n')
+                        try:
+                                sirLog.write(temp + '\n')
+                        except UnicodeEncodeError:
+                                sirLog.write(localTime+"Error-Unable to encode message."+'\n')
                         temp = temp.strip().split("\n")
                         temp = temp[0].strip().split(":")
 #                        print(localTime + " - Recieved Data:")
@@ -519,7 +523,7 @@ while( poweredOn == 1 ):
                         except:
 #                                print('\nAn error occured when checking recieved data.\n')
 ##
-                                UI.terminalOutput("An error occured when checking received data.")
+                                UI.terminalOutput("An error occured when checking received data:"+str(temp))
                                 sirLog.write('\nAn error occured when checking recieved data.\n')
 
 
