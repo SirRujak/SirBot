@@ -3,6 +3,7 @@
 import time
 import tkinter as tk
 from tkinter import ttk
+#import re
 #import tkinter.ttk
 #import os
 
@@ -198,6 +199,7 @@ class botGUI(tk.Frame):
     def terminalInput(self,message):
         msgID = str(self.identifyChat(message))+':'
         message = str(self.extractChat(message))
+        message = str(self.styleChat(message))
         #msgID=message.split(' ')[3]
         #message=str(message.split(' ')[5:]).strip(']').strip("'")
         self.terminalWrite(msgID,message)
@@ -515,7 +517,7 @@ class botGUI(tk.Frame):
                 msg = msg[1].split(' ')[1]
                 #message = message.split(',')[2:].strip(' ').strip("]").strip("'")
                 if(msg == 'PRIVMSG'):                     
-                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return(message)
                 elif(msg == 'JOIN'):
                     message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
@@ -524,13 +526,13 @@ class botGUI(tk.Frame):
                     message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
                     return(message+' has left.')
                 elif(msg =='001'or'002'or'003'or'004'or'375'or'372'or'376'):
-                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return('"'+message+'"')
                 elif(msg == '353'):
-                    message =  "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return("NAMES-"+message)
                 elif(msg == '366'):
-                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return("--"+message+"--")
                 elif(msg == 'MODE'):
                     message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
@@ -551,7 +553,7 @@ class botGUI(tk.Frame):
                             message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
                             return(message)
                         elif(msg == 'PRIVMSG'):
-                            message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
+                            message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
                             return(message)
                         else:
                             return(Error +"001: -("+msg+')' + message)
@@ -563,7 +565,7 @@ class botGUI(tk.Frame):
                 #not exactly sure what this one means yet
                 msg = msg[1].split(' ')[1]
                 if(msg == 'PRIVMSG'):                     
-                    message = "".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return(message)
                 else:
                     return(Error +"006: -("+msg+')'+message)
@@ -587,3 +589,12 @@ class botGUI(tk.Frame):
 ##            return(Error+"009: -"+message)
 ##        except:
 ##            return(Error +"000: -"+message)
+
+    def styleChat(self,message):
+        #.sub(replacement, string[, count=0])
+        #handle actions /me
+        message = message.replace("\'","'")
+        message = message.replace("', '",":")
+        #message = message.replace('\x01ACTION','')
+        #message = message.replace('\x01','')
+        return(message)
