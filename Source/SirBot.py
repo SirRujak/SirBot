@@ -523,7 +523,7 @@ while( poweredOn == 1 ):
                         except:
 #                                print('\nAn error occured when checking recieved data.\n')
 ##
-                                UI.terminalOutput("An error occured when checking received data:"+str(temp))
+#                                UI.terminalOutput("An error occured when checking received data:"+str(temp))
                                 sirLog.write('\nAn error occured when checking recieved data.\n')
 
 
