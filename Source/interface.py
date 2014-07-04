@@ -31,7 +31,10 @@ class botGUI(tk.Frame):
     msgID = ''
     defaultState = 1
 
+    #deque someday
     chatStack = []
+    messagelen = []
+    using = []
         
 
     def createWidgets(self):
@@ -199,7 +202,7 @@ class botGUI(tk.Frame):
     def terminalInput(self,message):
         #msgID = str(self.identifyChat(message))+':'
         (msgID,message) = self.extractChat(message)
-        msgID = str(msgID)+':'
+        msgID = str(msgID)
         message = str(self.styleChat(message))
         #msgID=message.split(' ')[3]
         #message=str(message.split(' ')[5:]).strip(']').strip("'")
@@ -269,6 +272,8 @@ class botGUI(tk.Frame):
         #print('Top window:'+self.createWidgets.top)
         print('IsChildOpen:'+str(self.childOpen.get()))
         print('IsConfiginEdit:'+str(self.editConfig.get()))
+        print("Nameslength:"+str(self.messagelen))
+        print("Users:"+str(self.using))
         #print('
 
     def goToUser(self):
@@ -435,7 +440,7 @@ class botGUI(tk.Frame):
 
     def stackSend(self):
         if(len(self.chatStack)):
-            output = self.chatStack.pop()
+            output = self.chatStack.pop(0)
         else:
             output=['']
         return(output)
@@ -450,30 +455,38 @@ class botGUI(tk.Frame):
                 #message = message.split(',')[2:].strip(' ').strip("]").strip("'")
                 if(msg == 'PRIVMSG'):                     
                     msgID = str(message.split("', '")[1].split('.')[0].split('!')[0])
+                    if(msgID == 'jtv'):
+                        msgID = 'Server'
+                    msgID = msgID + ':'
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return(msgID,message)
                 elif(msg == 'JOIN'):
-                    msgID = 'Server'
+                    msgID = 'Server:'
                     message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    self.joinUsers(message)
                     return(msgID,(message+' has joined.'))
                 elif(msg == 'PART'):
-                    msgID = 'Server'
+                    msgID = 'Server:'
                     message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                    self.partUsers(message)
                     return(msgID,(message+' has left.'))
-                elif(msg =='001'or'002'or'003'or'004'or'375'or'372'or'376'):
-                    msgID = 'Server'
+                elif(msg in ['001','002','003','004','375','372','376']):
+                    msgID = 'Server:'
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return(msgID,('"'+message+'"'))
                 elif(msg == '353'):
-                    msgID = 'Server'
+                    msgID = 'Server:'
+                    self.messagelen.append(len(message))
+                    #self.extractUsers(len(message))
                     message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    self.extractUsers(message)
                     return(msgID,("NAMES-"+message))
                 elif(msg == '366'):
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-                    msgID = 'Server'
+                    msgID = 'Server:'
                     return(msgID,("--"+message+"--"))
                 elif(msg == 'MODE'):
-                    msgID = 'Server'
+                    msgID = 'Server:'
                     message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
                     return(msgID,message)
                 else:
@@ -484,19 +497,22 @@ class botGUI(tk.Frame):
                     if(len(msg[1].split(' '))>=2):
                         msg=msg[1].split(' ')[1] 
                         if(msg == 'PART'):
-                            msgID = 'Server'
+                            msgID = 'Server:'
                             message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                            self.partUsers(message)
                             return(msgID,(message+" has left."))
                         elif(msg == 'JOIN'):
-                            msgID = 'Server'
+                            msgID = 'Server:'
                             message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                            self.joinUsers(message)
                             return(msgID,(message+" has joined."))
                         elif(msg == 'MODE'):
-                            msgID = 'Server'
+                            msgID = 'Server:'
                             message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
                             return(msgID,message)
                         elif(msg == 'PRIVMSG'):
                             msgID = message.split("', '")[1].split('.')[0].split('!')[0]
+                            msgID = msgID + ':'
                             message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
                             return(msgID,message)
                         else:
@@ -513,6 +529,7 @@ class botGUI(tk.Frame):
                 msg = msg[1].split(' ')[1]
                 if(msg == 'PRIVMSG'):
                     msgID = message.split("', '")[1].split('.')[0].split('!')[0]
+                    msgID = msgID + ':'
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     return(msgID,message)
                 else:
@@ -524,7 +541,7 @@ class botGUI(tk.Frame):
                 return(msgID,(Error +"005: -("+msg+')'+message))
         elif(message[1:8] == "'PING '"):
             if(message[11:24] == "tmi.twitch.tv"):
-                msgID = 'Server'
+                msgID = 'Server:'
                 message = 'PING!'
                 return(msgID,message)
             else:
@@ -557,5 +574,22 @@ class botGUI(tk.Frame):
         return(message)
 
     def extractUsers(self,message):
-        pass
+        self.using.extend(message.split(' '))
+        self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+        #self.users.set(self.using)
+
+    def joinUsers(self,user):
+        try:
+            self.using.append(user)
+            self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+        except:
+            pass
+
+    def partUsers(self,user):
+        try:
+            self.using.remove(user)
+            self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+        except:
+            pass
+
         
