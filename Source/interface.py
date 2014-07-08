@@ -35,6 +35,8 @@ class botGUI(tk.Frame):
     chatStack = []
     messagelen = []
     using = []
+    msgfragments = []
+    userlisterror = []
         
 
     def createWidgets(self):
@@ -71,7 +73,7 @@ class botGUI(tk.Frame):
         self.sendAsText = tk.Label(self,bg='white',fg='black',textvariable=self.owner)
         self.sendAsChange = tk.Button(self,text='Change',command=self.configQuery)
         self.usersList = tk.LabelFrame(self,labelanchor='nw',text='Users')
-        self.usersScroll = tk.Scrollbar(self,orient=tk.VERTICAL)
+        self.usersScroll = ttk.Scrollbar(self,orient=tk.VERTICAL)
         self.usersListText = tk.Listbox(self,activestyle='dotbox',bg='white',cursor='xterm',fg='black',height=15,listvariable=self.users,yscrollcommand=self.usersScroll.set)
         
         #active IRC add to grid
@@ -102,22 +104,44 @@ class botGUI(tk.Frame):
         #chat window declare
         self.textFrame = tk.LabelFrame(self,labelanchor='nw',text='Text Interface')
         self.chatFrame = tk.Frame(self)
-        self.chatScroll = tk.Scrollbar(self,orient=tk.VERTICAL)
+
+        self.terminalFrame = tk.Frame(self)
+        self.terminal = ttk.Notebook(self)
+        self.chatHistoryFrame = ttk.Frame(self)
+        #chathistorywidget
+        self.chatScroll = ttk.Scrollbar(self,orient=tk.VERTICAL)
         self.chatHistory = tk.Text(self,bg='white',fg='black',height=32,width=75,takefocus=0,state='disabled',yscrollcommand=self.chatScroll.set)
+        self.terminalHistoryFrame = ttk.Frame(self)
+        
+        
+        self.terminalScroll = ttk.Scrollbar(self,orient=tk.VERTICAL)
+        self.terminalHistory = tk.Text(self,bg='white',fg='black',height=32,width=75,takefocus=0,state='disabled',yscrollcommand=self.terminalScroll.set)
         self.chatInput = tk.Entry(self,bg='white',fg='black',cursor='xterm',textvariable=self.chatInput)
         self.cmdVerifyButton = tk.Button(self,text='...',command=self.verifyCommand)
         self.chatSendButton = tk.Button(self,text='Send',command=self.sendChat)
         self.chatInput.bind("<Return>",self.sendChat2)
         
+        
         #chat window add to grid
         self.textFrame.grid(column=1,row=1,sticky='NSEW')
         self.chatFrame.grid(in_=self.textFrame,sticky='EW')
-        self.chatHistory.grid(in_=self.chatFrame,row=0,column=0,columnspan=4,sticky='EW')
-        self.chatScroll.grid(in_=self.chatFrame,row=0,column=4,sticky='NS')
+
+        self.terminalFrame.grid(in_=self.chatFrame,row=0,column=0,columnspan=4,sticky='NSEW')
+        self.terminal.pack(in_=self.terminalFrame,fill=tk.BOTH,expand=tk.Y,padx=2,pady=3)
+        #grid chathistorywidget
+        self.chatHistory.grid(in_=self.chatHistoryFrame,row=0,column=0,columnspan=4,sticky='EW')
+        self.chatScroll.grid(in_=self.chatHistoryFrame,row=0,column=4,sticky='NS')
+        self.terminal.add(self.chatHistoryFrame,text='Chat',padding=2)
+
+        self.terminalHistory.grid(in_=self.terminalHistoryFrame,row=0,column=0,columnspan=4,sticky='EW')
+        self.terminalScroll.grid(in_=self.terminalHistoryFrame,row=0,column=4,sticky='NS')
         self.chatInput.grid(in_=self.chatFrame,row=1,column=0,columnspan=3,sticky='EW')
         self.cmdVerifyButton.grid(in_=self.chatFrame,row=1,column=4)
         self.chatSendButton.grid(in_=self.chatFrame,row=1,column=3,columnspan=1,sticky='EW')
         self.chatScroll['command'] = self.chatHistory.yview
+        self.terminalScroll['command'] = self.terminalHistory.yview
+
+        self.terminal.add(self.terminalHistoryFrame,text='Terminal',padding=2)
         
         #menu bar
         self.menuBar = tk.Menu(top)
@@ -203,24 +227,31 @@ class botGUI(tk.Frame):
         #msgID = str(self.identifyChat(message))+':'
         (msgID,message) = self.extractChat(message)
         msgID = str(msgID)
-        message = str(self.styleChat(message))
+        #message = str(self.styleChat(message))
         #msgID=message.split(' ')[3]
         #message=str(message.split(' ')[5:]).strip(']').strip("'")
         self.terminalWrite(msgID,message)
+        if(msgID != '' and msgID != 'Server:'):
+            self.chatWrite(msgID,message)
 
-    def combinedWrite(self,msgID,message):
-        self.allHistory.config(state='normal')
-        self.allHistory.insert(tk.END,self.timeStamp()+msgID+message+'\n')
-        self.allHistory.yview(tk.END)
-        self.allHistory.config(state='disabled')
+    def chatInput(self,message):
+        (msgID,message)=self.extractChat(message)
+        #msgID = str(msgID)
+        self.terminalWrite(msgID,message)
+        self.chatWrite(msgID,message)
 
     def terminalWrite(self,msgID,message):
-        self.chatHistory.config(state='normal')
+        self.terminalHistory.config(state='normal')
         #message = self.timeStamp()+self.msgID+message[2]+'\n'
+        self.terminalHistory.insert(tk.END,self.timeStamp()+msgID+message+'\n')
+        self.terminalHistory.yview(tk.END)
+        self.terminalHistory.config(state='disabled')
+        
+    def chatWrite(self,msgID,message):
+        self.chatHistory.config(state='normal')
         self.chatHistory.insert(tk.END,self.timeStamp()+msgID+message+'\n')
         self.chatHistory.yview(tk.END)
         self.chatHistory.config(state='disabled')
-
 
 
     def sendChat(self):
@@ -362,7 +393,7 @@ class botGUI(tk.Frame):
             self.optionsDialog.bind("<Escape>",self.optionsDialogClose2)
             #self.optionsDialog.geometry(wxh+x+y)
             self.optionsDialog.geometry('+'+str(self.winfo_rootx()+50)+'+'+str(self.winfo_rooty()+50))
-
+            
 
             #self.testButton = tk.Button(self.optionsDialog,text='Close',command=self.optionsDialogClose)
             #self.testButton.pack()
@@ -459,6 +490,7 @@ class botGUI(tk.Frame):
                         msgID = 'Server'
                     msgID = msgID + ':'
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    message = self.styleChat(message)
                     return(msgID,message)
                 elif(msg == 'JOIN'):
                     msgID = 'Server:'
@@ -476,12 +508,15 @@ class botGUI(tk.Frame):
                     return(msgID,('"'+message+'"'))
                 elif(msg == '353'):
                     msgID = 'Server:'
+                    #self.userlisterror.clear()
+                    self.userlisterror.append(message)
                     self.messagelen.append(len(message))
                     #self.extractUsers(len(message))
                     message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     self.extractUsers(message)
                     return(msgID,("NAMES-"+message))
                 elif(msg == '366'):
+                    self.userlisterror.clear()
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     msgID = 'Server:'
                     return(msgID,("--"+message+"--"))
@@ -491,6 +526,8 @@ class botGUI(tk.Frame):
                     return(msgID,message)
                 else:
                     msgID = ''
+                    #(msgID,message)=
+                    self.chatError(msg,msgID,message)
                     return(msgID,(Error +"004: -("+msg+')'+message))
             elif(len(msg) == 2):
                 if(len(msg)>=2):
@@ -506,6 +543,9 @@ class botGUI(tk.Frame):
                             message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
                             self.joinUsers(message)
                             return(msgID,(message+" has joined."))
+                        elif(msg=='535'):
+                            msgID='Server:'
+                            self.userlisterror.append(message)
                         elif(msg == 'MODE'):
                             msgID = 'Server:'
                             message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
@@ -514,15 +554,22 @@ class botGUI(tk.Frame):
                             msgID = message.split("', '")[1].split('.')[0].split('!')[0]
                             msgID = msgID + ':'
                             message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
+                            message = self.styleChat(message)
                             return(msgID,message)
                         else:
                             msgID = ''
+                            #(msgID,message)=
+                            self.chatError(msg,msgID,message)
                             return(msgID,(Error +"001: -("+msg+')' + message))
                     else:
                         msgID = ''
+                        #(msgID,message)=
+                        self.chatError('',msgID,message)
                         return(msgID,(Error+"010: -"+message))
                 else:
                     msgID = ''
+                    #(msgID,message)=
+                    self.chatError('',msgID,message)
                     return(msgID,(Error+'011: -'+message))
             elif(len(msg) >= 4):
                 #not exactly sure what this one means yet
@@ -531,13 +578,18 @@ class botGUI(tk.Frame):
                     msgID = message.split("', '")[1].split('.')[0].split('!')[0]
                     msgID = msgID + ':'
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    message = self.styleChat(message)
                     return(msgID,message)
                 else:
                     msgID = ''
+                    #(msgID,message)=
+                    self.chatError(msg,msgID,message)
                     return(msgID,(Error +"006: -("+msg+')'+message))
             else:
                 msg = msg[1].split(' ')[1]
                 msgID = ''
+                #(msgID,message)=
+                self.chatError(msg,msgID,message)
                 return(msgID,(Error +"005: -("+msg+')'+message))
         elif(message[1:8] == "'PING '"):
             if(message[11:24] == "tmi.twitch.tv"):
@@ -546,11 +598,27 @@ class botGUI(tk.Frame):
                 return(msgID,message)
             else:
                 msgID = ''
+                #(msgID,message)=
+                self.chatError('',msgID,message)
                 return(msgID,(Error +"002: -"+ message))
         else:
             #further contingencies go here someday
             #msg = message.split("', '")[1].split(' ')[1]
             msgID = ''
+            if(self.userlisterror):
+                self.userlisterror.append(message)
+                (fixable,temp) = self.fixUserList(message)
+                if(fixable):
+                    (fixable,message) = self.fixUserList(message)
+                    return('Server:',message.strip("[']"))
+                else:
+                    #self.msgfragments.append(message)
+                    #(msgID,message)=
+                    self.chatError('',msgID,message)
+            else:
+                #self.msgfragments.append(message)
+                #(msgID,message)=
+                self.chatError('',msgID,message)
             return(msgID,(Error +"003: -"+message))
 ##        except TypeError:
 ##            return(Error+"007: -"+message)
@@ -563,33 +631,150 @@ class botGUI(tk.Frame):
 
     def styleChat(self,message):
         #.sub(replacement, string[, count=0])
-        #handle actions /me
+        #handle actions /me more effectively
         message = message.replace("\\'","'")
         message = message.replace("', '",":")
         message = message.replace('", "',":")
-        #message = message.replace("""', """"",":")
+        message = message.replace("""', \"""",":")
         message = message.replace("""", '""",":")
-        message = message.replace("\\x01ACTION","<<")
-        message = message.replace("\\x01",">>")
+        message = message.replace("\\x01ACTION"," <<")
+        message = message.replace("\\x01"," >> ")
         return(message)
 
     def extractUsers(self,message):
         self.using.extend(message.split(' '))
-        self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
-        #self.users.set(self.using)
+        #self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+        self.setUsers()
 
     def joinUsers(self,user):
         try:
             self.using.append(user)
-            self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+            #self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+            self.setUsers()
         except:
             pass
 
     def partUsers(self,user):
         try:
             self.using.remove(user)
-            self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+            #self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+            self.setUsers()
         except:
             pass
 
-        
+    def formatUsers(self,users,data):
+        #implement tiered user groups in userslist
+        pass
+
+    def fixUserList(self,message):
+        fixable = False
+        while(len(self.userlisterror)>2):
+            self.userlisterror.pop(0)
+        if(len(self.userlisterror)==2):    
+            if(self.userlisterror[1].find(',')==-1 and self.userlisterror[0].split("', '")[1].split(' ')[1]=='353'):
+                message = self.userlisterror[0].split("', '")[2].strip(']').strip("'").split(' ')
+                message = message[len(message)-1]
+                try:
+                    self.using.remove(message)
+                    self.setUsers()
+                except:
+                    pass
+                message = message + self.userlisterror[1].lstrip('[').rstrip(']').strip("'")
+                #add NAMES- prefix to message
+                message = "NAMES-" + message
+                fixable = True
+                self.userlisterror.clear()
+            else:
+                message = self.userlisterror[0][:len(self.userlisterror[0])-2]+self.userlisterror[1][2:]
+                tag = message.split("', '")[1].split(' ')[1]
+                if(tag=='353'):
+                    message = "NAMES-" + message
+                    fixable = True
+                    self.userlisterror.clear()
+                else:
+                    message=self.userlisterror.pop(0)
+                pass
+        else:
+            pass
+        return(fixable,message)
+
+    def setUsers(self):
+        self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+
+    def chatError(self,msg,msgID,message):
+        time = self.timeStamp()
+#        ####change to void type function####
+        #check for message fragments in queue
+        #try to combine fragments to recover message
+        #write to terminal a "recovered message" with original timestamp
+        #if process turns out to be stable enough, write message to chat
+        if(self.msgfragments):
+            if(len(self.msgfragments)==2):
+                message = self.msgfragments[1].rstrip("']")+message.lstrip("['")
+                #print(message)
+                try:
+                    tag = message.split("', '")[1].split(' ')[1]
+                    #print(tag)
+                    if(tag == 'PRIVMSG'):
+                        msgID = str(message.split("', '")[1].split('.')[0].split('!')[0])
+                        if(msgID == 'jtv'):
+                            msgID = 'Server'
+                        msgID = msgID + ':'
+                        message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                        message = self.styleChat(message)
+                        self.recoverMessage(self.msgfragments[0]+msgID+message,1)
+                    elif(tag == 'PART'):
+                        msgID = 'Server:'
+                        message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                        self.partUsers(message)
+                        message=message+" has left."
+                    elif(tag == 'JOIN'):
+                        msgID = 'Server:'
+                        message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                        self.joinUsers(message)
+                        message = message+" has joined."
+                    elif(tag == 'MODE'):
+                        msgID = 'Server:'
+                        message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
+                    elif(tag == '353'):
+                        msgID = 'Server:'
+                        message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                        self.extractUsers(message)
+                        message = 'NAMES--'+message
+                    elif(tag=='366'):
+                        msgID = 'Server:'
+                        self.userlisterror.clear()
+                        message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    elif(tag in ['001','002','003','004','375','372','376']):
+                        msgID = 'Server:'
+                        message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                    else:
+                        #do no printing here. for now:
+                        x=10/0
+                    #print to terminal and maybe chat
+                    self.recoverMessage(self.msgfragments[0]+msgID+message,0)
+                    self.msgfragments.clear()
+                except:
+                    self.msgfragments.clear()
+                    #do something clever here
+                    #pass
+        else:
+            if(len(message)>=10):
+                if(message[0:5]=="['', "):
+                    self.msgfragments.append(time)
+                    self.msgfragments.append(message)
+                elif(message[0:10]=="['PING ', "):
+                    #eventually handle broken pings
+                    pass
+                else:
+                    #try to handle this
+                    pass
+            else:
+               #write this error to log
+               pass
+               
+    def recoverMessage(self,message,chat):
+        if(chat==0):
+            self.terminalWrite('Recovered:',message)
+        if(chat==1):
+            self.chatWrite('Recovered:',message)

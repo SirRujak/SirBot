@@ -472,8 +472,11 @@ UI.channel.set(sessionData[3])
 
 while( poweredOn == 1 ):
 
-        UI.update()
-        UI.update_idletasks()
+        try:
+                UI.update()
+                UI.update_idletasks()
+        except:
+                break                
 
         if(UI.chatStack):
                 fastResponse.append(UI.chatStack.pop())
@@ -484,7 +487,7 @@ while( poweredOn == 1 ):
                 try:
                         chatInformation.extend(readData(socketReady[currSocket][0][0]))
                         clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
-                except:
+                except _tkinter.TclError:
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
 #                        print(time.localtime(time.time()) + " - Unable to read data.")
 ##
