@@ -8,8 +8,15 @@ import socket
 import string
 import time
 
+import interface
 
+###############################################################
+###############################################################
 
+botName = 'SirBot'
+botVersion = '0.0.8'
+msgID = 'Console:'
+defaultState = 1
 
 ###############################################################
 ###############################################################
@@ -39,7 +46,8 @@ def checkChatStandard(chatData):
 
 
 def checkChatWelcome(channelName, userName):
-        welcomeMessage = "Hello there " + userName + " welcome to the stream!"
+        #welcomeMessage = "Hello there " + userName + " welcome to the stream!"
+        welcomeMessage = "A"
         return(welcomeMessage)
 
 
@@ -70,20 +78,26 @@ def sendResponse(socket, channelName, data, logFile):
                         socket.send(messageToSend)
                         logFile.write(localTime + ' - Sent Data:')
                         logFile.write(messageToSend.decode())
-                        print(localTime + " - Sent Data:")
-                        print(messageToSend.decode() + "\r\n")
+#                        print(localTime + " - Sent Data:")
+#                        print(messageToSend.decode() + "\r\n")
+##
+                        UI.terminalOutput(data)
                 except:
                         logFile.write(localTime + 'Unable to send:')
                         logFile.write(messageToSend.decode() + "\r\n")
-                        print(localTime + " - Unable to send:")
-                        print(messageToSend.decode() + "\r\n")
+#                        print(localTime + " - Unable to send:")
+#                        print(messageToSend.decode() + "\r\n")
+##
+                        UI.terminalOutput("Unable to send message!")
                         
 
 def pingPong(channelName):
         pongLine = "PONG tmi.twitch.tv\r\n"
         localTime = time.asctime( time.localtime(time.time()) )
-        print(localTime + " - Sent Data:")
-        print(pongLine)
+#        print(localTime + " - Sent Data:")
+#        print(pongLine)
+##
+        UI.terminalOutput(pongLine)
         return(pongLine)
 
 def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
@@ -125,8 +139,6 @@ def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
         else:
                 return( "None", 0 )
         
-
-
 
 def readData(socket):
         readbuffer = []
@@ -223,7 +235,9 @@ def createConfigFile(userName, channelName, password, socketInfo, spamLevel, spa
         configDict["CHANNEL-INFO"] = {"USERNAME":userName, "CHANNEL":channelName, "PASSWORD":password}
         configDict["SOCKET-INFO"] = {"MAX-SOCKETS":socketInfo}
         configDict["SPAM-INFO"] = {"SPAM-LEVEL":spamLevel, "SPAM-FILE-NAME":spamFileName}
-        print(configDict)
+#        print(configDict)
+##
+        UI.terminalOutput(configDict)
         configFile = open('config', 'w')
         json.dump(configDict, configFile)
         configFile.close()
@@ -325,6 +339,8 @@ class spamFilter():
                         spamFile = open(spamFileName, 'r')
                 except FileNotFoundError:
                         print("Your spam filter information has not been found. Check in the config file to make sure the names match.")
+##
+                        UI.terminalOutput("Your spam filter information has not been found.")
                         return()
                 spamDict = json.load(spamFile)
                 spamFile.close()
@@ -401,20 +417,23 @@ try:
         sirLog.write('\n--------------------------------------------\n')
         sirLog.write('\nSession Start: ' + time.asctime( time.localtime(time.time()) ) + '\n' )
 except:
-        print("Unable to begin logging. Please report!")
+#        print("Unable to begin logging. Please report!")
+##
+        UI.terminalOutput("Unable to begin logging. Please report!")
+        
 
 
-
-channelName = getConnectionData()[3]
+sessionData = getConnectionData()
+channelName = sessionData[3]
 (spamLevel, spamFileName) = getSpamLevel()
 
 spamFilter = loadSpamFile(spamLevel, spamFileName)
-print(spamFilter.filterHolder)
+#print(spamFilter.filterHolder)
 
 socketReady = []
 
 maxSocket = getSocketInfo() - 1
-minSendTime = 32 / (16*maxSocket)
+minSendTime = 32 / (16*(maxSocket))
 for socks in range(maxSocket+1):
         socketReady.append(select.select([createSocket(getConnectionData())], [], [], 2))
 ##socketReady.append(select.select([createSocket(getConnectionData())], [], [], 15))
@@ -431,22 +450,48 @@ modList = []
 modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), minSendTime)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
-shutdownTimer = baseTimer(time.time(), time.time(), 200)
+shutdownTimer = baseTimer(time.time(), time.time(), 3600)
 slowResponse.append(".mods")
 
 
 ####################
 poweredOn = 1
+
+UI=interface.botGUI()
+try:
+        UI.master.iconbitmap(default='ouricon.ico')
+except:
+##        UI.master.tk.call('wm','iconbitmap',UI.master._w, 'ouricon.ico')
+        pass
+#platform specific
+UI.master.title(botName + ' v.' + botVersion)
+UI.owner.set(sessionData[1])
+UI.channel.set(sessionData[3])
+
+#UI.terminalOutput(str(spamFilter.filterHolder))
+
 while( poweredOn == 1 ):
+
+        try:
+                UI.update()
+                UI.update_idletasks()
+        except:
+                break                
+
+        if(UI.chatStack):
+                fastResponse.append(UI.chatStack.pop())
+        
         if( socketReady[0][0][0] ):
                 
                 
                 try:
                         chatInformation.extend(readData(socketReady[currSocket][0][0]))
                         clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
-                except:
+                except _tkinter.TclError:
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
-                        print(time.localtime(time.time()) + " - Unable to read data.")
+#                        print(time.localtime(time.time()) + " - Unable to read data.")
+##
+                        UI.terminalOutput("Unable to read socket data.")
 
                 
                 if( len(chatInformation) > 0 ):
@@ -455,12 +500,17 @@ while( poweredOn == 1 ):
                         temp = chatInformation.pop(0)
                         temp = temp.strip('\n')
                         sirLog.write(localTime + ' - Recieved Data:')
-                        sirLog.write(temp + '\n')
+                        try:
+                                sirLog.write(temp + '\n')
+                        except UnicodeEncodeError:
+                                sirLog.write(localTime+"Error-Unable to encode message."+'\n')
                         temp = temp.strip().split("\n")
                         temp = temp[0].strip().split(":")
-                        print(localTime + " - Recieved Data:")
-                        print(temp)
-                        print("\n")
+#                        print(localTime + " - Recieved Data:")
+#                        print(temp)
+##
+                        UI.terminalInput(str(temp))
+#                        print("\n")
                         try:
                                 (respDat, respLev) = checkChatType(channelName, temp, modList, spamLevel, spamFilter)
                                 if( respDat == "None" ):
@@ -474,7 +524,9 @@ while( poweredOn == 1 ):
                                         modList.append(channelName[1:])
                                         modList.extend(respDat)
                         except:
-                                print('\nAn error occured when checking recieved data.\n')
+#                                print('\nAn error occured when checking recieved data.\n')
+##
+#                                UI.terminalOutput("An error occured when checking received data:"+str(temp))
                                 sirLog.write('\nAn error occured when checking recieved data.\n')
 
 
