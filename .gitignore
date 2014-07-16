@@ -3,3 +3,7 @@ config*
 NomLog.txt
 SirLog.txt
 Source/__pycache__
+Source/interfaceBACKUP.py
+Source/twitchDataBACKUP.py
+Source/SirBotBACKUP.py
+Source/testmodulesBACKUP.py
