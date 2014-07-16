@@ -47,7 +47,7 @@ def checkChatStandard(chatData):
 
 def checkChatWelcome(channelName, userName):
         #welcomeMessage = "Hello there " + userName + " welcome to the stream!"
-        welcomeMessage = "A"
+        welcomeMessage = "a"
         return(welcomeMessage)
 
 
@@ -74,7 +74,7 @@ def sendResponse(socket, channelName, data, logFile):
                 localTime = time.asctime( time.localtime(time.time()) )
                 messageToSend = messageToSend.encode()
                 try:
-                        
+
                         socket.send(messageToSend)
                         logFile.write(localTime + ' - Sent Data:')
                         logFile.write(messageToSend.decode())
@@ -89,7 +89,7 @@ def sendResponse(socket, channelName, data, logFile):
 #                        print(messageToSend.decode() + "\r\n")
 ##
                         UI.terminalOutput("Unable to send message!")
-                        
+
 
 def pingPong(channelName):
         pongLine = "PONG tmi.twitch.tv\r\n"
@@ -119,7 +119,7 @@ def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
         elif (len(chatData) > 2):
                 if( chatData[2]=='The moderators of this room are' and len(chatData) > 3 ):
                         return(chatData[3], 3)
-                
+
 
                 if( len(chatData) == 3):
                         if( checkMods( chatData[1], modList, channelName) == 1 ):
@@ -138,7 +138,7 @@ def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
 
         else:
                 return( "None", 0 )
-        
+
 
 def readData(socket):
         readbuffer = []
@@ -248,13 +248,13 @@ def createConfigFile(userName, channelName, password, socketInfo, spamLevel, spa
 ##        password = input("Enter the oauth password characters after 'oauth:' for connecting: ")
 ##        socketInfo = 3
 ##        spamLevel = input("Enter the desired spam level: ")
-        
+
 def loadSpamFile(currLevel, spamFileName):
         spamFilterStuff = spamFilter(currLevel)
         spamFilterStuff.loadLevels(spamFileName)
         return(spamFilterStuff)
-        
-        
+
+
 
 ##def checkSpam(chatText, spamLevel):
 ##        if (spamLevel >= 2):
@@ -265,9 +265,9 @@ def loadSpamFile(currLevel, spamFileName):
 ##        if (spamLevel >= 1):
 ##                if ("░" in chatText
 ##                        or "█" in chatText
-##                        or "▓" in chatText 
-##                        or "▀" in chatText 
-##                        or "▄" in chatText 
+##                        or "▓" in chatText
+##                        or "▀" in chatText
+##                        or "▄" in chatText
 ##                        or "▐" in chatText
 ##                        or "▌" in chatText
 ##                        or "▬" in chatText
@@ -309,7 +309,7 @@ def checkSpam(chatText, spamLevel, spamFilter):
                         if (chatText in spamFilter.filterHolder[tempSpamLevel]):
                                         return(1)
         return(0)
-        
+
 
 class baseTimer():
         def __init__(self, prevTime, currTime, timerLen):
@@ -351,7 +351,7 @@ class spamFilter():
                 spamFile = open(spamFileName, 'w')
                 json.dumps(self.filterHolder, spamFile)
                 spamFile.close()
-                
+
 
 
 
@@ -377,7 +377,7 @@ def getConnectionData():
         PORT=6667 ##Same with this port, leave it be.
         connectionData = [PASS, NICK, IDENT, CHANNEL, HOST, PORT]
         configFile.close()
-        
+
         return(connectionData)
 
 def getSocketInfo():
@@ -405,7 +405,7 @@ def readConfigInfo():
         spamLevel = getSpamLevel()
         configData = [connectionData, maxSockets, spamLevel]
         return( configData )
-        
+
 
 
 
@@ -420,7 +420,7 @@ except:
 #        print("Unable to begin logging. Please report!")
 ##
         UI.terminalOutput("Unable to begin logging. Please report!")
-        
+
 
 
 sessionData = getConnectionData()
@@ -476,14 +476,14 @@ while( poweredOn == 1 ):
                 UI.update()
                 UI.update_idletasks()
         except:
-                break                
+                break
 
         if(UI.chatStack):
                 fastResponse.append(UI.chatStack.pop())
-        
+
         if( socketReady[0][0][0] ):
-                
-                
+
+
                 try:
                         chatInformation.extend(readData(socketReady[currSocket][0][0]))
                         clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
@@ -493,9 +493,9 @@ while( poweredOn == 1 ):
 ##
                         UI.terminalOutput("Unable to read socket data.")
 
-                
+
                 if( len(chatInformation) > 0 ):
-                        
+
                         localTime = time.asctime( time.localtime(time.time()) )
                         temp = chatInformation.pop(0)
                         temp = temp.strip('\n')
@@ -556,9 +556,9 @@ while( poweredOn == 1 ):
                 shutdownTimer.checkIfTimePassed()
                 if( shutdownTimer.timePassed == 1 ):
                         poweredOn = 0
-                        
 
-                
+
+
         time.sleep(0.001)
 
 

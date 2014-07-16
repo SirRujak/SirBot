@@ -15,14 +15,14 @@ from tkinter import ttk
 
 class botGUI(tk.Frame):
 
-    
+
 
     def __init__(self,master=None):
 
         tk.Frame.__init__(self,master)
         self.grid()
         self.createWidgets()
-        
+
 
     #global class variables
 
@@ -37,7 +37,7 @@ class botGUI(tk.Frame):
     using = []
     msgfragments = []
     userlisterror = []
-        
+
 
     def createWidgets(self):
 
@@ -58,10 +58,6 @@ class botGUI(tk.Frame):
         self.ownerUpdate = tk.StringVar()
         self.password = tk.StringVar()
         self.users = tk.StringVar()
-        
-        self.users.set('1v13G4_DEATH oddba11 whiskerzzzzzzzzzzzzzzzzxyz dopey a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 00')
-        self.owner.set('id')
-        self.channel.set('MINEcraft5')
 
         #active IRC declare
         self.statusFrame = tk.LabelFrame(self,labelanchor='nw',text='Status')
@@ -75,7 +71,7 @@ class botGUI(tk.Frame):
         self.usersList = tk.LabelFrame(self,labelanchor='nw',text='Users')
         self.usersScroll = ttk.Scrollbar(self,orient=tk.VERTICAL)
         self.usersListText = tk.Listbox(self,activestyle='dotbox',bg='white',cursor='xterm',fg='black',height=15,listvariable=self.users,yscrollcommand=self.usersScroll.set)
-        
+
         #active IRC add to grid
         self.statusFrame.grid(column=0,row=1,sticky='NSEW')
         self.channelFrame.grid(in_=self.statusFrame,row=0,sticky='EW')
@@ -87,7 +83,7 @@ class botGUI(tk.Frame):
         self.sendAsChange.grid(in_=self.sendAs,sticky='E',column=1,row=0)
         self.usersList.grid(in_=self.usersFrame,row=1,sticky='EW')
         self.usersListText.grid(in_=self.usersList,row=0,column=0,sticky='EW')
-        self.usersScroll.grid(in_=self.usersList,row=0,column=1,sticky='NS')
+        self.usersScroll.grid(in_=self.usersList,row=0,column=1,sticky='NSE')
         self.usersScroll['command'] = self.usersListText.yview
 
         #add more status widgets
@@ -95,12 +91,7 @@ class botGUI(tk.Frame):
 
         #chat variables
         self.chatInput = tk.StringVar()
-        ###self.timeStamp = tk.StringVar()
 
-        ###self.timeStamp.set('[00/00/00|00:00:00]')
-        #self.timeStamp = '[00:00:00]'
-
-        
         #chat window declare
         self.textFrame = tk.LabelFrame(self,labelanchor='nw',text='Text Interface')
         self.chatFrame = tk.Frame(self)
@@ -112,16 +103,16 @@ class botGUI(tk.Frame):
         self.chatScroll = ttk.Scrollbar(self,orient=tk.VERTICAL)
         self.chatHistory = tk.Text(self,bg='white',fg='black',height=32,width=75,takefocus=0,state='disabled',yscrollcommand=self.chatScroll.set)
         self.terminalHistoryFrame = ttk.Frame(self)
-        
-        
+
+
         self.terminalScroll = ttk.Scrollbar(self,orient=tk.VERTICAL)
         self.terminalHistory = tk.Text(self,bg='white',fg='black',height=32,width=75,takefocus=0,state='disabled',yscrollcommand=self.terminalScroll.set)
         self.chatInput = tk.Entry(self,bg='white',fg='black',cursor='xterm',textvariable=self.chatInput)
         self.cmdVerifyButton = tk.Button(self,text='...',command=self.verifyCommand)
         self.chatSendButton = tk.Button(self,text='Send',command=self.sendChat)
         self.chatInput.bind("<Return>",self.sendChat2)
-        
-        
+
+
         #chat window add to grid
         self.textFrame.grid(column=1,row=1,sticky='NSEW')
         self.chatFrame.grid(in_=self.textFrame,sticky='EW')
@@ -142,7 +133,7 @@ class botGUI(tk.Frame):
         self.terminalScroll['command'] = self.terminalHistory.yview
 
         self.terminal.add(self.terminalHistoryFrame,text='Terminal',padding=2)
-        
+
         #menu bar
         self.menuBar = tk.Menu(top)
         top['menu'] = self.menuBar
@@ -168,29 +159,29 @@ class botGUI(tk.Frame):
         self.usersContext.add_command(label="More..")
         self.usersListText.bind("<Button-3>",self.contextMenu)
 
-        #users list buttons container
+        #users list buttons container <- need to fix layout
         self.usersListButtons = tk.Frame(self,relief=tk.FLAT)
-        self.usersListButtons.grid(in_=self.statusFrame,column=0,row=2)
+        self.usersListButtons.grid(in_=self.statusFrame,column=0,row=2,sticky='EW')
 
         #user selection buttons
         self.usersSelectionButtons = tk.LabelFrame(self,text='Selection',relief=tk.GROOVE)
-        self.usersSelectionButtons.grid(in_=self.usersListButtons,column=0,row=1)
+        self.usersSelectionButtons.grid(in_=self.usersListButtons,column=0,row=1,sticky='EW')
 
         #user navigation buttons container
         self.userNavigationButtons = tk.Frame(self,relief=tk.FLAT)
-        self.userNavigationButtons.grid(in_=self.usersListButtons,column=0,row=0)
+        self.userNavigationButtons.grid(in_=self.usersListButtons,column=0,row=0,sticky='EW')
 
         #find user button
         self.findUserButton = tk.Button(self,text='Find',command=self.goToUser)
-        self.findUserButton.grid(in_=self.userNavigationButtons,column=0,row=0)
+        self.findUserButton.grid(in_=self.userNavigationButtons,column=0,row=0,sticky='EW')
 
         #top of list button
         self.listTopButton = tk.Button(self,text='Return to Top',command=self.goListTop)
-        self.listTopButton.grid(in_=self.userNavigationButtons,column=1,row=0)
+        self.listTopButton.grid(in_=self.userNavigationButtons,column=1,row=0,sticky='EW')
 
         #select all button
         self.userSelectButton = tk.Button(self,text='All',command=self.selectAllUsers)
-        self.userSelectButton.grid(in_=self.usersSelectionButtons,column=0,row=0)
+        self.userSelectButton.grid(in_=self.usersSelectionButtons,column=0,row=0,sticky='EW')
 
         #clear selection button
         self.userDeselectButton = tk.Button(self,text='Clear',command=self.clearUserSelection)
@@ -201,52 +192,51 @@ class botGUI(tk.Frame):
         self.activateAutomation = tk.Radiobutton(self,text='On',value=1,variable=self.autoMod,relief=tk.GROOVE)
         self.deactivateAutomation = tk.Radiobutton(self,text='Off',value=0,variable=self.autoMod,relief=tk.GROOVE)
         self.customAutomation = tk.Button(self,text='Custom',command=self.customAutomatedModerator,relief=tk.GROOVE)
-        
+
         self.modAutomation.grid(in_=self.statusFrame,column=0,row=3)
         self.activateAutomation.grid(in_=self.modAutomation,column=0,row=0)
         self.deactivateAutomation.grid(in_=self.modAutomation,column=1,row=0)
         self.customAutomation.grid(in_=self.modAutomation,column=2,row=0)
-        
+
         #temporary function test button
         self.refreshButton = ttk.Button(self,text='VOID',command=self.configQuery)
         self.refreshButton.grid(in_=self.statusFrame,column=0,row=4)
 
+        #sort user list button
+        self.sortButton = tk.Button(self,text='Sort',command=self.sortUsers)
+        self.sortButton.grid(in_=self.usersListButtons,column=0,row=2,sticky='EW')
+
+
+    def sortUsers(self):
+        pass
 
     def refreshUsers(self):
         pass
 
     def terminalOutput(self,message):
         msgID = 'Console:'
-#        self.chatHistory.config(state='normal')
-#        self.chatHistory.insert(tk.END,self.timeStamp()+self.msgID+message+'\n')
-#        self.chatHistory.yview(tk.END)
-#        self.chatHistory.config(state='disabled')
+
         self.terminalWrite(msgID,message)
 
     def terminalInput(self,message):
         #msgID = str(self.identifyChat(message))+':'
         (msgID,message) = self.extractChat(message)
         msgID = str(msgID)
-        #message = str(self.styleChat(message))
-        #msgID=message.split(' ')[3]
-        #message=str(message.split(' ')[5:]).strip(']').strip("'")
         self.terminalWrite(msgID,message)
         if(msgID != '' and msgID != 'Server:'):
             self.chatWrite(msgID,message)
 
     def chatInput(self,message):
         (msgID,message)=self.extractChat(message)
-        #msgID = str(msgID)
         self.terminalWrite(msgID,message)
         self.chatWrite(msgID,message)
 
     def terminalWrite(self,msgID,message):
         self.terminalHistory.config(state='normal')
-        #message = self.timeStamp()+self.msgID+message[2]+'\n'
         self.terminalHistory.insert(tk.END,self.timeStamp()+msgID+message+'\n')
         self.terminalHistory.yview(tk.END)
         self.terminalHistory.config(state='disabled')
-        
+
     def chatWrite(self,msgID,message):
         self.chatHistory.config(state='normal')
         self.chatHistory.insert(tk.END,self.timeStamp()+msgID+message+'\n')
@@ -258,28 +248,21 @@ class botGUI(tk.Frame):
         inputData = self.chatInput.get()
         if(inputData != ''):
             msgID = self.owner.get() + ':'
-            #self.terminalWrite(msgID,inputData)
             self.chatStack.append(inputData)
-#            self.chatHistory.config(state='normal')
-#            self.chatHistory.insert(tk.END,self.timeStamp() +self.msgID+ inputData+"\n")
             self.chatInput.delete(0,tk.END)
-#            self.chatHistory.yview(tk.END)
-#            self.chatHistory.config(state='disabled')
             self.chatInput.focus_set()
 
     def sendChat2(self,event):
         self.sendChat()
 
     def timeStamp(self):
-        #get time and format appropriately
         times = time.asctime(time.localtime(time.time()))
         times = times[11:19]
         times = '['+times+']'
-        #time = '[00:00:00]'
         return times
 
     def contextMenu(self,event):
-        #try:
+##        try:
             self.usersContext.tk_popup(event.x_root,event.y_root,4)
             print(self.usersListText.get(self.usersListText.nearest(event.y)))
 ##        finally:
@@ -360,7 +343,7 @@ class botGUI(tk.Frame):
         self.ownerUpdate.set('')
         self.editConfig.set(0)
         self.configInput.destroy()
-    
+
     def editChannel(self):
         #tk.messagebox
         if(self.childOpen.get() == 0):
@@ -375,7 +358,7 @@ class botGUI(tk.Frame):
             self.channelEntry = tk.Entry(self.channelEdit,bg='white',fg='black',cursor='xterm',textvariable=self.newChannelName)
             self.channelEntry.bind("<Return>",self.editChannelClose2)
             self.joinChannelButton = ttk.Button(self.channelEdit,text='Join',command=self.editChannelClose)
-            
+
             self.channelEntry.grid(row=0,column=0,sticky='EW')
             self.joinChannelButton.grid(row=1,column=0)
 
@@ -393,7 +376,7 @@ class botGUI(tk.Frame):
             self.optionsDialog.bind("<Escape>",self.optionsDialogClose2)
             #self.optionsDialog.geometry(wxh+x+y)
             self.optionsDialog.geometry('+'+str(self.winfo_rootx()+50)+'+'+str(self.winfo_rooty()+50))
-            
+
 
             #self.testButton = tk.Button(self.optionsDialog,text='Close',command=self.optionsDialogClose)
             #self.testButton.pack()
@@ -429,10 +412,10 @@ class botGUI(tk.Frame):
             #self.trialframe3.grid()
             #self.trialbutton3=ttk.Button(self.trialframe1,text='testing3')
             #self.trialbutton3.grid()
-            
-            
-            
-                
+
+
+
+
 
             self.optionsDialog.protocol("WM_DELETE_WINDOW", self.optionsDialogClose)
 
@@ -460,6 +443,7 @@ class botGUI(tk.Frame):
 
     def customAutomatedModerator(self):
         self.openOptions()
+        #set moderator options to active with caret
 
     def getOauth(self):
         #get that pass somehow
@@ -475,7 +459,7 @@ class botGUI(tk.Frame):
         else:
             output=['']
         return(output)
-    
+
     def extractChat(self,message):
         Error = 'Error.extractChat x'
 ##        try:
@@ -484,7 +468,7 @@ class botGUI(tk.Frame):
             if(len(msg) == 3):
                 msg = msg[1].split(' ')[1]
                 #message = message.split(',')[2:].strip(' ').strip("]").strip("'")
-                if(msg == 'PRIVMSG'):                     
+                if(msg == 'PRIVMSG'):
                     msgID = str(message.split("', '")[1].split('.')[0].split('!')[0])
                     if(msgID == 'jtv'):
                         msgID = 'Server'
@@ -532,7 +516,7 @@ class botGUI(tk.Frame):
             elif(len(msg) == 2):
                 if(len(msg)>=2):
                     if(len(msg[1].split(' '))>=2):
-                        msg=msg[1].split(' ')[1] 
+                        msg=msg[1].split(' ')[1]
                         if(msg == 'PART'):
                             msgID = 'Server:'
                             message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
@@ -547,6 +531,7 @@ class botGUI(tk.Frame):
                             msgID='Server:'
                             self.userlisterror.append(message)
                         elif(msg == 'MODE'):
+                            #potentially other options besides +o to account for here someday - not sure
                             msgID = 'Server:'
                             message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
                             return(msgID,message)
@@ -558,17 +543,14 @@ class botGUI(tk.Frame):
                             return(msgID,message)
                         else:
                             msgID = ''
-                            #(msgID,message)=
                             self.chatError(msg,msgID,message)
                             return(msgID,(Error +"001: -("+msg+')' + message))
                     else:
                         msgID = ''
-                        #(msgID,message)=
                         self.chatError('',msgID,message)
                         return(msgID,(Error+"010: -"+message))
                 else:
                     msgID = ''
-                    #(msgID,message)=
                     self.chatError('',msgID,message)
                     return(msgID,(Error+'011: -'+message))
             elif(len(msg) >= 4):
@@ -582,13 +564,11 @@ class botGUI(tk.Frame):
                     return(msgID,message)
                 else:
                     msgID = ''
-                    #(msgID,message)=
                     self.chatError(msg,msgID,message)
                     return(msgID,(Error +"006: -("+msg+')'+message))
             else:
                 msg = msg[1].split(' ')[1]
                 msgID = ''
-                #(msgID,message)=
                 self.chatError(msg,msgID,message)
                 return(msgID,(Error +"005: -("+msg+')'+message))
         elif(message[1:8] == "'PING '"):
@@ -598,7 +578,6 @@ class botGUI(tk.Frame):
                 return(msgID,message)
             else:
                 msgID = ''
-                #(msgID,message)=
                 self.chatError('',msgID,message)
                 return(msgID,(Error +"002: -"+ message))
         else:
@@ -612,12 +591,8 @@ class botGUI(tk.Frame):
                     (fixable,message) = self.fixUserList(message)
                     return('Server:',message.strip("[']"))
                 else:
-                    #self.msgfragments.append(message)
-                    #(msgID,message)=
                     self.chatError('',msgID,message)
             else:
-                #self.msgfragments.append(message)
-                #(msgID,message)=
                 self.chatError('',msgID,message)
             return(msgID,(Error +"003: -"+message))
 ##        except TypeError:
@@ -630,8 +605,6 @@ class botGUI(tk.Frame):
 ##            return(Error +"000: -"+message)
 
     def styleChat(self,message):
-        #.sub(replacement, string[, count=0])
-        #handle actions /me more effectively
         message = message.replace("\\'","'")
         message = message.replace("', '",":")
         message = message.replace('", "',":")
@@ -643,13 +616,11 @@ class botGUI(tk.Frame):
 
     def extractUsers(self,message):
         self.using.extend(message.split(' '))
-        #self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
         self.setUsers()
 
     def joinUsers(self,user):
         try:
             self.using.append(user)
-            #self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
             self.setUsers()
         except:
             pass
@@ -657,7 +628,6 @@ class botGUI(tk.Frame):
     def partUsers(self,user):
         try:
             self.using.remove(user)
-            #self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
             self.setUsers()
         except:
             pass
@@ -670,7 +640,7 @@ class botGUI(tk.Frame):
         fixable = False
         while(len(self.userlisterror)>2):
             self.userlisterror.pop(0)
-        if(len(self.userlisterror)==2):    
+        if(len(self.userlisterror)==2):
             if(self.userlisterror[1].find(',')==-1 and self.userlisterror[0].split("', '")[1].split(' ')[1]=='353'):
                 message = self.userlisterror[0].split("', '")[2].strip(']').strip("'").split(' ')
                 message = message[len(message)-1]
@@ -680,7 +650,6 @@ class botGUI(tk.Frame):
                 except:
                     pass
                 message = message + self.userlisterror[1].lstrip('[').rstrip(']').strip("'")
-                #add NAMES- prefix to message
                 message = "NAMES-" + message
                 fixable = True
                 self.userlisterror.clear()
@@ -703,7 +672,7 @@ class botGUI(tk.Frame):
 
     def chatError(self,msg,msgID,message):
         time = self.timeStamp()
-#        ####change to void type function####
+#        ####try inserting a space between message fragments if appending fails####
         #check for message fragments in queue
         #try to combine fragments to recover message
         #write to terminal a "recovered message" with original timestamp
@@ -750,7 +719,7 @@ class botGUI(tk.Frame):
                         message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     else:
                         #do no printing here. for now:
-                        x=10/0
+                        x=10/0#<-inelegant escape?
                     #print to terminal and maybe chat
                     self.recoverMessage(self.msgfragments[0]+msgID+message,0)
                     self.msgfragments.clear()
@@ -767,12 +736,12 @@ class botGUI(tk.Frame):
                     #eventually handle broken pings
                     pass
                 else:
-                    #try to handle this
+                    #try to handle whatever this is
                     pass
             else:
-               #write this error to log
+               #write this error to log:probably not revoverable
                pass
-               
+
     def recoverMessage(self,message,chat):
         if(chat==0):
             self.terminalWrite('Recovered:',message)
