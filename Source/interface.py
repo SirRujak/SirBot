@@ -282,6 +282,7 @@ class botGUI(tk.Frame):
         #maybe do this to verified lines:
         #self.chatInput.insert(tk.END,'>')
         ##temporarily this:
+        self.checkUserMultiplicity()
         print('AutoModON/OFF:'+str(self.autoMod.get()))
         #print('Top window:'+self.createWidgets.top)
         print('IsChildOpen:'+str(self.childOpen.get()))
@@ -289,12 +290,12 @@ class botGUI(tk.Frame):
         print("Nameslength:"+str(self.messagelen))
         print("Users:"+str(self.using))
         #print('
-
+        
     def goToUser(self):
         #search for username in list: if it exists, select it; otherwise do nothing(notify?)
         pass
 
-    def updateUserList(self):
+    def formatUserList(self):
         #self.users
         #insert headings for various tiers
         pass
@@ -554,7 +555,7 @@ class botGUI(tk.Frame):
                     self.chatError('',msgID,message)
                     return(msgID,(Error+'011: -'+message))
             elif(len(msg) >= 4):
-                #not exactly sure what this one means yet
+                #not exactly sure what this one means yet<-DEPRECATED
                 msg = msg[1].split(' ')[1]
                 if(msg == 'PRIVMSG'):
                     msgID = message.split("', '")[1].split('.')[0].split('!')[0]
@@ -582,14 +583,13 @@ class botGUI(tk.Frame):
                 return(msgID,(Error +"002: -"+ message))
         else:
             #further contingencies go here someday
-            #msg = message.split("', '")[1].split(' ')[1]
             msgID = ''
             if(self.userlisterror):
                 self.userlisterror.append(message)
                 (fixable,temp) = self.fixUserList(message)
                 if(fixable):
-                    (fixable,message) = self.fixUserList(message)
-                    return('Server:',message.strip("[']"))
+                    message = temp
+                    return('Server:',temp.strip("[']"))
                 else:
                     self.chatError('',msgID,message)
             else:
@@ -647,27 +647,31 @@ class botGUI(tk.Frame):
                 try:
                     self.using.remove(message)
                     self.setUsers()
+                    
                 except:
+                    #this should never happen, but need to make note somehow if it does
                     pass
                 message = message + self.userlisterror[1].lstrip('[').rstrip(']').strip("'")
-                message = "NAMES-" + message
+                message = "Recovered:NAMES-" + message
                 fixable = True
                 self.userlisterror.clear()
             else:
                 message = self.userlisterror[0][:len(self.userlisterror[0])-2]+self.userlisterror[1][2:]
                 tag = message.split("', '")[1].split(' ')[1]
                 if(tag=='353'):
-                    message = "NAMES-" + message
+                    message = "Recovered:NAMES-" + message
                     fixable = True
                     self.userlisterror.clear()
                 else:
                     message=self.userlisterror.pop(0)
-                pass
+                    self.chatError('','',message)
+#                pass
         else:
             pass
         return(fixable,message)
 
     def setUsers(self):
+        self.formatUserList()
         self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
 
     def chatError(self,msg,msgID,message):
@@ -679,6 +683,7 @@ class botGUI(tk.Frame):
         #if process turns out to be stable enough, write message to chat
         if(self.msgfragments):
             if(len(self.msgfragments)==2):
+                oldmessage=message
                 message = self.msgfragments[1].rstrip("']")+message.lstrip("['")
                 #print(message)
                 try:
@@ -724,11 +729,71 @@ class botGUI(tk.Frame):
                     self.recoverMessage(self.msgfragments[0]+msgID+message,0)
                     self.msgfragments.clear()
                 except:
-                    self.msgfragments.clear()
+                    message=oldmessage
+                    message = self.msgfragments[1].rstrip("']")+' '+message.lstrip("['")
+                    try:
+                        tag = message.split("', '")[1].split(' ')[1]
+                        if(tag == 'PRIVMSG'):
+                            msgID = str(message.split("', '")[1].split('.')[0].split('!')[0])
+                            if(msgID == 'jtv'):
+                                msgID = 'Server'
+                            msgID = msgID + ':'
+                            message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                            message = self.styleChat(message)
+                            self.recoverMessage(self.msgfragments[0]+msgID+message,1)
+                        elif(tag == 'PART'):
+                            msgID = 'Server:'
+                            message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                            self.partUsers(message)
+                            message=message+" has left."
+                        elif(tag == 'JOIN'):
+                            msgID = 'Server:'
+                            message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                            self.joinUsers(message)
+                            message = message+" has joined."
+                        elif(tag == 'MODE'):
+                            msgID = 'Server:'
+                            message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
+                        elif(tag == '353'):
+                            msgID = 'Server:'
+                            message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                            self.extractUsers(message)
+                            message = 'NAMES--'+message
+                        elif(tag=='366'):
+                            msgID = 'Server:'
+                            self.userlisterror.clear()
+                            message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                        elif(tag in ['001','002','003','004','375','372','376']):
+                            msgID = 'Server:'
+                            message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
+                        else:
+                            #do no printing here. for now:
+                            x=10/0#<-inelegant escape?
+                        #print to terminal and maybe chat
+                        self.recoverMessage(self.msgfragments[0]+msgID+message,0)
+                        self.msgfragments.clear()
+                    except:
                     #do something clever here
-                    #pass
+                        pass
+            else:
+                if(len(message)>=6):
+                    if(message[0:5]=="['', "):
+                        self.msgfragments.append(time)
+                        self.msgfragments.append(message)
+                    elif(message[0:10]=="['PING ', "):
+                        #eventually handle broken pings
+                        pass
+                    else:
+                        #try to handle this as well
+                        self.msgfragments.append(time)
+                        self.msgfragments.append(message)
+                else:
+                    #write this error to log
+                    self.msgfragments.append(time)
+                    self.msgfragments.append(message)
+
         else:
-            if(len(message)>=10):
+            if(len(message)>=6):
                 if(message[0:5]=="['', "):
                     self.msgfragments.append(time)
                     self.msgfragments.append(message)
@@ -737,13 +802,40 @@ class botGUI(tk.Frame):
                     pass
                 else:
                     #try to handle whatever this is
+                    #this one is also probably not recoverable
                     pass
             else:
-               #write this error to log:probably not revoverable
+               #write this error to log:-probably not recoverable
                pass
 
     def recoverMessage(self,message,chat):
         if(chat==0):
             self.terminalWrite('Recovered:',message)
         if(chat==1):
+            #if this becomes reliable enough, remove the 'Recovered:' prefix from chatWrite
             self.chatWrite('Recovered:',message)
+
+    def runTasks(self):
+        #run maintenance tasks and utilites
+        #perhaps implement priority tiers here?
+        self.checkUserMultiplicity()
+        
+
+    def checkUserMultiplicity(self):
+        #check how many times each user appears in self.using; update self.users
+        #make note in log of occurance
+        #temporarily print out names that have multiplicities
+#        print('Coming soon...')
+        for _user in self.using:
+            while(True):
+                try:
+                    index=self.using.index(_user,self.using.index(_user)+1)
+                    print(self.using.pop(index))
+
+                except ValueError:
+                    break
+                except:
+                    #unexpected error needs to be logged
+                    break
+
+        self.setUsers()

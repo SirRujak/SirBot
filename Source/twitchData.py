@@ -48,7 +48,7 @@ def getTwitchState(streamData):
 
 
 
-def getTwitchFollowCount(userName):
+def getFollowerCount(userName):
     errFlag = 0
 
     try:
@@ -58,30 +58,30 @@ def getTwitchFollowCount(userName):
             url = 'https://api.twitch.tv/kraken/channels/'+str(userName)+'/follows?limit=1'
 
         try:
-            followData = urllib.request.urlopen(url)
-            followData = followData.read()
-            followData = followData.decode()
-            follows = json.loads(followData)['_total']
-            follows = int(follows)
+            followerData = urllib.request.urlopen(url)
+            followerData = followerData.read()
+            followerData = followerData.decode()
+            followers = json.loads(followerData)['_total']
+            followers = int(followers)
 
 
         except TypeError:
             #currently broken
-            followData = urllib.request.urlopen(url)
-            followData = followData.read()
-            followData = str(followData)
-            follows = int(followData.split(':')[1].split(',')[0])
+            followerData = urllib.request.urlopen(url)
+            followerData = followerData.read()
+            followerData = str(followerData)
+            followers = int(followerData.split(':')[1].split(',')[0])
 
             errFlag = 2
 
     except:
         errFlag = 1
-        follows = 'null'
+        followers = 'null'
 
-    return(follows,errFlag)
+    return(followers,errFlag)
 
 
-def getNewFollows(userName,lastCheck,newCheck):
+def getNewFollowers(userName,lastCheck,newCheck):
     errFlag = 0
     delta = -1
 
@@ -106,11 +106,11 @@ def getNewFollows(userName,lastCheck,newCheck):
 
     elif(delta >= 1):
         if(delta <= 100):
-            (followers,errorflag) = getNewFollowsNames(userName,delta,0)
+            (followers,errorflag) = getNewFollowersNames(userName,delta,0)
             followers = followers
 
         else:
-            (followers,errorflag) = getNewFollowsNames(userName,100,0)
+            (followers,errorflag) = getNewFollowersNames(userName,100,0)
             followers = followers
     else:
         followers = ['null']
@@ -118,7 +118,7 @@ def getNewFollows(userName,lastCheck,newCheck):
 
     return(followers,errFlag,delta)
 
-def getNewFollowsNames(userName,limit,offset):
+def getNewFollowersNames(userName,limit,offset):
     errFlag = 0
     followers = []
 
@@ -149,24 +149,24 @@ def getNewFollowsNames(userName,limit,offset):
             url = url + str(offset)
 
             try:
-                followData = urllib.request.urlopen(url)
-                followData = followData.read()
+                followerData = urllib.request.urlopen(url)
+                followerData = followerData.read()
 
-                followData = followData.decode()
-                followData = json.loads(followData)
+                followerData = followerData.decode()
+                followerData = json.loads(followerData)
 
                 for i in range(0, limit):
-                    followers.append(followData['follows'][i]['user']['display_name'])
+                    followers.append(followerData['follows'][i]['user']['display_name'])
 
             except:
                 #currently broken
-                followData = urllib.request.urlopen(url)
-                followData = followData.read()
+                followerData = urllib.request.urlopen(url)
+                followerData = followerData.read()
 
-                followData = str(followData)
+                followerData = str(followerData)
 
                 for i in range(0, limit):
-                    followers.append(followData.split(':')[15 + i*22])
+                    followers.append(followerData.split(':')[15 + i*22])
                     followers[i] = followers[i].split(',')[0].strip('"')
 
                 errFlag = 3
@@ -244,12 +244,12 @@ def getLatestSubscribers(userName,quantity):
     pass
 
 def getLatestFollowers(userName,quantity):
-    (follows,errorflag) = getNewFollows(userName,0,quantity)
-    return(follows)
+    (followers,errorflag) = getNewFollowers(userName,0,quantity)
+    return(followers)
 
-def getAllFollows(userName):
+def getAllFollowers(userName):
     followers = []
-    (count,error1) = getTwitchFollowCount(userName)
+    (count,error1) = getFollowerCount(userName)
     if(error1==0):
         i=0
         ii=0
@@ -257,14 +257,14 @@ def getAllFollows(userName):
         while(i<count):
             ii = ii + 1
             if(i+100<=count):
-                (following,error2)=getNewFollowsNames(userName,100,i)
+                (following,error2)=getNewFollowersNames(userName,100,i)
                 if(error2==0):
                     followers.extend(following)
                 else:
                     error2list.extend(['Count ',i,' and error ',error2])
                 i = i + 100
             else:
-                (following,error2)=getNewFollowsNames(userName,count-i,i)
+                (following,error2)=getNewFollowersNames(userName,count-i,i)
                 if(error2==0):
                     followers.extend(following)
                 else:
@@ -283,11 +283,158 @@ def getAllFollows(userName):
         errFlag = 1
 
     followers.reverse()
+    #TODO: write to file
     return(followers,errFlag)
 
 def getAllSubscribers(userName):
     pass
 
+def getALlSubscribing(userName):
+    pass
+
+def getAllFollowing(userName):
+    followings = []
+    (count,error1) = getFollowingCount(userName)
+    if(error1==0):
+        i=0
+        ii=0
+        error2list = []
+        while(i<count):
+            ii = ii + 1
+            if(i+100<=count):
+                (following,error2)=getFollowingNames(userName,100,i)
+                if(error2==0):
+                    followings.extend(following)
+                else:
+                    error2list.extend(['Count ',i,' and error ',error2])
+                i = i + 100
+            else:
+                (following,error2)=getFollowingNames(userName,count-i,i)
+                if(error2==0):
+                    followings.extend(following)
+                else:
+                    error2list.extend(['Count- ',i,' and error ',error2])
+                break
+
+            if(ii>10000):#temporary glass ceiling - need a timer
+                error2list.append('Too many iterations.')
+                break
+
+        errFlag = error2list
+        if(count != len(followings)):
+            errFlag = 'Not all followers found after '+str(ii)+' requests.'
+
+    else:
+        errFlag = 1
+
+    followings.reverse()
+    #TODO: write to file
+    return(followings,errFlag)
+
+def getFollowingCount(userName):
+    errFlag = 0
+
+    try:
+        try:
+            url = 'https://api.twitch.tv/kraken/users/'+userName+'/follows/channels?limit=1'
+        except TypeError:
+            url = 'https://api.twitch.tv/kraken/users/'+str(userName)+'/follows/channels?limit=1'
+
+        try:
+            followingData = urllib.request.urlopen(url)
+            followingData = followingData.read()
+            followingData = followingData.decode()
+            followings = json.loads(followingData)['_total']
+            followings = int(followings)
 
 
+        except TypeError:
+            #currently broken
+            followingData = urllib.request.urlopen(url)
+            followingData = followingData.read()
+            followingData = str(followingData)
+            followings = int(followingData.split(':')[1].split(',')[0])
+
+            errFlag = 2
+
+    except:
+        errFlag = 1
+        followings = 'null'
+
+    return(followings,errFlag)
+
+
+def getFollowingNames(userName,limit,offset):
+    errFlag = 0
+    followings = []
+
+    try:
+        int(limit)
+        int(offset)
+    except:
+        followers = ['null']
+        errFlag = -1
+        return(followings,errFlag)
+
+    if(limit == 0):
+        followings = ['null']
+        return(followings,errFlag)
+
+    try:
+        if(limit > 100 or offset < 0):
+            errFlag = 1
+            followings = ['null']
+
+            return(followings,errFlag)
+        else:
+            url = 'https://api.twitch.tv/kraken/users/'
+            url = url + str(userName) + '/follows/channels?direction=DESC&limit='
+            url = url + str(limit)
+            url = url + '&offset='
+            url = url + str(offset)
+
+            try:
+                followingData = urllib.request.urlopen(url)
+                followingData = followingData.read()
+
+                followingData = followingData.decode()
+                followingData = json.loads(followingData)
+
+                #switch to xrange?
+                for i in range(0, limit):
+                    followings.append(followingData['follows'][i]['channel']['display_name'])
+
+            except:
+                #currently broken
+                followingData = urllib.request.urlopen(url)
+                followingData = followingData.read()
+                followingData = str(followingData)
+
+                for i in range(0, limit):
+                    followings.append(followingData.split(':')[15 + i*22])
+                    followings[i] = followings[i].split(',')[0].strip('"')
+
+                errFlag = 3
+
+    except:
+        errFlag = 2
+        followers = ['null']
+
+    return(followings,errFlag)
+
+def updateAllFollowers(userName,filePath):
+    pass
+
+def updateAllFollowing(userName,filePath):
+    pass
+
+def updateAllSubscribers(userName,filePath):
+    pass
+
+def updateAllSubscribing(userName,filePath):
+    pass
+
+def findLiveStreamerFromFollowing(userName):
+    #give preferrence to same gametitle
+    pass
 

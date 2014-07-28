@@ -1,4 +1,4 @@
-import twitchData as twitchdatafetch
+import twitchData as twitch
 import json
 
 modules = ['twitchData']
@@ -6,31 +6,31 @@ response='null'
 username='twitchplayspokemon'
 num=1
 
-def testtwitchData():
+def test_twitchData():
     username = input('Which channel would you like to scope? ')
     num = input('How many recent followers would you like to fetch? ')
     num=int(num)
     if(num>100):
         num = 100
-    (streamdata,errorflag)=twitchdatafetch.getStreamInfo(username)
+    (streamdata,errorflag)=twitch.getStreamInfo(username)
     if(errorflag!=0 and errorflag!='0'):
         print('Error code in data fetch: ',end='')
         print(errorflag)
     print('\n')
     print('---INFO---\n')
     print(username)
-    streamstate =twitchdatafetch.getTwitchState(streamdata)[0]
+    streamstate =twitch.getTwitchState(streamdata)[0]
     print('streaming: ' + streamstate)
     if(streamstate == 'true'):
-        print('playing: ' + str(twitchdatafetch.getGameTitle(streamdata)[0]))
-        print('status: ' + str(twitchdatafetch.getStreamStatus(streamdata)[0]))
-        print('# currently viewing: ' + str(twitchdatafetch.getLiveViewerCount(streamdata)[0]))
-    print('followers: ' + str(twitchdatafetch.getTwitchFollowCount(username)[0]))
-    print(str(num)+' most recent: ' + str(twitchdatafetch.getNewFollows(username,0,num)[0]))
-    getlist = input('Fetch follower list? ')
-    if(getlist=='Yes'):
-        f=twitchdatafetch.getTwitchFollowCount(username)[0]
-        v=twitchdatafetch.getAllFollows(username)
+        print('playing: ' + str(twitch.getGameTitle(streamdata)[0]))
+        print('status: ' + str(twitch.getStreamStatus(streamdata)[0]))
+        print('# currently viewing: ' + str(twitch.getLiveViewerCount(streamdata)[0]))
+    print('followers: ' + str(twitch.getFollowerCount(username)[0]))
+    print(str(num)+' most recent: ' + str(twitch.getNewFollowers(username,0,num)[0]))
+    getlist = input('Fetch follower list? (Note:-Large processor and network load incurred) ')
+    if(getlist=='yes'):
+        f=twitch.getFollowerCount(username)[0]
+        v=twitch.getAllFollowers(username)
         print('A list of all ',end='')
         print(f,end='')
         print(' of ',end='')
@@ -40,27 +40,47 @@ def testtwitchData():
         if(v[1]):
             print("Error: ",end='')
             print(v[1])
+    print('channels followed: '+str(twitch.getFollowingCount(username)[0]))
+    getlist = input('Fetch following list? (Note:-Large processor and network load incurred) ')
+    if(getlist=='yes'):
+        f=twitch.getFollowingCount(username)[0]
+        v=twitch.getAllFollowing(username)
+        print('A list of all ',end='')
+        print(f,end='')
+        print(' channels ',end='')
+        print(username,end='')
+        print(" is following:")
+        print(v[0])
+        if(v[1]):
+            print("Error: ",end='')
+            print(v[1])
 
     print('\n')
 
 def testdummy():
-    print('Nothing here!')
+    print('Nothing here!'end='')
+    time.sleep(5)
+    print('..yet...')
 
 while(response!='quit'):
     response = input('Which module would you like to test? ')
-
+    
+    if(response=='list'or response=='ls'):
+        print(modules)
+        
     if(response=='twitchData'):
+        test_twitchData()
 
-        testtwitchData()
-
-    elif(response=='dummy'):
+    if(response=='dummy'):
         testdummy()
 
-    elif(response.lower()=='stop'or response=='terminate'or response=='exit'):
+    response=response.lower()
+    
+    if(response=='stop'or response=='terminate'or response=='exit'):
         response = 'quit'
 
-    elif(response.lower()=='close'or response=='break'or response=='end'):
+    if(response=='close'or response=='break'or response=='end'):
         response = 'quit'
 
-    elif(response.lower()=='none'):
+    if(response=='none'or response=='cancel'):
         response='quit'
