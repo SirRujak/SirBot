@@ -30,7 +30,8 @@ def checkChatCommand(channelName, chatData):
                 message = "Watch both of us play WildStar here!: "
                 return(message)
         elif( chatData[:5]=="!bop"):
-                command = ".timeout " + chatData[6:] + " 30"
+                #command = ".timeout " + chatData[6:] + " 30"
+                command='!move b'
                 return(command)
         else:
                 return(checkChatStandard(chatData))
