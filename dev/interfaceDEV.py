@@ -28,21 +28,10 @@ class GUI():
     def launch(self):
         self.createMainWindow()
 
-        try:
-            self.logoimage = tk.PhotoImage(file='sirbot2.gif')
-        except:
-            pass
-        try:
-            self.splashimage = tk.PhotoImage(file='sirbot.gif')
-        except:
-            pass
-        try:
-            self.usersimage = tk.PhotoImage(file='users.gif')
-        except:
-            pass
-        
         self.splash()
+        self.imports()       
         self.allocateVars()
+        self.createChildren()
         #load control values from config
 
         #run startup tasks eventually
@@ -55,24 +44,52 @@ class GUI():
         self.loadMainWindow()
         self.MainWindow.update_idletasks()
 
+    def imports(self):
+
+        try:
+            self.logoimage = tk.PhotoImage(file='sirbot2.gif')
+        except:
+            #log
+            pass
+        try:
+            self.usersimage = tk.PhotoImage(file='users.gif')
+        except:
+            #log
+            pass
+        try:
+            self.optionsimage = tk.PhotoImage(file='options.gif')
+        except:
+            #log
+            pass
+        
+
     def splash(self):
-        self.loadingSplash = tk.Toplevel(self.MainWindow)
-        self.loading = ttk.Label(self.loadingSplash,image=self.splashimage)
-        self.loadingSplash.overrideredirect(True)
-        self.loading.pack()
+        try:
+            self.splashimage = tk.PhotoImage(file='Sirbot.gif')
+        except:
+            #log
+            pass
+        try:
+            self.loadingSplash = tk.Toplevel(self.MainWindow)
+            self.loading = ttk.Label(self.loadingSplash,image=self.splashimage)
+            self.loadingSplash.overrideredirect(True)
+            self.loading.pack()
 
-        top = self.loading.winfo_toplevel()
-        self.h = self.loading.winfo_screenheight()
-        self.w = self.loading.winfo_screenwidth()
-        self.hmm = self.loading.winfo_screenmmheight()
-        self.wmm = self.loading.winfo_screenmmwidth()
+            top = self.loading.winfo_toplevel()
+            self.h = self.loading.winfo_screenheight()
+            self.w = self.loading.winfo_screenwidth()
+            self.hmm = self.loading.winfo_screenmmheight()
+            self.wmm = self.loading.winfo_screenmmwidth()
 
-        self.loadingSplash.wm_attributes('-alpha',0.75)
-        self.loadingSplash.update_idletasks()
-        self.loadingSplash.geometry('262x112+'+str(int(self.w/2)-131*1)+
-                                    '+'+str(int(self.h/2)-56*1))
-        self.loadingSplash.update_idletasks()
-        self.loadingSplash.update()
+            self.loadingSplash.wm_attributes('-alpha',0.75)
+            self.loadingSplash.update_idletasks()
+            self.loadingSplash.geometry('262x112+'+str(int(self.w/2)-131*1)+
+                                        '+'+str(int(self.h/2)-56*1))
+            self.loadingSplash.update_idletasks()
+            self.loadingSplash.update()
+        except:
+            #log
+            pass
 
     def allocateVars(self):
         #informative
@@ -88,6 +105,7 @@ class GUI():
         #control variables
         self.geomMain = ''
         self.backgroundColor = '#3496B2'
+        self.fontColor = 'black'
 
         #tk control variables
         self.editConfig = tk.IntVar()
@@ -141,9 +159,13 @@ class GUI():
         self.terminalFrame.columnconfigure(0,weight=1)
         #self.usersListFrame.columnconfigure(1,weight=1)
 
+    def createChildren(self):
+        self.createUsersList()
+        self.createOptionsMenu()
+
 
     def createTerminalSIMPLE(self):
-        self.mainHeading = tk.Frame(self.MainWindow,bg='#3496B2')
+        self.mainHeading = tk.Frame(self.MainWindow,bg=self.backgroundColor)
         self.mainHeading.grid(in_=self.MainWindow,row=0,column=0,sticky='NSEW')
         try:
             self.mainLogo = tk.Label(self.mainHeading,image=self.logoimage,
@@ -151,7 +173,7 @@ class GUI():
             self.mainLogo.grid(in_=self.mainHeading,row=0,column=0,sticky='NSW')
         except:
             self.mainLogo = tk.Label(self.mainHeading,text='SirBot',borderwidth=0,
-                                     bg='#3496B2')
+                                     bg=self.backgroundColor)
             self.mainLogo.grid(in_=self.mainHeading,row=0,column=0,sticky='NSW')
 
         try:
@@ -165,13 +187,30 @@ class GUI():
             self.usersButton = tk.Button(self.mainHeading,text='User List',bd=0,
                                          bg=self.backgroundColor,
                                          activebackground=self.backgroundColor,
-                                         highlightedbackground=self.backgroundColor,
+                                         highlightbackground=self.backgroundColor,
                                          command=self.showUsers)
             self.usersButton.grid(in_=self.mainHeading,row=0,column=4,sticky='NSE')
 
+        try:
+            self.optionsButton = tk.Button(self.mainHeading,image=self.optionsimage,
+                                           bd=0,bg=self.backgroundColor,
+                                           overrelief=tk.FLAT,relief=tk.FLAT,
+                                           highlightbackground=self.backgroundColor,
+                                           activebackground=self.backgroundColor,
+                                           command=self.showOptions)
+            self.optionsButton.grid(in_=self.mainHeading,row=0,column=3,sticky='NSE')
+        except:
+            self.optionsButton = tk.Button(self.mainHeading,text='Options',
+                                           bd=0,bg=self.backgroundColor,
+                                           highlightbackground=self.backgroundColor,
+                                           activebackground=self.backgroundColor,
+                                           command=self.showOptions)
+            self.optionsButton.grid(in_=self.mainHeading,row=0,column=3,sticky='NSE')
+     
+
         self.mainHeading.columnconfigure(2,weight=1)    
         
-        self.terminalFrame = tk.Frame(self.MainWindow,padx=8,pady=8,bg='#3496B2')
+        self.terminalFrame = tk.Frame(self.MainWindow,padx=8,pady=8,bg=self.backgroundColor)
         self.terminalFrame.grid(in_=self.MainWindow,row=1,column=0,sticky='NSEW')
         self.createTerminalHistory()
         self.createTerminalInput()
@@ -207,11 +246,13 @@ class GUI():
         
     def createUsersList(self):
         self.UsersList = tk.Toplevel(self.MainWindow)
+        self.UsersList.withdraw()
         self.UsersList.title('User List')
         self.UsersList.geometry()
 
         
-        self.usersListHeading = tk.Frame(self.UsersList,bg=self.backgroundColor)
+        self.usersListHeading = tk.Frame(self.UsersList,bg=self.backgroundColor,
+                                         padx=4,pady=4)
         self.usersListHeading.grid(in_=self.UsersList,row=0,column=0,sticky='NSEW')
         try:
             self.usersListHeadingLabel = tk.Label(self.usersListHeading,
@@ -225,11 +266,11 @@ class GUI():
             self.usersListHeadingLabel.grid(in_=self.usersListHeading,row=0,
                                             column=0,sticky='NSW')
 
-        self.usersListFrame = tk.Frame(self.UsersList,padx=8,pady=8,bg='#3496B2')
+        self.usersListFrame = tk.Frame(self.UsersList,padx=8,pady=8,bg=self.backgroundColor)
         self.usersListScroll = ttk.Scrollbar(self.usersListFrame,orient=tk.VERTICAL)
         self.usersListText = tk.Listbox(self.usersListFrame,activestyle='dotbox',
                                         cursor='xterm',height=15,
-                                        listvariable=self.users,fg='#3496B2',
+                                        listvariable=self.users,fg=self.fontColor,
                                         yscrollcommand=self.usersListScroll.set)
 
         self.usersListScroll['command'] = self.usersListText.yview
@@ -249,22 +290,43 @@ class GUI():
         self.usersListFrame.columnconfigure(0,weight=1)
         #self.usersListFrame.columnconfigure(1,weight=1)
 
-        self.MainWindow.update_idletasks()
-        self.geomMain = self.MainWindow.geometry()
-        h=self.geomMain.split('x')
-        w=int(h[0])
-        h=h[1].split('+')
-        x=int(h[1])
-        y=int(h[2])
-        h=int(h[0])
-        self.UsersList.geometry(str(int(w*(1/4)))+'x'+str(int(h*(3/4)))+
-                                '+'+str(x+w+16)+'+'+str(y))
+        self.UsersList.geometry('1x1+0+0')
         self.UsersList.protocol("WM_DELETE_WINDOW",self.hideUsers)
 
         self.UsersList.update()
         self.UsersList.update_idletasks()
         
 
+    def createOptionsMenu(self):
+        self.OptionsMenu = tk.Toplevel(self.MainWindow)
+        self.OptionsMenu.withdraw()
+        self.OptionsMenu.title('Options')
+        self.OptionsMenu.geometry()
+
+        self.optionsMenuHeading = tk.Frame(self.OptionsMenu,bg=self.backgroundColor,
+                                         padx=4,pady=4)
+        self.optionsMenuHeading.grid(in_=self.OptionsMenu,row=0,column=0,sticky='NSEW')
+        try:
+            self.optionsMenuHeadingLabel = tk.Label(self.optionsMenuHeading,
+                                                  image=self.optionsimage,bd=0)
+            self.optionsMenuHeadingLabel.grid(in_=self.optionsMenuHeading,row=0,
+                                            column=0,sticky='NSW')
+        except:
+            self.optionsMenuHeadingLabel = tk.Label(self.optionsMenuHeading,
+                                                  text='Options',
+                                                  bd=0,bg=self.backgroundColor)
+            self.optionsMenuHeadingLabel.grid(in_=self.optionsMenuHeading,row=0,
+                                            column=0,sticky='NSW')
+
+        self.OptionsMenu.columnconfigure(0,weight=1)
+
+        self.OptionsMenu.geometry('1x1+0+0')
+
+        self.OptionsMenu.protocol("WM_DELETE_WINDOW",self.hideOptions)
+
+        self.OptionsMenu.update()
+        self.OptionsMenu.update_idletasks()
+        
     def createTEMP(self):
         self.Main = ttk.Frame(self.MainWindow)
         self.button = ttk.Button(self.Main,text='Button')
@@ -282,14 +344,41 @@ class GUI():
         self.enterTextBttn()
 
     def showUsers(self):
-        self.createUsersList()
+        self.MainWindow.update_idletasks()
+        self.geomMain = self.MainWindow.geometry()
+        h=self.geomMain.split('x')
+        w=int(h[0])
+        h=h[1].split('+')
+        x=int(h[1])
+        y=int(h[2])
+        h=int(h[0])
+        self.UsersList.geometry(str(int(w*(1/4)))+'x'+str(int(h*(3/4)))+
+                                '+'+str(x+w+16)+'+'+str(y))
+        self.UsersList.deiconify()
         self.usersButton['state'] = tk.DISABLED
         self.usersButton.grid_remove()
 
     def hideUsers(self):
-        self.UsersList.destroy()
+        self.UsersList.withdraw()
         self.usersButton['state'] = tk.NORMAL
         self.usersButton.grid()
+
+    def showOptions(self):
+        self.MainWindow.update_idletasks()
+        self.geomMain = self.MainWindow.geometry()
+        x=self.geomMain.split('+')
+        y=x[2]
+        x=x[1]
+        self.OptionsMenu.geometry('256x256+'+x+'+'+y)
+        self.OptionsMenu.deiconify()
+        self.optionsButton['state'] = tk.DISABLED
+        self.optionsButton.grid_remove()
+
+    def hideOptions(self):
+        self.OptionsMenu.withdraw()
+        self.optionsButton['state'] = tk.NORMAL
+        self.optionsButton.grid()
+        
 
 app=GUI()
 
