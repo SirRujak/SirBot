@@ -8,4 +8,5 @@ Source/twitchDataBACKUP.py
 Source/SirBotBACKUP.py
 Source/testmodulesBACKUP.py
 Source/Thumbs.db
-Source/interfacex.py
+dev/interfacex.py
+dev/*BACKUP.py
