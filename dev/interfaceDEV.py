@@ -141,12 +141,14 @@ class GUI():
 
     def createMainWindow(self):
         self.MainWindow = tk.Tk()
-        self.MainWindow.geometry('1x1+0+0')
+        self.MainWindow.withdraw()
+        #self.MainWindow.geometry('1x1+0+0')
         self.MainWindow.overrideredirect(True)
         self.MainWindow.protocol("WM_DELETE_WINDOW",self.cleanUp)
 
     def cleanUp(self):
         self.splash()
+        self.MainWindow.update()
         self.MainWindow.withdraw()
         self.OptionsMenu.withdraw()
         self.UsersList.withdraw()
@@ -159,6 +161,7 @@ class GUI():
     def loadMainWindow(self):
         self.MainWindow.overrideredirect(False)
         self.MainWindow.geometry(self.geomMain)
+        self.MainWindow.deiconify()
         self.MainWindow.title(self.botName+' v'+self.botVersion)
         self.createTerminalSIMPLE()
 
@@ -372,26 +375,34 @@ class GUI():
         
 
     def enterText(self,event):
-        inputData = []
-        inputData.append(self.timeStamp())
-        inputData.append('Input')
-        inputData.append(': ')
-        inputData.append(self.terminalEntry.get())
-        inputData.append(0)
-        self.inputqueue.put(inputData)
-        self.terminalEntry.delete(0,tk.END)
-        self.writeInput()
-        self.parseCommands(inputData)
-        self.terminalEntry.focus_set()
+        message = self.terminalEntry.get()
+        if(message != ''):
+            inputData = []
+            inputData.append(self.timeStamp())
+            inputData.append('Input')
+            inputData.append(': ')
+            inputData.append(message)
+            inputData.append(0)
+            self.inputqueue.put(inputData)
+            self.terminalEntry.delete(0,tk.END)
+            self.writeInput()
+            self.parseCommands(inputData)
+            self.terminalEntry.focus_set()
 
     def writeInput(self):
         data = self.inputqueue.get()
-        data = self.styleChat(data)
-        self.displayToTerminal(data[0],(data[1],'Time'))
-        self.displayToTerminal(data[1],(data[1]))
-        self.displayToTerminal(data[2],(data[1],'Text'))
-        self.displayToTerminal(data[3],(data[1],'Text'))
-        self.displayToTerminal('\n',(data[1]))
+        if(data[4] == 0):
+            data = self.styleChat(data)
+            self.displayToTerminal(data[0],(data[1],'Time'))
+            self.displayToTerminal(data[1],(data[1],'ID'))
+            self.displayToTerminal(data[2],(data[1],'Text'))
+            self.displayToTerminal(data[3],(data[1],'Text'))
+            self.displayToTerminal('\n',(data[1]))
+        else:
+            #extend [data[*]] by extra tabs and convert to tuple
+            pass
+        self.MainWindow.update()
+
 
         
     def parseCommands(self,data):
@@ -430,11 +441,13 @@ class GUI():
         self.UsersList.deiconify()
         self.usersButton['state'] = tk.DISABLED
         self.usersButton.grid_remove()
+        self.MainWindow.update()
 
     def hideUsers(self):
         self.UsersList.withdraw()
         self.usersButton['state'] = tk.NORMAL
         self.usersButton.grid()
+        self.MainWindow.update()
 
     def showOptions(self):
         self.MainWindow.update_idletasks()
@@ -446,11 +459,13 @@ class GUI():
         self.OptionsMenu.deiconify()
         self.optionsButton['state'] = tk.DISABLED
         self.optionsButton.grid_remove()
+        self.MainWindow.update()
 
     def hideOptions(self):
         self.OptionsMenu.withdraw()
         self.optionsButton['state'] = tk.NORMAL
         self.optionsButton.grid()
+        self.MainWindow.update()
 
 
     def usersContext(self,event):
@@ -466,137 +481,202 @@ class GUI():
     def clearUserSelection(self):
         self.usersListText.selection_clear(0,tk.END)
 
-    def displayToTerminal(self,data,tag):
+    def displayToTerminal(self,data,tag=None):
         self.terminalHistory.config(state='normal')
         self.terminalHistory.insert(tk.END,data,tag)
-        #self.terminalHistory.tag_config('Time',foreground='grey')
+        self.terminalHistory.tag_config('Text',foreground='black')
+        self.terminalHistory.tag_config('Time',foreground='grey')
+        self.terminalHistory.tag_config('Input',foreground='red')
+        #self.terminalHistory.tag_config('Input',elide=1)
         self.terminalHistory.yview(tk.END)
         self.terminalHistory.config(state='disabled')
 
+    def incomingMessage(self,message):
+        data = self.extractChat(message,self.timeStamp())
+        self.inputqueue.put(data)
+        self.writeInput()
+
 ###############################################################################################
 
-    def extractChat(self,message):
+    def extractChat(self,message,time):
+        #put message in error buffer
+        inputData=[]
+        extratag = 0
+        inputData.append(time)
         Error = 'Error.extractChat x'
         if(message[1:4] == "'',"):
             msg = message.split("', '")
-            if(len(msg) < 2):
+            if(len(msg) > 2):
                 msg = msg[1].split(' ')[1]
                 if(msg == 'PRIVMSG'):
                     msgID = str(message.split("', '")[1].split('.')[0].split('!')[0])
+                    message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip('"').strip("'")
                     if(msgID == 'jtv'):
                         msgID = 'Server'
-                    msgID = msgID + ':'
-                    message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-                    message = self.styleChat(message)
-                    return(msgID,message)
-                elif(msg == 'JOIN'):
-                    msgID = 'Server:'
-                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                    self.joinUsers(message)
-                    return(msgID,(message+' has joined.'))
-                elif(msg == 'PART'):
-                    msgID = 'Server:'
-                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                    self.partUsers(message)
-                    return(msgID,(message+' has left.'))
+                        extratag=['Info']
+                        if(message.split(' ')[0]=="USERCOLOR"):
+                            self.addColor(message.split(' ')[2])
+##                    inputData.append(msgID)
+##                    inputData.append(': ')
+##                    inputData.append(message)
+##                    inputData.append(extratag)
+##                    return(inputData)
+##                elif(msg == 'JOIN'):
+##                    msgID = 'Server:'
+##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+##                    self.joinUsers(message)
+##                    return(msgID,(message+' has joined.'))
+##                elif(msg == 'PART'):
+##                    msgID = 'Server:'
+##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+##                    self.partUsers(message)
+##                    return(msgID,(message+' has left.'))
                 elif(msg in ['001','002','003','004','375','372','376']):
-                    msgID = 'Server:'
+                    msgID = 'Server'
+##                    inputData.append(msgID)
+##                    inputData.append(': ')
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-                    return(msgID,('"'+message+'"'))
+##                    inputData.append(message)
+                    extratag = ['Welcome']
+##                    inputData.append(extratag)
+##                    return(inputData)
                 elif(msg == '353'):
-                    msgID = 'Server:'
-                    #self.userlisterror.clear()
-                    self.userlisterror.append(message)
-                    self.messagelen.append(len(message))
+                    msgID = 'Server'
+##                    inputData.append(msgID)
+##                    inputData.append(': ')
+                    #self.userlisterror.append(message)
+                    #self.messagelen.append(len(message))
                     #self.extractUsers(len(message))
                     message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     self.extractUsers(message)
-                    return(msgID,("NAMES-"+message))
+                    message = 'USERS-' + message
+##                    inputData.append("USERS-"+message)
+                    extratag = ['Users']
+##                    inputData.append(extratag)
+##                    return(inputData)
                 elif(msg == '366'):
-                    self.userlisterror.clear()
+                    #self.userlisterror.clear()
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-                    msgID = 'Server:'
-                    return(msgID,("--"+message+"--"))
-                elif(msg == 'MODE'):
-                    msgID = 'Server:'
-                    message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
-                    return(msgID,message)
+                    msgID = 'Server'
+##                    inputData.append(msgID)
+##                    inputData.append(': ')
+##                    inputData.append(message)
+                    extratag=['Users']
+##                    inputData.append(extratag)
+##                    return(inputData)
+##                elif(msg == 'MODE'):
+##                    msgID = 'Server:'
+##                    message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
+##                    return(msgID,message)
                 else:
-                    msgID = ''
-                    #(msgID,message)=
-                    self.chatError(msg,msgID,message)
-                    return(msgID,(Error +"004: -("+msg+')'+message))
+                    msgID = 'Error'
+##                    inputData.append(msgID)
+##                    inputData.append(': ')
+##                    inputData.append(message)
+                    extratag = ['Error']
+##                    inputData.append(extratag)
+##                    #(msgID,message)=
+                    #self.chatError(msg,msgID,message)
+                    #self.userlisterror.append(message)
+##                    return(inputData)
             elif(len(msg) == 2):
-                if(len(msg)>=2):
-                    if(len(msg[1].split(' '))>=2):
-                        msg=msg[1].split(' ')[1]
-                        if(msg == 'PART'):
-                            msgID = 'Server:'
-                            message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                            self.partUsers(message)
-                            return(msgID,(message+" has left."))
-                        elif(msg == 'JOIN'):
-                            msgID = 'Server:'
-                            message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                            self.joinUsers(message)
-                            return(msgID,(message+" has joined."))
-                        elif(msg=='535'):
-                            msgID='Server:'
-                            self.userlisterror.append(message)
-                        elif(msg == 'MODE'):
-                            #potentially other options besides +o to account for here someday - not sure
-                            msgID = 'Server:'
-                            message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
-                            return(msgID,message)
-                        elif(msg == 'PRIVMSG'):
-                            msgID = message.split("', '")[1].split('.')[0].split('!')[0]
-                            msgID = msgID + ':'
-                            message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
-                            message = self.styleChat(message)
-                            return(msgID,message)
+##                if(len(msg)>=2):
+                if(len(msg[1].split(' '))>=2):
+                    msg=msg[1].split(' ')[1]
+                    if(msg == 'PART'):
+                        msgID = 'Server'
+                        message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                        self.partUsers(message)
+                        message = message + " has left."
+                        extratag = ['Part']
+                    elif(msg == 'JOIN'):
+                        msgID = 'Server'
+                        message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
+                        self.joinUsers(message)
+                        message = message + " has joined."
+                        extratag = ['Join']
+                    elif(msg=='353'):
+                        msgID='Server'
+                        extratag = ['Error']
+                        #self.userlisterror.append(message)
+                    elif(msg == 'MODE'):
+                        #potentially other options besides +o to account for here someday - not too sure here
+                        msgID = 'Server'
+                        message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
+                        if(message.split(' ')[1] == '+o'):
+                            message = 'Mods: ' + " ".join(message.split(' ')[2:])
+                            extratag = ['Mods']
                         else:
-                            msgID = ''
-                            self.chatError(msg,msgID,message)
-                            return(msgID,(Error +"001: -("+msg+')' + message))
+                            extratag = ['Error']
+                    elif(msg == 'PRIVMSG'):
+                        try:
+                            msgID = message.split("', '")[1].split('.')[0].split('!')[0]
+                        except:
+                            msgID = 'PRIVMSG'
+                        #self.chatError(msg,msgID,message)
+                        extratag = ['Error']
+##                        elif(msg == 'PRIVMSG'):
+##                            msgID = message.split("', '")[1].split('.')[0].split('!')[0]
+##                            msgID = msgID + ':'
+##                            message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
+##                            message = self.styleChat(message)
+##                            return(msgID,message)
                     else:
-                        msgID = ''
-                        self.chatError('',msgID,message)
-                        return(msgID,(Error+"010: -"+message))
+                        msgID = 'Error'
+                        #self.chatError(msg,msgID,message)
+                        extratag = ['Error']
+##                    else:
+##                        msgID = ''
+##                        self.chatError('',msgID,message)
+##                        return(msgID,(Error+"010: -"+message))
                 else:
-                    msgID = ''
-                    self.chatError('',msgID,message)
-                    return(msgID,(Error+'011: -'+message))
+                    msgID = 'Error'
+                    #self.chatError('',msgID,message)
+                    extratag = ['Error']
             else:
                 msg = msg[1].split(' ')[1]
-                msgID = ''
-                self.chatError(msg,msgID,message)
-                return(msgID,(Error +"005: -("+msg+')'+message))
+                msgID = 'Error'
+                #self.chatError(msg,msgID,message)
+                extratag = ['Error']
         elif(message[1:8] == "'PING '"):
             if(message[11:24] == "tmi.twitch.tv"):
-                msgID = 'Server:'
-                message = 'PING!'
-                return(msgID,message)
+                msgID = 'Server'
+                message = 'PING! '
+                extratag = ['Ping']
             else:
-                msgID = ''
+                msgID = 'Server'
                 self.chatError('',msgID,message)
-                return(msgID,(Error +"002: -"+ message))
+                extratag = ['Ping','Error']
         else:
             #further contingencies go here someday
-            msgID = ''
-            if(self.userlisterror):
-                self.userlisterror.append(message)
-                (fixable,temp) = self.fixUserList(message)
-                if(fixable):
-                    message = temp
-                    return('Server:',temp.strip("[']"))
-                else:
-                    self.chatError('',msgID,message)
-            else:
-                self.chatError('',msgID,message)
-            return(msgID,(Error +"003: -"+message))
+            msgID = 'Error'
+            #if(self.userlisterror):
+                #self.userlisterror.append(message)
+                #(fixable,temp) = self.fixUserList(message)
+                #if(fixable):
+                    #message = temp
+                    #return('Server:',temp.strip("[']"))
+                #else:
+                    #self.chatError('',msgID,message)
+            #else:
+                #self.chatError('',msgID,message)
+            #return(msgID,(Error +"003: -"+message))
+            extratag = ['Error']
+
+        inputData.append(msgID)
+        inputData.append(': ')
+        inputData.append(message)
+        inputData.append(extratag)
+
+        return(inputData)
 
 ######################################################################################################
 
+
+
+    def addColor(self,color):
+        #add possible font color to database if not already present. set user color if not overriden by a default
+        pass
 
     def chatError(self,data):
         #message recovery tool
@@ -639,22 +719,18 @@ app.MainWindow.mainloop()
 
 
 #tags:
-#input/*username*/server/terminal/info/join/part/mods     ?server:join:?
+#input/*username*/server/terminal
 #time/text
+
 #recovered
+#/join/part/welcome/users/ping/mods/info/error
 
-#['<timestamp>','<input/*username*/server/terminal/info>',':','<message>',<recovered bool>]
+#['<timestamp>','<input/*username*/server/terminal/info>',':','<message>',[<extra-tags>]]
 
 
 
+##import tkinter as tk
 ##
-### explore Tkinter transparency (simplified)
-##try:
-##    # Python2
-##    import Tkinter as tk
-##except ImportError:
-##    # Python3
-##    import tkinter as tk
 ##root = tk.Tk()
 ##root.overrideredirect(1)
 ### use opacity alpha values from 0.0 to 1.0
