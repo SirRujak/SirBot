@@ -10,3 +10,4 @@ Source/testmodulesBACKUP.py
 Source/Thumbs.db
 dev/interfacex.py
 dev/*BACKUP.py
+dev/__pycache__

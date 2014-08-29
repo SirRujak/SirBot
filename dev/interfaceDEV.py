@@ -136,7 +136,7 @@ class GUI():
         #master user list
         self.using = []
         
-        self.users.set('1v13G4_DEATH oddba11 whiskerzzzzzzzzzzzzzzzzxyz dopey a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 00')
+        #self.users.set('1v13G4_DEATH oddba11 whiskerzzzzzzzzzzzzzzzzxyz dopey a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 00')
         
 
     def createMainWindow(self):
@@ -389,18 +389,34 @@ class GUI():
             self.parseCommands(inputData)
             self.terminalEntry.focus_set()
 
+
     def writeInput(self):
         data = self.inputqueue.get()
         if(data[4] == 0):
             data = self.styleChat(data)
             self.displayToTerminal(data[0],(data[1],'Time'))
-            self.displayToTerminal(data[1],(data[1],'ID'))
+            self.displayToTerminal(data[1],(data[1]))
             self.displayToTerminal(data[2],(data[1],'Text'))
             self.displayToTerminal(data[3],(data[1],'Text'))
             self.displayToTerminal('\n',(data[1]))
         else:
-            #extend [data[*]] by extra tabs and convert to tuple
-            pass
+            #extend [data[]] by extra tabs and convert to tuple
+            tag = [data[1]]
+            tag.extend(data[4])
+            tag.append('Time')
+            tags = tuple(tag)
+            self.displayToTerminal(data[0],tags)
+            tag.pop()
+            tags = tuple(tag)
+            self.displayToTerminal(data[1],tags)
+            tag.append('Text')
+            tags = tuple(tag)
+            self.displayToTerminal(data[2],tags)
+            self.displayToTerminal(data[3],tags)
+            tag.pop()
+            tags = tuple(tag)
+            self.displayToTerminal('\n',tags)
+            
         self.MainWindow.update()
 
 
@@ -415,6 +431,7 @@ class GUI():
         
 
     def styleChat(self,data):
+        #consider implementing a tag for actions- would need low priority
         if(data[1] is not 'Server'):
             data[3] = data[3].replace("\\'","'")
             data[3] = data[3].replace("', '",":")
@@ -424,7 +441,7 @@ class GUI():
             if("\\x01ACTION" in data[3]):
                 data[3] = data[3].replace("\\x01ACTION",'')
                 data[3] = data[3].replace("\\x01",'')
-                data[2] = ' '
+                data[2] = ''
         return(data)
 
     def showUsers(self):
@@ -436,8 +453,12 @@ class GUI():
         x=int(h[1])
         y=int(h[2])
         h=int(h[0])
-        self.UsersList.geometry(str(int(w*(1/4)))+'x'+str(int(h*(3/4)))+
-                                '+'+str(x+w+16)+'+'+str(y))
+        if(x+w+16+(1/4)*w <= self.w):
+            self.UsersList.geometry(str(int(w*(1/4)))+'x'+str(int(h*(3/4)))+
+                                    '+'+str(x+w+16)+'+'+str(y))
+        else:
+            self.UsersList.geometry(str(int(w*(1/4)))+'x'+str(int(h*(3/4)))+
+                                    '+'+str(x-int((1/4)*w)-16)+'+'+str(y))
         self.UsersList.deiconify()
         self.usersButton['state'] = tk.DISABLED
         self.usersButton.grid_remove()
@@ -474,6 +495,7 @@ class GUI():
 
     def goListTop(self):
         self.usersListText.see(0)
+        self.setUsers()
 
     def selectAllUsers(self):
         self.usersListText.selection_set(0,tk.END)
@@ -486,7 +508,7 @@ class GUI():
         self.terminalHistory.insert(tk.END,data,tag)
         self.terminalHistory.tag_config('Text',foreground='black')
         self.terminalHistory.tag_config('Time',foreground='grey')
-        self.terminalHistory.tag_config('Input',foreground='red')
+        #self.terminalHistory.tag_config('Input',foreground='red')
         #self.terminalHistory.tag_config('Input',elide=1)
         self.terminalHistory.yview(tk.END)
         self.terminalHistory.config(state='disabled')
@@ -516,71 +538,31 @@ class GUI():
                         extratag=['Info']
                         if(message.split(' ')[0]=="USERCOLOR"):
                             self.addColor(message.split(' ')[2])
-##                    inputData.append(msgID)
-##                    inputData.append(': ')
-##                    inputData.append(message)
-##                    inputData.append(extratag)
-##                    return(inputData)
-##                elif(msg == 'JOIN'):
-##                    msgID = 'Server:'
-##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-##                    self.joinUsers(message)
-##                    return(msgID,(message+' has joined.'))
-##                elif(msg == 'PART'):
-##                    msgID = 'Server:'
-##                    message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-##                    self.partUsers(message)
-##                    return(msgID,(message+' has left.'))
                 elif(msg in ['001','002','003','004','375','372','376']):
                     msgID = 'Server'
-##                    inputData.append(msgID)
-##                    inputData.append(': ')
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-##                    inputData.append(message)
                     extratag = ['Welcome']
-##                    inputData.append(extratag)
-##                    return(inputData)
                 elif(msg == '353'):
                     msgID = 'Server'
-##                    inputData.append(msgID)
-##                    inputData.append(': ')
                     #self.userlisterror.append(message)
                     #self.messagelen.append(len(message))
                     #self.extractUsers(len(message))
                     message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     self.extractUsers(message)
                     message = 'USERS-' + message
-##                    inputData.append("USERS-"+message)
                     extratag = ['Users']
-##                    inputData.append(extratag)
-##                    return(inputData)
                 elif(msg == '366'):
                     #self.userlisterror.clear()
+                    self.checkUserMultiplicity()
                     message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
                     msgID = 'Server'
-##                    inputData.append(msgID)
-##                    inputData.append(': ')
-##                    inputData.append(message)
                     extratag=['Users']
-##                    inputData.append(extratag)
-##                    return(inputData)
-##                elif(msg == 'MODE'):
-##                    msgID = 'Server:'
-##                    message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
-##                    return(msgID,message)
                 else:
-                    msgID = 'Error'
-##                    inputData.append(msgID)
-##                    inputData.append(': ')
-##                    inputData.append(message)
+                    msgID = ''
                     extratag = ['Error']
-##                    inputData.append(extratag)
-##                    #(msgID,message)=
                     #self.chatError(msg,msgID,message)
                     #self.userlisterror.append(message)
-##                    return(inputData)
             elif(len(msg) == 2):
-##                if(len(msg)>=2):
                 if(len(msg[1].split(' '))>=2):
                     msg=msg[1].split(' ')[1]
                     if(msg == 'PART'):
@@ -604,38 +586,29 @@ class GUI():
                         msgID = 'Server'
                         message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
                         if(message.split(' ')[1] == '+o'):
-                            message = 'Mods: ' + " ".join(message.split(' ')[2:])
+                            message = 'Mods:' + " ".join(message.split(' ')[2:])
                             extratag = ['Mods']
                         else:
                             extratag = ['Error']
                     elif(msg == 'PRIVMSG'):
                         try:
                             msgID = message.split("', '")[1].split('.')[0].split('!')[0]
+                            message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip("'").strip('"')
                         except:
                             msgID = 'PRIVMSG'
+                            extratag = ['Error']
                         #self.chatError(msg,msgID,message)
-                        extratag = ['Error']
-##                        elif(msg == 'PRIVMSG'):
-##                            msgID = message.split("', '")[1].split('.')[0].split('!')[0]
-##                            msgID = msgID + ':'
-##                            message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip('"')
-##                            message = self.styleChat(message)
-##                            return(msgID,message)
                     else:
-                        msgID = 'Error'
+                        msgID = ''
                         #self.chatError(msg,msgID,message)
                         extratag = ['Error']
-##                    else:
-##                        msgID = ''
-##                        self.chatError('',msgID,message)
-##                        return(msgID,(Error+"010: -"+message))
                 else:
-                    msgID = 'Error'
+                    msgID = ''
                     #self.chatError('',msgID,message)
                     extratag = ['Error']
             else:
                 msg = msg[1].split(' ')[1]
-                msgID = 'Error'
+                msgID = ''
                 #self.chatError(msg,msgID,message)
                 extratag = ['Error']
         elif(message[1:8] == "'PING '"):
@@ -649,7 +622,7 @@ class GUI():
                 extratag = ['Ping','Error']
         else:
             #further contingencies go here someday
-            msgID = 'Error'
+            msgID = ''
             #if(self.userlisterror):
                 #self.userlisterror.append(message)
                 #(fixable,temp) = self.fixUserList(message)
@@ -709,23 +682,87 @@ class GUI():
         #insert headings for various tiers
         pass
         
-    
+    def terminalOutput(self,message):
+        if(message != ''):
+            inputData = []
+            inputData.append(self.timeStamp())
+            inputData.append('Console')
+            inputData.append(': ')
+            inputData.append(message)
+            inputData.append(['Raw'])
+            self.inputqueue.put(inputData)
+            self.writeInput()
+        
+    def fixUserList(self,message):
+        fixable = False
+        while(len(self.userlisterror)>2):
+            self.userlisterror.pop(0)
+        if(len(self.userlisterror)==2):
+            if(self.userlisterror[1].find(',')==-1 and self.userlisterror[0].split("', '")[1].split(' ')[1]=='353'):
+                message = self.userlisterror[0].split("', '")[2].strip(']').strip("'").split(' ')
+                message = message[len(message)-1]
+                try:
+                    self.using.remove(message)
+                    self.setUsers()
+                    
+                except:
+                    #this should never happen, but need to make note somehow if it does
+                    pass
+                message = message + self.userlisterror[1].lstrip('[').rstrip(']').strip("'")
+                message = "Recovered:NAMES-" + message
+                fixable = True
+                self.userlisterror.clear()
+            else:
+                message = self.userlisterror[0][:len(self.userlisterror[0])-2]+self.userlisterror[1][2:]
+                tag = message.split("', '")[1].split(' ')[1]
+                if(tag=='353'):
+                    message = "Recovered:NAMES-" + message
+                    fixable = True
+                    self.userlisterror.clear()
+                else:
+                    message=self.userlisterror.pop(0)
+                    self.chatError('','',message)
+#                pass
+        else:
+            pass
+        self.checkUserMultiplicity()
+        return(fixable,message)
+
+    def checkUserMultiplicity(self):
+        #check how many times each user appears in self.using; update self.users
+        #make note in log of occurance
+        #temporarily print out names that have multiplicities
+#        print('Coming soon...')
+        for _user in self.using:
+            while(True):
+                try:
+                    index=self.using.index(_user,self.using.index(_user)+1)
+                    self.using.pop(index)
+                    #print(self.using.pop(index))
+
+                except ValueError:
+                    break
+                except:
+                    #unexpected error needs to be logged
+                    break
+
+        self.setUsers()
 
 
-app=GUI()
 
-app.MainWindow.mainloop()
+#app=GUI()
+
+#app.MainWindow.mainloop()
 
 
 
 #tags:
-#input/*username*/server/terminal
+#input/*username*/server/console
 #time/text
 
-#recovered
-#/join/part/welcome/users/ping/mods/info/error
+#/join/part/welcome/users/ping/mods/info/error/recovered/raw
 
-#['<timestamp>','<input/*username*/server/terminal/info>',':','<message>',[<extra-tags>]]
+#['<timestamp>','<input/*username*/server/console>',':','<message>',[<extra-tags>]]
 
 
 

@@ -668,6 +668,7 @@ class botGUI(tk.Frame):
 #                pass
         else:
             pass
+        self.checkUserMultiplicity()
         return(fixable,message)
 
     def setUsers(self):
@@ -812,7 +813,7 @@ class botGUI(tk.Frame):
         if(chat==0):
             self.terminalWrite('Recovered:',message)
         if(chat==1):
-            #if this becomes reliable enough, remove the 'Recovered:' prefix from chatWrite
+            #if this becomes reliable enough, make the 'Recovered:' prefix togglable
             self.chatWrite('Recovered:',message)
 
     def runTasks(self):

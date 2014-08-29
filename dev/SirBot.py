@@ -8,7 +8,7 @@ import socket
 import string
 import time
 
-import interface
+import interfaceDEV as interface
 
 ###############################################################
 ###############################################################
@@ -27,11 +27,12 @@ defaultState = 1
 ## in favor of the new command system being implemented.
 def checkChatCommand(channelName, chatData):
         if( chatData=="!info" ):
-                message = "Watch both of us play WildStar here!: "
+                #message = "Watch both of us play WildStar here!: "
+                message = "oi "
                 return(message)
         elif( chatData[:5]=="!bop"):
                 #command = ".timeout " + chatData[6:] + " 30"
-                command='!move b'
+                command='mmm'
                 return(command)
         else:
                 return(checkChatStandard(chatData))
@@ -108,7 +109,7 @@ def sendResponse(socket, channelName, data, logFile):
 #                        print(localTime + " - Sent Data:")
 #                        print(messageToSend.decode() + "\r\n")
 ##
-                        UI.terminalOutput(data)
+##                        UI.terminalOutput(data)
                 except:
                         logFile.write(localTime + 'Unable to send:')
                         logFile.write(messageToSend.decode() + "\r\n")
@@ -138,7 +139,8 @@ def checkChatType(channelName, chatData, modList, spamLevel, spamFilter):
                                 chatData = chatData[0].split("!")
                                 chatData = chatData[0]
                                 chatData = chatData[0].upper() + chatData[1:]
-                                return(checkChatWelcome(channelName, chatData), 2)
+                                #return(checkChatWelcome(channelName, chatData), 2)
+                                return("None",0)
                 else:
                         return("None", 0)
 
@@ -478,35 +480,36 @@ modList.append(channelName[1:])
 sendTimer = baseTimer(time.time(), time.time(), minSendTime)
 checkModTimer = baseTimer(time.time(), time.time(), 15)
 shutdownTimer = baseTimer(time.time(), time.time(), 3600)
-slowResponse.append(".mods")
+#slowResponse.append(".mods")
 
 
 ####################
 poweredOn = 1
 
-UI=interface.botGUI()
-try:
-        UI.master.iconbitmap(default='ouricon.ico')
-except:
-##        UI.master.tk.call('wm','iconbitmap',UI.master._w, 'ouricon.ico')
-        pass
-#platform specific
-UI.master.title(botName + ' v.' + botVersion)
-UI.owner.set(sessionData[1])
-UI.channel.set(sessionData[3])
-
-#UI.terminalOutput(str(spamFilter.filterHolder))
+UI = interface.GUI()
+##UI=interface.botGUI()
+##try:
+##        UI.master.iconbitmap(default='ouricon.ico')
+##except:
+####        UI.master.tk.call('wm','iconbitmap',UI.master._w, 'ouricon.ico')
+##        pass
+###platform specific
+##UI.master.title(botName + ' v.' + botVersion)
+##UI.owner.set(sessionData[1])
+##UI.channel.set(sessionData[3])
+##
+###UI.terminalOutput(str(spamFilter.filterHolder))
 
 while( poweredOn == 1 ):
 
         try:
-                UI.update()
-                UI.update_idletasks()
+                UI.MainWindow.update()
+                UI.MainWindow.update_idletasks()
         except:
                 break
 
-        if(UI.chatStack):
-                fastResponse.append(UI.chatStack.pop())
+        if(not UI.outputqueue.empty()):
+                fastResponse.append(UI.outputqueue.get())
 
         if( socketReady[0][0][0] ):
 
@@ -536,7 +539,8 @@ while( poweredOn == 1 ):
 #                        print(localTime + " - Recieved Data:")
 #                        print(temp)
 ##
-                        UI.terminalInput(str(temp))
+#                        UI.terminalInput(str(temp))
+                        UI.incomingMessage(str(temp))
 #                        print("\n")
                         try:
                                 (respDat, respLev) = checkChatType(channelName, temp, modList, spamLevel, spamFilter)
@@ -560,7 +564,8 @@ while( poweredOn == 1 ):
 
                 ## to check and see if we need to check the mods  FIX THIS
                 if( checkForMods(checkModTimer) == 1 ):
-                        slowResponse.append(".mods")
+                        #slowResponse.append(".mods")
+                        pass
 
                 ## New timer check for sending to chat.
                 if( len(fastResponse) > 0):
