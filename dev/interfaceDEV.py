@@ -541,7 +541,13 @@ class GUI():
 
     def displayToTerminal(self,data,tag=None):
         self.terminalHistory.config(state='normal')
-        self.terminalHistory.insert(tk.END,data,tag)
+        try:
+            self.terminalHistory.insert(tk.END,data,tag)
+        except _tkinter.TclError:
+            tags = list(tag)
+            tags.append('Error')
+            tag = tuple(tags)
+            self.terminalHistory.insert(tk.END,"<Unable to display text>",tag)
         self.terminalHistory.tag_config('Text',foreground='black')
         self.terminalHistory.tag_config('Time',foreground='grey')
         #self.terminalHistory.tag_config('Input',foreground='red')
