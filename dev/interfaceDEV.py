@@ -7,6 +7,8 @@ try:
 
     from tkinter import ttk
 
+    from sys import platform
+
 except ImportError:
     try:
         import os
@@ -62,6 +64,15 @@ class GUI():
         except:
             #log
             pass
+        try:
+            if(platform=='win32'):
+                self.MainWindow.iconbitmap(default='SirBot.ico')
+            else:
+                self.tk.call('wm', 'iconphoto', str(root), "-default", *icons)
+        except:
+            #log
+            pass
+        
         
 
     def splash(self):
@@ -136,15 +147,13 @@ class GUI():
         #master user list
         self.using = []
         
-        #self.users.set('1v13G4_DEATH oddba11 whiskerzzzzzzzzzzzzzzzzxyz dopey a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 00')
-        
-
     def createMainWindow(self):
         self.MainWindow = tk.Tk()
         self.MainWindow.withdraw()
         #self.MainWindow.geometry('1x1+0+0')
         self.MainWindow.overrideredirect(True)
         self.MainWindow.protocol("WM_DELETE_WINDOW",self.cleanUp)
+        self.mainHeading = tk.Frame(self.MainWindow)
 
     def cleanUp(self):
         self.splash()
@@ -180,10 +189,11 @@ class GUI():
         self.createUsersList()
         self.createOptionsMenu()
         self.createUsersContextMenu()
+        self.createMainHeaderContextMenu()
 
 
     def createTerminalSIMPLE(self):
-        self.mainHeading = tk.Frame(self.MainWindow,bg=self.backgroundColor)
+        self.mainHeading['bg'] = self.backgroundColor
         self.mainHeading.grid(in_=self.MainWindow,row=0,column=0,sticky='NSEW')
         try:
             self.mainLogo = tk.Label(self.mainHeading,image=self.logoimage,
@@ -356,6 +366,18 @@ class GUI():
         self.UsersContextMenu.add_command(label='More...')
         self.usersListText.bind("<Button-3>",self.usersContext)
 
+    def createMainHeaderContextMenu(self):
+        if(platform == 'win32'):
+            self.MainHeaderContextMenu=tk.Menu(self.MainWindow,tearoff=0)
+            self.MainHeaderContextMenu.add_checkbutton(label='Always on Top',
+                                                       variable=self.onTop,
+                                                       command=self.alwaysOnTop)
+            self.MainHeaderContextMenu.add_separator()
+        self.MainHeaderContextMenu.add_command(label='Options',command=self.showOptions)
+        self.MainHeaderContextMenu.add_command(label='Help')
+        self.mainHeading.bind("<Button-3>",self.mainContext)
+        
+
 
     def createTEMP(self):
         self.Main = ttk.Frame(self.MainWindow)
@@ -363,6 +385,16 @@ class GUI():
 
         self.Main.grid()
         self.button.grid(sticky='NSEW')
+
+    def alwaysOnTop(self):
+        if(self.onTop.get() == 1):
+            self.MainWindow.wm_attributes("-topmost",1)
+            self.UsersList.wm_attributes("-topmost",1)
+            self.OptionsMenu.wm_attributes("-topmost",1)
+        else:
+            self.MainWindow.wm_attributes("-topmost",0)
+            self.UsersList.wm_attributes("-topmost",0)
+            self.OptionsMenu.wm_attributes("-topmost",0)
 
     def timeStamp(self):
         times = time.asctime(time.localtime(time.time()))
@@ -493,6 +525,10 @@ class GUI():
         self.UsersContextMenu.tk_popup(event.x_root,event.y_root,0)
         temp=(self.usersListText.get(self.usersListText.nearest(event.y)))
 
+    def mainContext(self,event):
+        self.MainHeaderContextMenu.tk_popup(event.x_root,event.y_root,0)
+        
+
     def goListTop(self):
         self.usersListText.see(0)
         self.setUsers()
@@ -532,7 +568,8 @@ class GUI():
                 msg = msg[1].split(' ')[1]
                 if(msg == 'PRIVMSG'):
                     msgID = str(message.split("', '")[1].split('.')[0].split('!')[0])
-                    message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip('"').strip("'")
+                    #message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip('"').strip("'")
+                    message = ",".join(message.split(',')[2:])[2:][:-2]
                     if(msgID == 'jtv'):
                         msgID = 'Server'
                         extratag=['Info']
@@ -593,7 +630,8 @@ class GUI():
                     elif(msg == 'PRIVMSG'):
                         try:
                             msgID = message.split("', '")[1].split('.')[0].split('!')[0]
-                            message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip("'").strip('"')
+                            #message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip("'").strip('"')
+                            message = ",".join(message.split(',')[2:])[2:][:-2]
                         except:
                             msgID = 'PRIVMSG'
                             extratag = ['Error']
