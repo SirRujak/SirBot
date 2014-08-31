@@ -517,7 +517,7 @@ while( poweredOn == 1 ):
                 try:
                         chatInformation.extend(readData(socketReady[currSocket][0][0]))
                         clearSecondarySocket(socketReady, maxSocket, currSocket, channelName, sirLog)
-                except _tkinter.TclError:
+                except:
                         sirLog.write(time.asctime( time.localtime(time.time()) ) + " - Unable to read data.")
 #                        print(time.localtime(time.time()) + " - Unable to read data.")
 ##
