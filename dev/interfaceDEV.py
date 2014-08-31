@@ -50,7 +50,27 @@ class GUI():
     def imports(self):
 
         try:
-            self.logoimage = tk.PhotoImage(file='sirbot2.gif')
+            self.logoimage = tk.PhotoImage(file='SirBot.gif')
+        except:
+            #log
+            pass
+        try:
+            self.userslistimage = tk.PhotoImage(file='userslist.gif')
+        except:
+            #log
+            pass
+        try:
+            self.optionsimage = tk.PhotoImage(file='options.gif')
+        except:
+            #log
+            pass
+        try:
+            self.dashboardimage = tk.PhotoImage(file='dashboard.gif')
+        except:
+            #log
+            pass
+        try:
+            self.chatimage = tk.PhotoImage(file='chat.gif')
         except:
             #log
             pass
@@ -60,7 +80,17 @@ class GUI():
             #log
             pass
         try:
-            self.optionsimage = tk.PhotoImage(file='options.gif')
+            self.commandsimage = tk.PhotoImage(file='commands.gif')
+        except:
+            #log
+            pass
+        try:
+            self.advancedimage = tk.PhotoImage(file='advanced.gif')
+        except:
+            #log
+            pass
+        try:
+            self.helpimage = tk.PhotoImage(file='help.gif')
         except:
             #log
             pass
@@ -77,7 +107,7 @@ class GUI():
 
     def splash(self):
         try:
-            self.splashimage = tk.PhotoImage(file='Sirbot.gif')
+            self.splashimage = tk.PhotoImage(file='splash.gif')
         except:
             #log
             pass
@@ -205,7 +235,7 @@ class GUI():
             self.mainLogo.grid(in_=self.mainHeading,row=0,column=0,sticky='NSW')
 
         try:
-            self.usersButton = tk.Button(self.mainHeading,image=self.usersimage,
+            self.usersButton = tk.Button(self.mainHeading,image=self.userslistimage,
                                          bd=0,bg=self.backgroundColor,
                                          activebackground=self.backgroundColor,
                                          highlightbackground=self.backgroundColor,
@@ -262,7 +292,7 @@ class GUI():
                                             orient=tk.VERTICAL)
         self.terminalHistory = tk.Text(self.terminalFrame,bg='white',fg='black',
                                    height=32,width=75,takefocus=0,
-                                   state='disabled',
+                                   state='disabled',wrap=tk.WORD,
                                    yscrollcommand=self.terminalScroll.set)
         self.terminalScroll['command'] = self.terminalHistory.yview
         
@@ -328,8 +358,12 @@ class GUI():
     def createOptionsMenu(self):
         self.OptionsMenu = tk.Toplevel(self.MainWindow)
         self.OptionsMenu.withdraw()
+        self.OptionsMenu.resizable(width=False,height=False)
         self.OptionsMenu.title('Options')
-        self.OptionsMenu.geometry()
+        self.optionsStyle = ttk.Style()
+        self.optionsStyle.configure("TNotebook",background=self.backgroundColor,padding=0)
+        self.optionsStyle.map("TNotebook.Tab",background=[("selected", 'black')], foreground=[("selected", 'black')])
+        self.optionsStyle.configure("TNotebook.Tab", background=self.backgroundColor, foreground='black',padding=0)
 
         self.optionsMenuHeading = tk.Frame(self.OptionsMenu,bg=self.backgroundColor,
                                          padx=4,pady=4)
@@ -347,6 +381,53 @@ class GUI():
                                             column=0,sticky='NSW')
 
         self.OptionsMenu.columnconfigure(0,weight=1)
+        self.OptionsMenu.rowconfigure(1,weight=1)
+
+        self.optionsFrame = tk.Frame(self.OptionsMenu,bg=self.backgroundColor,
+                                     padx=4,pady=4)
+        self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0)
+        self.dashboardTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor,padx=0)
+        self.chatTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        self.usersTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        self.commandsTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        self.advancedTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        self.helpTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+
+        self.optionsFrame.grid(in_=self.OptionsMenu,row=1,column=0,sticky='NSEW')
+        #self.optionsFrame.row
+        self.optionsTabs.pack(fill=tk.BOTH,expand=tk.Y,padx=0,pady=0)
+        self.optionsTabs.enable_traversal()
+
+        try:
+            self.optionsTabs.add(self.dashboardTab,image=self.dashboardimage,padding=2)
+        except:
+            #log
+            self.optionsTabs.add(self.dashboardTab,text='Dashboard',padding=2)
+        try:            
+            self.optionsTabs.add(self.chatTab,image=self.chatimage,padding=2)
+        except:
+            #log
+            self.optionsTabs.add(self.chatTab,text='Chat',padding=2)
+        try:
+            self.optionsTabs.add(self.usersTab,image=self.usersimage,padding=2)
+        except:
+            #log
+            self.optionsTabs.add(self.usersTab,text='Users',padding=2)
+        try:
+            self.optionsTabs.add(self.commandsTab,image=self.commandsimage,padding=2)
+        except:
+            #log
+            self.optionsTabs.add(self.commandsTab,text='Commands',padding=2)
+        try:
+            self.optionsTabs.add(self.advancedTab,image=self.advancedimage,padding=2)
+        except:
+            #log
+            self.optionsTabs.add(self.advancedTab,text='Advanced',padding=2)
+        try:
+            self.optionsTabs.add(self.helpTab,image=self.helpimage,padding=2)
+        except:
+            #log
+            self.optionsTabs.add(self.helpTab,text='Help',padding=2)
 
         self.OptionsMenu.geometry('1x1+0+0')
 
@@ -361,6 +442,7 @@ class GUI():
         self.UsersContextMenu.add_separator()
         self.UsersContextMenu.add_command(label='Find...')
         self.UsersContextMenu.add_command(label='Top',command=self.goListTop)
+        self.UsersContextMenu.add_command(label='Random')
         self.UsersContextMenu.add_command(label='Select All',command=self.selectAllUsers)
         self.UsersContextMenu.add_command(label='Clear',command=self.clearUserSelection)
         self.UsersContextMenu.add_command(label='More...')
@@ -508,7 +590,7 @@ class GUI():
         x=self.geomMain.split('+')
         y=x[2]
         x=x[1]
-        self.OptionsMenu.geometry('256x256+'+x+'+'+y)
+        self.OptionsMenu.geometry('540x420+'+x+'+'+y)
         self.OptionsMenu.deiconify()
         self.optionsButton['state'] = tk.DISABLED
         self.optionsButton.grid_remove()
@@ -543,15 +625,16 @@ class GUI():
         self.terminalHistory.config(state='normal')
         try:
             self.terminalHistory.insert(tk.END,data,tag)
-        except _tkinter.TclError:
+        except tk._tkinter.TclError:
             tags = list(tag)
             tags.append('Error')
             tag = tuple(tags)
             self.terminalHistory.insert(tk.END,"<Unable to display text>",tag)
-        self.terminalHistory.tag_config('Text',foreground='black')
         self.terminalHistory.tag_config('Time',foreground='grey')
-        #self.terminalHistory.tag_config('Input',foreground='red')
+        self.terminalHistory.tag_config('Input',foreground='red')
         #self.terminalHistory.tag_config('Input',elide=1)
+        self.terminalHistory.tag_config('User',foreground='red')
+        self.terminalHistory.tag_config('Text',foreground='black')
         self.terminalHistory.yview(tk.END)
         self.terminalHistory.config(state='disabled')
 
