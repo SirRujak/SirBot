@@ -1,0 +1,50 @@
+dashboard
+-channel
+--twitch
+--custom
+-account
+--
+-statistics?
+--uptime
+--memory
+--network
+--
+-chat
+-users
+
+
+chat tab
+-chat
+-all
+-custom:
+--show timestamps
+--show errors
+--show server messages
+--show input
+--show join/part
+--show welcome
+--show recovered messages
+--show /NAMES list
+--show pings/pongs
+--remove kicked users text
+--allow username colors
+--show emoticons
+--slow on
+--hide terminal messages
+--hide user messages 
+
+users tab
+-user list
+--assign colors
+-manage groups
+-followers/subscribers
+-following
+
+
+commands tab
+
+
+advanced tab
+
+
+help tab
