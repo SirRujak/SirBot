@@ -665,6 +665,8 @@ class GUI():
             self.inputqueue.put(data)
             self.writeInput()
         else:
+            #not until parser works with other modes:
+            #temp = self.extractChat(message,self.timeStamp())
             data = message
             self.inputqueue.put(data)
             self.writeInputRAW()
