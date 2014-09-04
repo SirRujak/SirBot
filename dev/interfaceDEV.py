@@ -149,6 +149,7 @@ class GUI():
         self.geomMain = ''
         self.backgroundColor = '#3496B2'
         self.fontColor = 'black'
+        self.raw = 0
 
         #tk control variables
         self.editConfig = tk.IntVar()
@@ -158,6 +159,7 @@ class GUI():
         self.ownerUpdate = tk.StringVar()
         self.terminalInput = tk.StringVar()
         self.onTop = tk.IntVar()
+        self.rawChat = tk.IntVar()
 
         self.editConfig.set(0)
         self.autoMod.set(1)
@@ -166,6 +168,7 @@ class GUI():
         self.ownerUpdate.set('')
         self.terminalInput.set('')
         self.onTop.set(0)
+        self.rawChat.set(self.raw)
 
 
         #tk user variables
@@ -387,7 +390,13 @@ class GUI():
                                      padx=4,pady=4)
         self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0)
         self.dashboardTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor,padx=0)
+
         self.chatTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        self.rawToggle = tk.Radiobutton(self.chatTab,bg=self.backgroundColor,
+                                        variable=self.rawChat,text='Raw Chat',
+                                        anchor='nw',command=self.toggleRawChat,
+                                        value=1)
+        
         self.usersTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
         self.commandsTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
         self.advancedTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
@@ -408,6 +417,8 @@ class GUI():
         except:
             #log
             self.optionsTabs.add(self.chatTab,text='Chat',padding=2)
+
+        self.rawToggle.grid(row=0,column=0)
         try:
             self.optionsTabs.add(self.usersTab,image=self.usersimage,padding=2)
         except:
@@ -478,6 +489,12 @@ class GUI():
             self.UsersList.wm_attributes("-topmost",0)
             self.OptionsMenu.wm_attributes("-topmost",0)
 
+    def toggleRawChat(self):
+        if(self.rawChat.get() == 1):
+            self.raw = 1
+        else:
+            self.raw = 0
+
     def timeStamp(self):
         times = time.asctime(time.localtime(time.time()))
         times = times[11:19]
@@ -533,6 +550,10 @@ class GUI():
             
         self.MainWindow.update()
 
+    def writeInputRAW(self):
+        data = self.inputqueue.get()
+        self.displayToTerminal(data,'Raw')
+        self.displayToTerminal('\n','Raw')
 
         
     def parseCommands(self,data):
@@ -639,9 +660,14 @@ class GUI():
         self.terminalHistory.config(state='disabled')
 
     def incomingMessage(self,message):
-        data = self.extractChat(message,self.timeStamp())
-        self.inputqueue.put(data)
-        self.writeInput()
+        if(self.raw == 0):
+            data = self.extractChat(message,self.timeStamp())
+            self.inputqueue.put(data)
+            self.writeInput()
+        else:
+            data = message
+            self.inputqueue.put(data)
+            self.writeInputRAW()
 
 ###############################################################################################
 
@@ -875,11 +901,9 @@ class GUI():
 
         self.setUsers()
 
-
-
-#app=GUI()
-
-#app.MainWindow.mainloop()
+if __name__ == "__main__":
+    app=GUI()
+    app.MainWindow.mainloop()
 
 
 
