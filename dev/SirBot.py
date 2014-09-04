@@ -528,6 +528,7 @@ while( poweredOn == 1 ):
 
                         localTime = time.asctime( time.localtime(time.time()) )
                         temp = chatInformation.pop(0)
+                        #UI.incomingMessage(str(temp))
                         temp = temp.strip('\n')
                         sirLog.write(localTime + ' - Recieved Data:')
                         try:
