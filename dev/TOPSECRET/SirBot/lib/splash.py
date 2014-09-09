@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #simple script for importing splash assets and displaying splash screen
 
 from tkinter import ttk
