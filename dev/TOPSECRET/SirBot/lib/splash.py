@@ -13,7 +13,6 @@ def splash():
         loadingSplash.overrideredirect(True)
         loading.pack()
 
-        top = loading.winfo_toplevel()
         h = loading.winfo_screenheight()
         w = loading.winfo_screenwidth()
 
@@ -26,12 +25,11 @@ def splash():
     except:
         #log
         loadingSplash = Tk()
-        myfont = tkFont.families()[0]
+        #myfont = tkFont.families()[0]
         loading = Label(loadingSplash,text='SirBot')
         loadingSplash.overrideredirect(True)
         loading.pack()
 
-        top = lading.winfo_toplevel()
         h = loading.winfo_screenheight()
         w = loading.winfo_screenwidth()
 
