@@ -51,7 +51,8 @@ def checkChatStandard(chatData):
 
 def checkChatWelcome(channelName, userName):
         #welcomeMessage = "Hello there " + userName + " welcome to the stream!"
-        welcomeMessage = "a"
+        #welcomeMessage = "a"
+        welcomeMessage = "None"
         return(welcomeMessage)
 
 

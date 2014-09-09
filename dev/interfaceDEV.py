@@ -490,7 +490,7 @@ class GUI():
             self.OptionsMenu.wm_attributes("-topmost",0)
 
     def toggleRawChat(self):
-        if(self.rawChat.get() == 1):
+        if(self.rawChat.get() == 0):
             self.raw = 1
         else:
             self.raw = 0
