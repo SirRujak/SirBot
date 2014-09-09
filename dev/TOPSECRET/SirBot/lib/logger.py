@@ -1,2 +1,0 @@
-#class responsible for logging chat histories, command histories, errors and
-#optionally usage data
