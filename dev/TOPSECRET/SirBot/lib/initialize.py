@@ -4,6 +4,7 @@ def splash():
     try:
         import lib.splash as splash
         #display splash
+        splash.splash()
 
     except:
         #open a terminal or something to let them know we are gathering assets
@@ -25,3 +26,6 @@ def validate():
             #end script
             pass
     
+def destroySplash():
+    #destroy splash window
+    splash.destroy()
