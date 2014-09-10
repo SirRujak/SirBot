@@ -2,9 +2,11 @@
 
 #class to embody IRC elements
 
+from time import asctime
+
 class irc():
     def timeStamp(self):
-        times = time.asctime(time.localtime(time.time()))
+        times = asctime(time.localtime(time.time()))
         times = times[11:19]
         times = '['+times+']'
         return(times)
@@ -229,4 +231,9 @@ class irc():
 
         self.setUsers()
 
+    def pingPong(channelName):
+        pongLine = "PONG tmi.twitch.tv\r\n"
+        #timestamp
+        #send to logger and add to terminal queue
+        return(pongLine)
 
