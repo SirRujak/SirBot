@@ -164,8 +164,7 @@ class GUI():
                                    state='disabled',wrap=tk.WORD,
                                    yscrollcommand=self.terminalScroll.set)
         self.terminalScroll['command'] = self.terminalHistory.yview
-        
-        
+        self.applyTagFormat()
 
         self.terminalHistory.grid(in_=self.terminalFrame,row=0,column=0,sticky='NSEW',
                                   columnspan=12)
@@ -485,13 +484,16 @@ class GUI():
             tags.append('Error')
             tag = tuple(tags)
             self.terminalHistory.insert(tk.END,"<Unable to display text>",tag)
+        self.terminalHistory.yview(tk.END)
+        self.terminalHistory.config(state='disabled')
+
+    def applyTagFormat(self):
+        #going to be much more advanced/complicated someday
         self.terminalHistory.tag_config('Time',foreground='grey')
         self.terminalHistory.tag_config('Input',foreground='red')
         self.terminalHistory.tag_config('User',foreground='red')
         self.terminalHistory.tag_config('Text',foreground='black')
-        self.terminalHistory.yview(tk.END)
-        self.terminalHistory.config(state='disabled')
-
+        
     def incomingMessage(self,message):
         if(self.raw == 0):
             data = self.extractChat(message,self.timeStamp())
