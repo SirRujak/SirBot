@@ -10,7 +10,14 @@ from sys import platform
 class GUI():
 
     self.geomMain = '621x541+50+50'
-    
+
+    def launch(self):
+        self.createMainWindow()
+        self.createChildren()
+        self.loadMainWindow()
+        self.MainWindow.update()
+        self.MainWindow.update_idletasks()
+        
     def createMainWindow(self):
         self.MainWindow = tk.Tk()
         self.MainWindow.withdraw()
