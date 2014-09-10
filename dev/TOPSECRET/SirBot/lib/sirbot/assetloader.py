@@ -6,13 +6,8 @@ from tkinter import PhotoImage
 
 def assetloader():
     moduleDir=dirname(__file__)
-    moduleDir=moduleDir.rsplit('/',2)[0]
+    moduleDir=moduleDir.rsplit('/',3)[0]
     assetPath=moduleDir+'/resource/sirbot/'
-    
-    configFile = open(configPath,"rb+")
-    data = configFile.read().decode()
-    data = loads(data)
-    configFile.close()
 
     try:
         filename = assetPath+'Sirbot.gif'

@@ -42,9 +42,6 @@ import lib.sirbot.dataloader as dataloader
 #import main runtime class
 import lib.sirbot.main as main
 
-#perform internal imports for main.py
-main.imports()
-
 #import shutdown module
 import lib.sirbot.shutdown as shutdown
 

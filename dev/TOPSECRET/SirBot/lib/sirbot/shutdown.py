@@ -6,6 +6,7 @@
 
 def shutdown():
     #check for lingering runtime errors
+    #finishing writing log queues to file
     #if none: write clean.start file in config directory
     pass
 

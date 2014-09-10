@@ -17,9 +17,12 @@ def imports():
     import streamer
     import obs
     import voice
-    import help
+    import help #?
 
 #main class
 class main():
     #this is where all submodules need to speak to each other and we run loops
-    
+    def run(self):
+        #run loops
+        #need careful logic here
+        pass

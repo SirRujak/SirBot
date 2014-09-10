@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 #script to rule all startup/import scripts
 
 def splash():
     try:
-        import lib.splash as splash
+        import splash
         #display splash
         splash.splash()
 
@@ -12,12 +14,12 @@ def splash():
 
 def validate():
     try:
-        import lib.validator as validator
+        import validator
         #run validator
 
     except:
         try:
-            import lib.setup as setup
+            import setup
             #open a terminal or something to let them know we are working
             #run setup
 

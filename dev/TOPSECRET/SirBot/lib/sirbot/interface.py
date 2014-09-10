@@ -490,9 +490,10 @@ class GUI():
     def applyTagFormat(self):
         #going to be much more advanced/complicated someday
         self.terminalHistory.tag_config('Time',foreground='grey')
-        self.terminalHistory.tag_config('Input',foreground='red')
+        self.terminalHistory.tag_config('Input',elide=True)
         self.terminalHistory.tag_config('User',foreground='red')
         self.terminalHistory.tag_config('Text',foreground='black')
+        
         
     def incomingMessage(self,message):
         if(self.raw == 0):
