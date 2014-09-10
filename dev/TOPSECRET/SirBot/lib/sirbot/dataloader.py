@@ -9,7 +9,7 @@ from os.path import dirname
 
 def dataloader():
     moduleDir=dirname(__file__)
-    moduleDir=moduleDir.rsplit('/',2)[0]
+    moduleDir=moduleDir.rsplit('/',3)[0]
     configPath=moduleDir+'/config/sirbot/config'
     
     configFile = open(configPath,"rb+")
