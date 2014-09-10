@@ -7,7 +7,7 @@ Source/interfaceBACKUP.py
 Source/twitchDataBACKUP.py
 Source/SirBotBACKUP.py
 Source/testmodulesBACKUP.py
-*/Thumbs.db
+*.db
 dev/interfacex.py
 dev/*BACKUP.py
 dev/__pycache__
