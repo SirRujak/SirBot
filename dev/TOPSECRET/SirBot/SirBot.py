@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+
+#main sirbot script
+ON = True
+
 try:
-    import lib.initialize as initialize
+    import lib.sirbot.initialize as initialize
 
     #display splash
     initialize.splash()
@@ -9,10 +14,10 @@ try:
 
 except:
     try:
-        import lib.setup as setup
+        import lib.sirbot.setup as setup
         #open a terminal or something to let them know we are working
         #run setup
-        import lib.initialize as initialize
+        import lib.sirbot.initialize as initialize
 
         #display splash
         initialize.splash()
@@ -25,11 +30,28 @@ except:
         #end script
         pass
 
-import lib.assetloader as assetloader
+import lib.sirbot.assetloader as assetloader
 
 #import assets and pass to data object
 
-import lib.dataloader as dataloader
+import lib.sirbot.dataloader as dataloader
 
 #import configurations and pass to data object
+
+
+#import main runtime class
+import lib.sirbot.main as main
+
+#perform internal imports for main.py
+main.imports()
+
+#import shutdown module
+import lib.sirbot.shutdown as shutdown
+
+#runtime loop
+while(ON):
+    ON = main.main.run()
+
+shutdown.shutdown()
+
 
