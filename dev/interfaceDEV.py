@@ -201,6 +201,19 @@ class GUI():
         
 
     def loadMainWindow(self):
+        self.Style = ttk.Style()
+        print(self.Style.theme_use())
+##        self.Style.configure("TNotebook",background=self.backgroundColor)
+##        self.Style.map("TNotebook.Tab",background=[("selected",'white')])
+##        self.Style.configure("TNotebook.Tab", background=self.backgroundColor);
+##        self.Style.theme_create("Sirbot",parent='alt',settings={
+##            "TNotebook": {"configure": {"tabmargins":[0,0,0,0]}},
+##            "TNotebook.Tab": {
+##                "configure": {"padding":[0,0],"background": "#d2ffd2"},
+##                "map": {"background": [("selected","#dd0202")],
+##                        "expand":[("selected",[0,0,0,0])]}}})
+##        self.Style.theme_use("Sirbot")
+
         self.MainWindow.overrideredirect(False)
         self.MainWindow.geometry(self.geomMain)
         self.MainWindow.deiconify()
@@ -364,10 +377,13 @@ class GUI():
         self.OptionsMenu.resizable(width=False,height=False)
         self.OptionsMenu.title('Options')
         self.optionsStyle = ttk.Style()
-        self.optionsStyle.configure("TNotebook",background=self.backgroundColor,padding=0)
-        self.optionsStyle.map("TNotebook.Tab",background=[("selected", 'black')], foreground=[("selected", 'black')])
-        self.optionsStyle.configure("TNotebook.Tab", background=self.backgroundColor, foreground='black',padding=0)
-
+        #self.optionsStyle.configure('TNotebook',background=self.backgroundColor)
+        self.optionsStyle.configure('Sirbot.TNotebook',background=self.backgroundColor)
+        #self.optionsStyle.map("TNotebook.Tab",background=[("selected",self.backgroundColor)],foreground=[("selected",'white')])
+##        self.optionsStyle.configure("TNotebook",background=self.backgroundColor,padding=0)
+##        self.optionsStyle.map("TNotebook.Tab",background=[("selected", 'black')], foreground=[("selected", 'black')])
+##        self.optionsStyle.configure("TNotebook.Tab", background=self.backgroundColor, foreground='black',padding=0)
+##
         self.optionsMenuHeading = tk.Frame(self.OptionsMenu,bg=self.backgroundColor,
                                          padx=4,pady=4)
         self.optionsMenuHeading.grid(in_=self.OptionsMenu,row=0,column=0,sticky='NSEW')
@@ -387,9 +403,11 @@ class GUI():
         self.OptionsMenu.rowconfigure(1,weight=1)
 
         self.optionsFrame = tk.Frame(self.OptionsMenu,bg=self.backgroundColor,
-                                     padx=4,pady=4)
-        self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0)
-        self.dashboardTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor,padx=0)
+                                     padx=0,pady=0)
+        self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0,
+                                 style='Sirbot.TNotebook.Tab')
+        self.dashboardTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor,padx=0,
+                                     pady=0)
 
         self.chatTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
         self.rawToggle = tk.Radiobutton(self.chatTab,bg=self.backgroundColor,
@@ -411,7 +429,7 @@ class GUI():
             self.optionsTabs.add(self.dashboardTab,image=self.dashboardimage,padding=2)
         except:
             #log
-            self.optionsTabs.add(self.dashboardTab,text='Dashboard',padding=2)
+            self.optionsTabs.add(self.dashboardTab,text='Dashboard',padding=0)
         try:            
             self.optionsTabs.add(self.chatTab,image=self.chatimage,padding=2)
         except:
