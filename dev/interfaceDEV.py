@@ -35,6 +35,7 @@ class GUI():
         self.imports()       
         self.allocateVars()
         self.createChildren()
+        self.style()
         #load control values from config
 
         #run startup tasks eventually
@@ -46,6 +47,95 @@ class GUI():
         self.loadingSplash.destroy()
         self.loadMainWindow()
         self.MainWindow.update_idletasks()
+
+    def style(self):
+        self.mainStyle = ttk.Style()
+        self.mainStyle.theme_create('Sirbot',parent='default',settings={
+            ".": {
+                "configure":{
+                    "background":self.backgroundColor,
+                    "troughcolor":'#A8DDE7',
+                    #"fieldbackground":'white',
+                    #"font":"",
+                    "borderwidth":0}},
+            
+            "Vertical.TScrollbar": {
+                "layout":[
+                    ("Vertical.Scrollbar.uparrow",{"side":"top","sticky":''}),
+                    ("Vertical.Scrollbar.downarrow",{"side":"bottom","sticky":''}),
+                    ("Vertical.Scrollbar.trough",{"sticky":"ns","children":[
+                        ("Vertical.Scrollbar.thumb",{"expand":1,"unit":1,
+                                                     "children":[
+                                                         ("Vertical.Scrollbar.grip",{
+                                                             "sticky":''})]})]})],
+                "configure":{
+                    "background":'#5CC6DE',
+                    "troughcolor":'#A8DDE7',
+                    "borderwidth":0},
+                "map":{
+                    "background":[("active",'#5CC6DE')]}
+                },
+
+            "Scrollbar.downarrow": {"element create":
+                ("image", self.dwn,
+                ("pressed", self.dwn2), {'sticky': ''})
+            },
+
+            "Scrollbar.uparrow":{"element create":
+                                 ("image",self.up,
+                                  ("pressed",self.up2),{'sticky':''})
+            },
+            
+            "TButton":{"element create":
+                       ("image",self.enterimage,
+                        ("pressed",self.enterimage2),{'sticky':''})
+            },
+
+
+            "TNotebook":{
+                "configure":{
+                    "tabmargins":[0,0,0,0],
+                    'background':self.backgroundColor}},
+            "TNotebook.Tab":{
+                "configure":{
+                    "padding":[0,0],
+                    "background":self.backgroundColor},
+                "map":{
+                    "background":[("selected",self.backgroundColor)]}}
+            
+
+            })
+        #self.optionsStyle.configure('.',background=self.backgroundColor)
+        self.mainStyle.theme_use('Sirbot')
+        #self.optionsStyle.theme_use('Sirbot')
+        #self.optionsStyle.configure("Sirbot.Tab",background='black')
+        #self.optionsStyle.configure("sirbot.TNotebook",background='black')
+        #self.optionsStyle.configure("TNotebook",background=self.backgroundColor)
+        #self.optionsStyle.configure("TNotebook.Tab",background=self.backgroundColor)
+        #self.optionsStyle.map("TNotebook.Tab",background=[('selected',self.backgroundColor)])
+        #self.optionsStyle.configure('TNotebook',background=self.backgroundColor)
+        #self.optionsStyle.configure('Sirbot.TNotebook',background=self.backgroundColor)
+        #self.optionsStyle.configure("Sirbot.TNotebook.Tab",background=self.backgroundColor)
+        #self.optionsStyle.map('Sirbot.TNotebook.Tab',background=[('selected',self.backgroundColor)])
+        #self.optionsStyle.map("TNotebook.Tab",background=[("selected",self.backgroundColor)],foreground=[("selected",'white')])
+##        self.optionsStyle.configure("TNotebook",background=self.backgroundColor,padding=0)
+##        self.optionsStyle.map("TNotebook.Tab",background=[("selected", 'black')], foreground=[("selected", 'black')])
+##        self.optionsStyle.configure("TNotebook.Tab", background=self.backgroundColor, foreground='black',padding=0)
+##        
+#        self.Style = ttk.Style()
+        #print(self.Style.theme_use())
+##        self.Style.configure("TNotebook",background=self.backgroundColor)
+##        self.Style.map("TNotebook.Tab",background=[("selected",'white')])
+##        self.Style.configure("TNotebook.Tab", background=self.backgroundColor);
+##        self.Style.theme_create("Sirbot",parent='vista',settings={
+##            "TNotebook": {"configure": {"tabmargins":[0,0,0,0]}},
+##            "TNotebook.Tab": {
+##                "configure": {"padding":[0,0],"background": "#d2ffd2"},
+##                "map": {"background": [("selected","#dd0202")],
+##                        "expand":[("selected",[0,0,0,0])]}}})
+##        self.Style.theme_use("Sirbot")
+
+
 
     def imports(self):
 
@@ -95,6 +185,20 @@ class GUI():
             #log
             pass
         try:
+            self.dwn=tk.PhotoImage(file='down.gif',format="gif89")
+            self.dwn2=tk.PhotoImage(file='down2.gif',format="gif89")
+            self.up=tk.PhotoImage(file='up.gif',format="gif89")
+            self.up2=tk.PhotoImage(file='up2.gif',format="gif89")
+        except:
+            #log
+            pass
+        try:
+            self.enterimage=tk.PhotoImage(file='enter.gif')
+            self.enterimage2=tk.PhotoImage(file='enter2.gif')
+        except:
+            #log
+            pass
+        try:
             if(platform=='win32'):
                 self.MainWindow.iconbitmap(default='SirBot.ico')
             else:
@@ -113,7 +217,7 @@ class GUI():
             pass
         try:
             self.loadingSplash = tk.Toplevel(self.MainWindow)
-            self.loading = ttk.Label(self.loadingSplash,image=self.splashimage)
+            self.loading = tk.Label(self.loadingSplash,image=self.splashimage)
             self.loadingSplash.overrideredirect(True)
             self.loading.pack()
 
@@ -201,19 +305,6 @@ class GUI():
         
 
     def loadMainWindow(self):
-        self.Style = ttk.Style()
-        print(self.Style.theme_use())
-##        self.Style.configure("TNotebook",background=self.backgroundColor)
-##        self.Style.map("TNotebook.Tab",background=[("selected",'white')])
-##        self.Style.configure("TNotebook.Tab", background=self.backgroundColor);
-##        self.Style.theme_create("Sirbot",parent='alt',settings={
-##            "TNotebook": {"configure": {"tabmargins":[0,0,0,0]}},
-##            "TNotebook.Tab": {
-##                "configure": {"padding":[0,0],"background": "#d2ffd2"},
-##                "map": {"background": [("selected","#dd0202")],
-##                        "expand":[("selected",[0,0,0,0])]}}})
-##        self.Style.theme_use("Sirbot")
-
         self.MainWindow.overrideredirect(False)
         self.MainWindow.geometry(self.geomMain)
         self.MainWindow.deiconify()
@@ -292,8 +383,12 @@ class GUI():
     def createTerminalInput(self):
         self.terminalEntry = ttk.Entry(self.terminalFrame,cursor='xterm',
                                        textvariable=self.terminalInput)
-        self.terminalEnter = ttk.Button(self.terminalFrame,text='Enter',
-                                        command=self.enterTextBttn)
+        try:
+            self.terminalEnter = ttk.Button(self.terminalFrame,image=self.enterimage,
+                                            command=self.enterText)
+        except:
+            self.terminalEnter = ttk.Button(self.terminalFrame,text='Enter',
+                                            command=self.enterText)
 
         self.terminalEntry.bind("<Return>",self.enterText)
 
@@ -322,7 +417,7 @@ class GUI():
         self.UsersList = tk.Toplevel(self.MainWindow)
         self.UsersList.withdraw()
         self.UsersList.title('User List')
-        self.UsersList.geometry()
+        #self.UsersList.geometry()
 
         
         self.usersListHeading = tk.Frame(self.UsersList,bg=self.backgroundColor,
@@ -330,7 +425,7 @@ class GUI():
         self.usersListHeading.grid(in_=self.UsersList,row=0,column=0,sticky='NSEW')
         try:
             self.usersListHeadingLabel = tk.Label(self.usersListHeading,
-                                                  image=self.usersimage,bd=0)
+                                                  image=self.userslistimage,bd=0)
             self.usersListHeadingLabel.grid(in_=self.usersListHeading,row=0,
                                             column=0,sticky='NSW')
         except:
@@ -376,14 +471,7 @@ class GUI():
         self.OptionsMenu.withdraw()
         self.OptionsMenu.resizable(width=False,height=False)
         self.OptionsMenu.title('Options')
-        self.optionsStyle = ttk.Style()
-        #self.optionsStyle.configure('TNotebook',background=self.backgroundColor)
-        self.optionsStyle.configure('Sirbot.TNotebook',background=self.backgroundColor)
-        #self.optionsStyle.map("TNotebook.Tab",background=[("selected",self.backgroundColor)],foreground=[("selected",'white')])
-##        self.optionsStyle.configure("TNotebook",background=self.backgroundColor,padding=0)
-##        self.optionsStyle.map("TNotebook.Tab",background=[("selected", 'black')], foreground=[("selected", 'black')])
-##        self.optionsStyle.configure("TNotebook.Tab", background=self.backgroundColor, foreground='black',padding=0)
-##
+
         self.optionsMenuHeading = tk.Frame(self.OptionsMenu,bg=self.backgroundColor,
                                          padx=4,pady=4)
         self.optionsMenuHeading.grid(in_=self.OptionsMenu,row=0,column=0,sticky='NSEW')
@@ -404,16 +492,13 @@ class GUI():
 
         self.optionsFrame = tk.Frame(self.OptionsMenu,bg=self.backgroundColor,
                                      padx=0,pady=0)
-        self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0,
-                                 style='Sirbot.TNotebook.Tab')
-        self.dashboardTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor,padx=0,
-                                     pady=0)
+        self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0)
+        self.dashboardTab = ttk.Frame(self.optionsTabs)
 
         self.chatTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
-        self.rawToggle = tk.Radiobutton(self.chatTab,bg=self.backgroundColor,
+        self.rawToggle = tk.Checkbutton(self.chatTab,bg=self.backgroundColor,
                                         variable=self.rawChat,text='Raw Chat',
-                                        anchor='nw',command=self.toggleRawChat,
-                                        value=1)
+                                        anchor='nw',command=self.toggleRawChat)
         
         self.usersTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
         self.commandsTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
@@ -434,7 +519,7 @@ class GUI():
             self.optionsTabs.add(self.chatTab,image=self.chatimage,padding=2)
         except:
             #log
-            self.optionsTabs.add(self.chatTab,text='Chat',padding=2)
+            self.optionsTabs.add(self.chatTab,text='Chat',padding=0)
 
         self.rawToggle.grid(row=0,column=0)
         try:
@@ -458,7 +543,7 @@ class GUI():
             #log
             self.optionsTabs.add(self.helpTab,text='Help',padding=2)
 
-        self.OptionsMenu.geometry('1x1+0+0')
+##        self.OptionsMenu.geometry('1x1+0+0')
 
         self.OptionsMenu.protocol("WM_DELETE_WINDOW",self.hideOptions)
 
@@ -508,7 +593,7 @@ class GUI():
             self.OptionsMenu.wm_attributes("-topmost",0)
 
     def toggleRawChat(self):
-        if(self.rawChat.get() == 0):
+        if(self.rawChat.get() == 1):
             self.raw = 1
         else:
             self.raw = 0
@@ -520,10 +605,11 @@ class GUI():
         return times
 
     def enterTextBttn(self):
+        #deprecated
         self.enterText(0)
         
 
-    def enterText(self,event):
+    def enterText(self,event=None):
         message = self.terminalEntry.get()
         if(message != ''):
             inputData = []
@@ -629,7 +715,7 @@ class GUI():
         x=self.geomMain.split('+')
         y=x[2]
         x=x[1]
-        self.OptionsMenu.geometry('540x420+'+x+'+'+y)
+        self.OptionsMenu.geometry('640x480+'+x+'+'+y)
         self.OptionsMenu.deiconify()
         self.optionsButton['state'] = tk.DISABLED
         self.optionsButton.grid_remove()
@@ -674,7 +760,10 @@ class GUI():
         #self.terminalHistory.tag_config('Input',elide=1)
         self.terminalHistory.tag_config('User',foreground='red')
         self.terminalHistory.tag_config('Text',foreground='black')
-        self.terminalHistory.yview(tk.END)
+        #print(self.terminalScroll.get())
+        #print(tk.END)
+        if(self.terminalScroll.get()[1]==1.0):
+            self.terminalHistory.yview(tk.END)
         self.terminalHistory.config(state='disabled')
 
     def incomingMessage(self,message):
