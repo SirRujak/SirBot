@@ -307,8 +307,14 @@ class GUI():
         self.password = tk.StringVar()
         self.users = tk.StringVar()
 
-        #master user list
+        #user lists
         self.using = []
+        self.viewers = []
+        self.groups = []
+        self.followers = []
+        self.subscribers = []
+        self.mods = []
+        self.specialusers = []
         
     def createMainWindow(self):
         self.MainWindow = tk.Tk()
@@ -1005,6 +1011,8 @@ class GUI():
     def formatUserList(self):
         #self.users
         #insert headings for various tiers
+        #for user in self.using:
+        #    if user in 
         pass
         
     def terminalOutput(self,message):
