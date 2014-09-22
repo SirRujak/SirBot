@@ -58,6 +58,13 @@ class GUI():
                     #"fieldbackground":'white',
                     #"font":"",
                     "borderwidth":0}},
+            "TLabel":{
+                "configure":{
+                    'padding':[0,0,0,0],
+                    'borderwidth':0}
+                },
+            
+
             
             "Vertical.TScrollbar": {
                 "layout":[
@@ -91,17 +98,31 @@ class GUI():
                         ("pressed",self.enterimage2),{'sticky':''})
             },
 
+            "Tab":{
+                "map":{
+                    "expand":[('selected',[0,0,0,4])]},
+                
+                "layout":[
+                    ("Notebook.tab",{'sticky':'nswe','children':
+                                     [('Notebook.padding',{
+                                         'side':'top','sticky':'nswe',
+                                         'children':[
+                                             ('Notebook.label',{'side':'top',
+                                                               'sticky':''})],
+                                         })]
+                                     })]
+                },
 
             "TNotebook":{
                 "configure":{
-                    "tabmargins":[0,0,0,0],
+                    "tabmargins":[4,0,4,0],
                     'background':self.backgroundColor}},
             "TNotebook.Tab":{
                 "configure":{
-                    "padding":[0,0],
-                    "background":self.backgroundColor},
+                    "padding":[4,4,4,0],
+                    "background":'#5CC6DE'},
                 "map":{
-                    "background":[("selected",self.backgroundColor)]}}
+                    "background":[("selected",'#5CC6DE')]}}
             
 
             })
@@ -195,6 +216,11 @@ class GUI():
         try:
             self.enterimage=tk.PhotoImage(file='enter.gif')
             self.enterimage2=tk.PhotoImage(file='enter2.gif')
+        except:
+            #log
+            pass
+        try:
+            self.optheader=tk.PhotoImage(file='optheader.gif')
         except:
             #log
             pass
@@ -494,17 +520,49 @@ class GUI():
                                      padx=0,pady=0)
         self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0)
         self.dashboardTab = ttk.Frame(self.optionsTabs)
-
+        try:
+            self.dashboardLabel=ttk.Label(self.dashboardTab,image=self.optheader)
+        except:
+            #log
+            pass
         self.chatTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        try:
+            self.chatLabel=ttk.Label(self.chatTab,image=self.optheader)
+        except:
+            #log
+            pass
         self.rawToggle = tk.Checkbutton(self.chatTab,bg=self.backgroundColor,
                                         variable=self.rawChat,text='Raw Chat',
                                         anchor='nw',command=self.toggleRawChat)
         
         self.usersTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        try:
+            self.usersLabel=ttk.Label(self.usersTab,image=self.optheader)
+        except:
+            #log
+            pass
+        
         self.commandsTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        try:
+            self.commandsLabel = ttk.Label(self.commandsTab,image=self.optheader)
+        except:
+            #log
+            pass
+        
         self.advancedTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
+        try:
+            self.advancedLabel = ttk.Label(self.advancedTab,image=self.optheader)
+        except:
+            #log
+            pass
+        
         self.helpTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
-
+        try:
+            self.helpLabel = ttk.Label(self.helpTab,image=self.optheader)
+        except:
+            #log
+            pass
+        
         self.optionsFrame.grid(in_=self.OptionsMenu,row=1,column=0,sticky='NSEW')
         #self.optionsFrame.row
         self.optionsTabs.pack(fill=tk.BOTH,expand=tk.Y,padx=0,pady=0)
@@ -512,33 +570,38 @@ class GUI():
 
         try:
             self.optionsTabs.add(self.dashboardTab,image=self.dashboardimage,padding=2)
+            self.dashboardLabel.grid(row=0,column=0)
         except:
             #log
             self.optionsTabs.add(self.dashboardTab,text='Dashboard',padding=0)
         try:            
             self.optionsTabs.add(self.chatTab,image=self.chatimage,padding=2)
+            self.chatLabel.grid(row=0,column=0)
         except:
             #log
             self.optionsTabs.add(self.chatTab,text='Chat',padding=0)
-
-        self.rawToggle.grid(row=0,column=0)
+        self.rawToggle.grid(row=1,column=0,sticky='W')
         try:
             self.optionsTabs.add(self.usersTab,image=self.usersimage,padding=2)
+            self.usersLabel.grid(row=0,column=0)
         except:
             #log
             self.optionsTabs.add(self.usersTab,text='Users',padding=2)
         try:
             self.optionsTabs.add(self.commandsTab,image=self.commandsimage,padding=2)
+            self.commandsLabel.grid(row=0,column=0)
         except:
             #log
             self.optionsTabs.add(self.commandsTab,text='Commands',padding=2)
         try:
             self.optionsTabs.add(self.advancedTab,image=self.advancedimage,padding=2)
+            self.advancedLabel.grid(row=0,column=0)
         except:
             #log
             self.optionsTabs.add(self.advancedTab,text='Advanced',padding=2)
         try:
             self.optionsTabs.add(self.helpTab,image=self.helpimage,padding=2)
+            self.helpLabel.grid(row=0,column=0)
         except:
             #log
             self.optionsTabs.add(self.helpTab,text='Help',padding=2)
