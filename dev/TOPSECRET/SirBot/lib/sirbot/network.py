@@ -3,71 +3,140 @@
 #class for handling all data transmission over networks
 
 
-def createSocket(connectionData):#PASS, NICK, IDENT, CHANNEL, HOST, PORT):
-        s = socket.socket( ) ##Creating the socket variable
+from socket import socket,AF_INET,SOCK_STREAM,SHUT_RDWR
+from urllib.request import urlopen
+from queue import Queue
+from time import sleep
 
-        s.connect((connectionData[4], connectionData[5]))##Connecting to Twitch
-        Password = "PASS " + connectionData[0] + "\r\n"#PASS + "\r\n"
-        s.send(Password.encode()) ##Notice how I'm sending the password BEFORE the username!
+class request():
+    def __init__(self):
+        pass
 
-        ##Just sending the rest of the data now.
-        Nickname = "Nick " + connectionData[1] + "\r\n"#NICK + "\r\n"
-        s.send(Nickname.encode())
-        Username = "USER " + connectionData[2] + " " + connectionData[4] + " bla :" +connectionData[1]+"\r\n"#IDENT + " " + HOST + "bla :" + REALNAME + "\r\n"
-        s.send(Username.encode())
+class stream():
+    """Class for creating streaming connections, i.e., IRC threads."""
+    def __init__(self):
+        self.connection = socket(AF_INET,SOCK_STREAM)
+        #self.connection.set_inheritable(True) #we might have to do this
+        self.connection.setblocking(False)
+        self.inputqueue = Queue()#this could be leaving
 
-        ##Connecting to the channel.
-        Channel = "JOIN " + connectionData[3] + "\r\n"
-        s.send(Channel.encode() )
-        s.setblocking(0) ## ensure that recv() will never block indefinitely //may eventually change
-        return(s)
+    buffer_length = 4096
 
-def clearSecondarySocket(sockets, maxSockets, currSocket, channelName, logFile):
-        for i in range(maxSockets+1):
-                if( i != currSocket ):
-##                        print("Socket " + str(i) + " cleared.")
-                        chatInfo = readData(sockets[i][0][0])
-                        ## Need to check for all server responses. What happens is that one of the non-current
-                        ## sockets gets a response from something like .mods and then it has two in the socket
-                        ## while the current only has one. This means it clears the .mods command and then
-                        ## recieves the same chat data as the other just responded to making it respond twice.
-                        ## Therefore if one of these is found we need to clear that socket again. Probably
-                        ## need to separate the clearing and checking parts.
-                        if( chatInfo[:4] == 'PING' ):
-                                sendResponse(sockets[i][0][0], channelName, "PONG tmi.twitch.tv\r\n".encode(), logFile)
+    def connect(self,host,port):
+        self.connection.settimeout(5)
+        self.connection.connect((host,port))
+        self.connection.settimeout(0)
 
-def readData(socket):
-        readbuffer = []
-        localChatInfo = []
+    def transmit(self,data):
+        data = data.encode()
+        self.connection.sendall(data)
+
+    def send(self,message):
+        #elevate
+        if len(message) > 0:
+            self.transmit(message + "\n")
+            print(message+'\n')#temporary
+
+    def receive(self,buffer=buffer_length):
+        #elevate and leave a replacement possibly without a queue
         try:
-                readbuffer.append(socket.recv(4096).decode())
+            data = self.connection.recv(buffer).decode()
         except:
-                pass
-        if ( len(readbuffer) > 0 ):
-                for chatItem in range(len(readbuffer)):
-                        localChatInfo.extend(readbuffer[chatItem].strip().split("\n"))
-        return(localChatInfo)
+            data = None
+        if(data):
+            for line in data.split("\n"):
+                if(len(line)!=0):
+                    print(line)#temporary
+                    self.inputqueue.put(line)
 
-def sendResponse(socket, channelName, data, logFile):
-        if( data == "PONG tmi.twitch.tv\r\n" ):
-                socket.send(data.encode())
-        else:
-                messageToSend = "PRIVMSG " + channelName + " :" + data + "\r\n"
-                localTime = time.asctime( time.localtime(time.time()) )
-                messageToSend = messageToSend.encode()
-                try:
+    def twitchConnect(self,username,token):
+        #elevate
+        self.connect("irc.twitch.tv",6667)#80,443
+        self.send("PASS oauth:" + token)
+        self.send("NICK " + username)
 
-                        socket.send(messageToSend)
-                        logFile.write(localTime + ' - Sent Data:')
-                        logFile.write(messageToSend.decode())
-#                        print(localTime + " - Sent Data:")
-#                        print(messageToSend.decode() + "\r\n")
-##
-##                        UI.terminalOutput(data)
-                except:
-                        logFile.write(localTime + 'Unable to send:')
-                        logFile.write(messageToSend.decode() + "\r\n")
-#                        print(localTime + " - Unable to send:")
-#                        print(messageToSend.decode() + "\r\n")
-##
-                        UI.terminalOutput("Unable to send message!")
+    def close(self):
+        #elevate
+        self.send("QUIT")
+        self.connection.shutdown(SHUT_RDWR)
+        self.connection = None
+
+    def getInput(self):
+        try:
+            return(self.inputqueue.get_nowait())
+        except queue.Empty:
+            return(None)
+
+    def joinTwitchChannel(self,channel):
+        #elevate
+        self.send("JOIN #" + channel)
+
+    def verifyConnection(self,username):
+        #elevate
+        state = True
+        motd = ['001','002','003','004','375','372','376']
+        self.connection.settimeout(10)
+        sleep(6)
+        self.receive(350)#244+(7*len(username)))
+        self.connection.settimeout(0)
+        for key in range(7):
+            msg = self.inputqueue.get()
+            if(msg.split()[1] == 'NOTICE'):
+                state = False
+        return(state)
+
+    def privmsg(self,channel,message):
+        #elevate
+        self.send("PRIVMSG #" + channel + ' :' + message)
+
+    def partTwitchChannel(self,channel):
+        #elevate
+        self.send("PART #" + channel)
+
+    def update(self):
+        #run actions for API
+        pass
+
+    def pong(self):
+        self.send("PONG")
+
+    def chooseTwitchClient(self,choice):
+        #elevate to infrasctructure or higher
+        if(choice==1):
+            self.send('TWITCHCLIENT 1')
+        elif(choice==2):
+            self.send('TWITCHCLIENT 2')
+        elif(choice==3):
+            self.send('TWITCHCLIENT 3')
+
+    def clearTwitchChat(self):
+        #elevate to irc or ai
+        self.send('.clear')
+            
+
+if __name__ == "__main__":
+    user = ''
+    channel = ''
+    token = ''
+    x=stream()
+
+    #sleep(.1)
+
+    x.twitchConnect(user,token)
+    print(x.verifyConnection(user))
+    sleep(.25)
+    #x.receive()
+    x.chooseTwitchClient(2)
+
+    x.joinTwitchChannel(channel)
+    #x.privmsg(channel,'wha?')
+    #x.receive()
+    sleep(10)
+    x.privmsg(channel,'oi')
+    sleep(10)
+    x.receive()
+    x.partTwitchChannel(channel)
+    sleep(5)
+    x.receive()
+    x.close()
+    
