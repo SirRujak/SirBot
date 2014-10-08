@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #main sirbot script
-ON = True
+ON = 1
 
 try:
     import lib.sirbot.initialize as initialize
@@ -30,25 +30,50 @@ except:
         #end script
         pass
 
-import lib.sirbot.assetloader as assetloader
-
 #import assets and pass to data object
+import lib.sirbot.loader as loader
 
-import lib.sirbot.dataloader as dataloader
+config = loader.load()
 
-#import configurations and pass to data object
+#import main runtime classes
+import lib.sirbot.infrastructure as infrastructure
+import lib.sirbot.application as application
+
+if(config.GUI == True):
+    import lib.sirbot.interface as interface
 
 
-#import main runtime class
-import lib.sirbot.main as main
 
 #import shutdown module
 import lib.sirbot.shutdown as shutdown
 
-#runtime loop
-while(ON):
-    ON = main.main.run()
+if __name__ == '__main__':
 
-shutdown.shutdown()
+    #initialize primary modules
+    infra = infrastructure.infrastructure(config)
+    app = application.application(config)
+    if(config.GUI == True):
+        inter = interface.interface(config)
+    
+    #runtime loop - single thread
+    if(config.GUI == True):
+        while(ON):
+            ON = ON * infra.tick()
+            ON = ON * app.tick()
+            ON = ON * inter.tick()
+
+        infra.shutdown()
+        app.shutdown()
+        inter.shutdown()
+    else:
+        while(ON):
+            ON = ON * infra.tick()
+            ON = ON * app.tick()
+
+        infra.shutdown()
+        app.shutdown()
+
+    #send current configuration options to be saved for next startup
+    shutdown.shutdown(config)
 
 
