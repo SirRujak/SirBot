@@ -3,11 +3,12 @@
 #script for loading all audio and visual sirbot assets - except for splash assets
 
 from tkinter import PhotoImage
+from os.path import dirname
 
 def assetloader():
     moduleDir=dirname(__file__)
     moduleDir=moduleDir.rsplit('/',3)[0]
-    assetPath=moduleDir+'/resource/sirbot/'
+    assetPath=moduleDir+'/resources/sirbot/'
 
     try:
         filename = assetPath+'Sirbot.gif'

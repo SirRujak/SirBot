@@ -30,41 +30,52 @@ except:
         #end script
         pass
 
-#import assets and pass to data object
-import lib.sirbot.loader as loader
+#import configurations 
+import lib.sirbot.configloader as configloader
 
-config = loader.load()
+config = configloader.load()
 
 #import main runtime classes
-import lib.sirbot.infrastructure as infrastructure
+import lib.sirbot.network as network
 import lib.sirbot.application as application
 
 if(config.GUI == True):
     import lib.sirbot.interface as interface
-
-
+    import lib.sirbot.assetloader as assetloader
 
 #import shutdown module
 import lib.sirbot.shutdown as shutdown
 
+#import tools
+from multiprocessing import Queue
+
 if __name__ == '__main__':
 
-    #initialize primary modules
-    infra = infrastructure.infrastructure(config)
-    app = application.application(config)
+    #initialize primary modules and queues
+    netinput = Queue()
+    netoutput = Queue()
+    net = network.network(config,netinput,netoutput)
     if(config.GUI == True):
-        inter = interface.interface(config)
+        interinput = Queue()
+        interoutput = Queue()
+        inter = interface.interface(config,interinput,interoutput)
+        app = application.application(config,
+                                      netinput,netoutput,
+                                      interinput,interoutput)
+    else:
+        app = application.application(config,netinput,netoutput)
     
     #runtime loop - single thread
     if(config.GUI == True):
         while(ON):
-            ON = ON * infra.tick()
+            ON = ON * net.tick()
             ON = ON * app.tick()
             ON = ON * inter.tick()
 
         infra.shutdown()
         app.shutdown()
         inter.shutdown()
+        
     else:
         while(ON):
             ON = ON * infra.tick()

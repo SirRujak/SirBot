@@ -5,11 +5,15 @@
 from tkinter import ttk
 from tkinter import PhotoImage
 from tkinter import Tk
-from tkinter import Label
+#from tkinter import Label
+from os.path import dirname
 
 def splash():
     try:
-        splashimage = PhotoImage(file='splash.gif')
+        moduleDir = dirname(__file__)
+        moduleDir = moduleDir.rsplit('/',3)[0]
+        image = moduleDir+'/resources/sirbot/splash.gif'
+        splashimage = PhotoImage(file=image)
         loadingSplash = Tk()
         loading = ttk.Label(loadingSplash,image=self.splashimage)
         loadingSplash.overrideredirect(True)
