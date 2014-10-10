@@ -61,9 +61,9 @@ class application():
             """
             if(item[0]<=10):
                 if(item[0]==2):
-                    self.automatedIRC.send(item[1])
+                    self.automatedIRC.send(item[1])#needs to be .privmsg with channel
                 elif(item[0]==3):
-                    self.trustedIRC.send(item[1])
+                    self.trustedIRC.send(item[1])#as above
             elif(item[0]<=20):
                 #internal data - mostly ai.py
                 pass
@@ -105,7 +105,7 @@ class application():
                     self.output.append([24,self.chatcache.pop()])
                 self.chatcache.append(item)
             elif(item[:6]=="PING :"):
-                self.output.append(24,item)
+                self.output.append([24,item])
                 self.sendPong()
             else:
                 fragment = self.chatcache.pop()
