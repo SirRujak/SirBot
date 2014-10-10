@@ -1,0 +1,12 @@
+"""
+0-10=outbound internet data
+--2=automated irc account stream data
+--3=trusted irc account stream data
+
+11-20=internal data
+
+21-30=interface data
+--24=irc chat messages
+--25=interface settings
+
+31-99=overflow internal data

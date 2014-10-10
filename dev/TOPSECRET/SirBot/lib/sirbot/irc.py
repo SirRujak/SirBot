@@ -2,11 +2,14 @@
 
 #class to embody IRC elements
 
-from time import asctime
+from time import asctime,localtime,time
 
 class irc():
+    def __init__(self):
+        self.users = []
+
     def timeStamp(self):
-        times = asctime(time.localtime(time.time()))
+        times = asctime(localtime(time()))
         times = times[11:19]
         times = '['+times+']'
         return(times)
@@ -25,11 +28,19 @@ class irc():
                 data[2] = ''
         return(data)
 
-    def extractChat(self,message,time):
+    def inFormat(self,message,times):
+        #temporarily
+        return(message)
+
+    def outFormat(self,message):
+        #temporarily
+        return(message)
+
+    def extractChat(self,message,times):
         #put message in error buffer
         inputData=[]
         extratag = 0
-        inputData.append(time)
+        inputData.append(times)
         Error = 'Error.extractChat x'
         if(message[1:4] == "'',"):
             msg = message.split("', '")
@@ -231,9 +242,5 @@ class irc():
 
         self.setUsers()
 
-    def pingPong(channelName):
-        pongLine = "PONG tmi.twitch.tv\r\n"
-        #timestamp
-        #send to logger and add to terminal queue
-        return(pongLine)
+
 

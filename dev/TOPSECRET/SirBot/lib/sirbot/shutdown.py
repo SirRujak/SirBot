@@ -4,7 +4,7 @@
 #successful completion of this process at last runtime, will skip extra validation
 #steps on next run
 
-def shutdown():
+def shutdown(config,interinput,interoutput):
     #check for lingering runtime errors
     #finishing writing log queues to file
     #if none: write clean.start file in config directory

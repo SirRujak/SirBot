@@ -2,15 +2,18 @@
 
 #script to rule all startup/import scripts
 
-def splash():
-    try:
-        import splash
+class splashing():
+    def __init__(self):
+        #try:
+        import lib.sirbot.splash
         #display splash
-        splash.splash()
+        self.startsplash=splash.splash()
 
-    except:
-        #open a terminal or something to let them know we are gathering assets
-        pass
+        #except:
+            #open a terminal or something to let them know we are gathering assets
+            #pass
+    def destroySplash(self):
+        self.startsplash.destroy()
 
 def validate():
     try:
@@ -28,6 +31,3 @@ def validate():
             #end script
             pass
     
-def destroySplash():
-    #destroy splash window
-    splash.destroy()

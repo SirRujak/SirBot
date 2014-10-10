@@ -16,7 +16,7 @@ class stream():
     """Class for creating streaming connections, i.e., IRC threads."""
     def __init__(self):
         self.connection = socket(AF_INET,SOCK_STREAM)
-        #self.connection.set_inheritable(True) #we might have to do this
+        self.connection.set_inheritable(True) #we might have to do this
         self.connection.setblocking(False)
         self.inputqueue = Queue()#this could be leaving
 
@@ -35,7 +35,7 @@ class stream():
         #elevate
         if len(message) > 0:
             self.transmit(message + "\n")
-            print(message+'\n')#temporary
+            #print(message+'\n')#temporary
 
     def receive(self,buffer=buffer_length):
         #elevate and leave a replacement possibly without a queue
@@ -46,7 +46,7 @@ class stream():
         if(data):
             for line in data.split("\n"):
                 if(len(line)!=0):
-                    print(line)#temporary
+                    #print(line)#temporary
                     self.inputqueue.put(line)
 
     def twitchConnect(self,username,token):
@@ -71,12 +71,18 @@ class stream():
         #elevate
         self.send("JOIN #" + channel)
 
+    def twitchConnectv(self,username,token,retries):
+        for i in range(retries):
+            self.twitchConnect(username,token)
+            if(self.verifyConnection(username)==True):
+                break
+
     def verifyConnection(self,username):
         #elevate
         state = True
         motd = ['001','002','003','004','375','372','376']
         self.connection.settimeout(10)
-        sleep(6)
+        sleep(1)
         self.receive(350)#244+(7*len(username)))
         self.connection.settimeout(0)
         for key in range(7):
@@ -123,17 +129,18 @@ if __name__ == "__main__":
     #sleep(.1)
 
     x.twitchConnect(user,token)
+    print("Connection successful?",end=" ")
     print(x.verifyConnection(user))
     sleep(.25)
-    #x.receive()
+    x.receive()
     x.chooseTwitchClient(2)
 
     x.joinTwitchChannel(channel)
     #x.privmsg(channel,'wha?')
-    #x.receive()
+    x.receive()
     sleep(10)
     x.privmsg(channel,'oi')
-    sleep(10)
+    sleep(380)
     x.receive()
     x.partTwitchChannel(channel)
     sleep(5)
