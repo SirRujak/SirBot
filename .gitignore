@@ -1,5 +1,4 @@
 *~
-config*
 NomLog.txt
 SirLog.txt
 Source/__pycache__
@@ -7,7 +6,10 @@ Source/interfaceBACKUP.py
 Source/twitchDataBACKUP.py
 Source/SirBotBACKUP.py
 Source/testmodulesBACKUP.py
+Source/config
 *.db
 dev/interfacex.py
 dev/*BACKUP.py
 dev/__pycache__
+dev/TOPSECRET/SirBot/config/sirbot/config
+dev/config
