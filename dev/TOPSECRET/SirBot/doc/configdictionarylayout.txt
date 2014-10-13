@@ -1,0 +1,45 @@
+======
+config
+------
+
+GUI=True/False
+
+Interface
+-map="%dx%d+%d+%d"
+-iconified=True/False
+-user list=True/False
+-options menu=True/False
+-send as=automated/trusted
+-target channel=Default/'string'
+-chat
+--timestamps=True/False
+--user colors = True/False
+--emoticons = True/False
+--actions = True/False
+--raw=0/1
+--channel tag=True/False
+--text color = HEX
+--silent=True/False
+
+Twitch Accounts
+-automated account
+--name='string'
+--token='string' <-- encrypt eventually
+-trusted account
+--name='string'
+--token='string' <--encrypt eventually
+--join chat=True/False
+
+Twitch Channels
+-default channel='string'
+-favorite channels=[channel1,channel2,...]
+-
+
+Twitch Automated Moderator
+-welcome users=True/False
+-echo=True/False/Terminal
+-monitor chat content=True/False
+-allow custom commands=True/False
+
+Misc
+-twitch connect retries=%d
