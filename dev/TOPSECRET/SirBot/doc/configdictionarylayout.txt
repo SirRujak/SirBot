@@ -15,6 +15,7 @@ Interface
 --timestamps=True/False
 --user colors = True/False
 --emoticons = True/False
+--user icons = True/False
 --actions = True/False
 --raw=0/1
 --channel tag=True/False
