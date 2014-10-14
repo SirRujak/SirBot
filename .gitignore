@@ -13,3 +13,4 @@ dev/*BACKUP.py
 dev/__pycache__
 dev/TOPSECRET/SirBot/config/sirbot/config
 dev/config
+dev/TOPSECRET/SirBot/lib/sirbot/__pycache__
