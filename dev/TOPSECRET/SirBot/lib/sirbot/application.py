@@ -43,7 +43,7 @@ class application():
         self.intakeData()
         self.processData()
         self.outputData()
-        sleep(0.01)
+        sleep(0.001)
         return(self.status)
 
     def outputData(self):
@@ -51,8 +51,8 @@ class application():
         for item in self.output:
             """ OUTPUT CODES:
             0-10=outbound internet data
-            --2=automated irc account stream data
-            --3=trusted irc account stream data
+            --2=automated irc account stream chat
+            --3=trusted irc account stream chat
             11-20=internal data
             21-30=interface data
             --24=irc chat messages
@@ -61,17 +61,23 @@ class application():
             """
             if(item[0]<=10):
                 if(item[0]==2):
-                    self.automatedIRC.send(item[1])#needs to be .privmsg with channel
+                    self.automatedIRC.privmsg(item[1])#needs to be .privmsg with channel
                 elif(item[0]==3):
-                    self.trustedIRC.send(item[1])#as above
+                    self.trustedIRC.privmsg(item[1])#item[1] = (channel,message)
             elif(item[0]<=20):
                 #internal data - mostly ai.py
                 pass
             elif(item[0]<=30):
                 if(item[0]==24):
-                    self.interinput.put(item[1])
+                    try:
+                        self.interinput.put(item[1])
+                    except AttributeError:
+                        pass
                 elif(item[0]==25):
-                    self.interinput.put(item[1])
+                    try:
+                        self.interinput.put(item[1])
+                    except AttributeError:
+                        pass
             else:
                 pass
             self.output = []
@@ -97,8 +103,9 @@ class application():
             elif(item[0]==':'):
                 if(self.config['Interface']['chat']['raw']!=1):
                     try:
-                        self.output.append([24,self.chat.inFormat(self.chatcache.pop(),
-                                                                  self.chat.timeStamp())])
+                        self.output.append([24,
+                                            self.chat.inFormat(self.chatcache.pop(),
+                                                               self.chat.timeStamp())])
                     except IndexError:
                         pass
                 else:
@@ -128,7 +135,7 @@ class application():
             self.trustedIRC.pong()
             
     def createIRCclient(self):
-        self.chat = irc()
+        self.chat = irc(self.config)
 
     def createIRCstreams(self,selection):
         retries = self.config['MISC']['twitch connect retries']
@@ -158,6 +165,8 @@ class application():
         try:
             self.input.append(self.interoutput.get_nowait())
         except Empty:
+            pass
+        except AttributeError:
             pass
 
     def checkNetwork(self):

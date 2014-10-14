@@ -19,7 +19,7 @@ class interface():
         self.alt=1#temporary
 
     def display(self):
-        self.geomMain = '621x541+50+50'
+        self.geomMain = self.config['Interface']['map']
         self.loadMainWindow()
         self.MainWindow.update()
         self.MainWindow.update_idletasks()
@@ -28,25 +28,18 @@ class interface():
         self.alt=self.alt*(-1)#temporary
         if(self.alt==1):#temporary
             self.MainWindow.update_idletasks()
-        self.writeInputRAW()
+        self.writeInputRAW()#temporary
         self.MainWindow.update()
         return(self.status)
         
 
     def launch(self,config,assets,interinput,interoutput):
         self.createMainWindow()
-
         self.imports(assets)       
         self.allocateVars(config,interinput,interoutput)
         self.createChildren()
         self.style()
-        #load control values from config
-
-        #run startup tasks eventually
-        #including: remember window size/pos from last use; otherwise default
-        #meanwhile:
-
-
+        
     def style(self):
         self.mainStyle = ttk.Style()
         self.mainStyle.theme_create('Sirbot',parent='default',settings={
@@ -271,6 +264,8 @@ class interface():
 
     def cleanUp(self):
         self.MainWindow.update()
+        self.MainWindow.update_idletasks()
+        self.config['Interface']['map'] = self.MainWindow.geometry()
         self.MainWindow.withdraw()
         self.OptionsMenu.withdraw()
         self.UsersList.withdraw()

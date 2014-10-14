@@ -5,8 +5,11 @@
 from time import asctime,localtime,time
 
 class irc():
-    def __init__(self):
+    def __init__(self,config):
         self.users = []
+        self.targetchannels = []
+        self.targetchannels.append(config['Twitch Channels']['default channel'])#temporary
+        #self.sendas = config['
 
     def timeStamp(self):
         times = asctime(localtime(time()))
@@ -33,8 +36,8 @@ class irc():
         return(message)
 
     def outFormat(self,message):
-        #temporarily
-        return(message)
+        #temporarily - by that i mean longterm temporarily
+        return((self.targetchannels[0],message))
 
     def extractChat(self,message,times):
         #put message in error buffer
@@ -244,3 +247,10 @@ class irc():
 
 
 
+#tags:
+#input/*username*/server/console
+#time/text
+
+#/join/part/welcome/users/ping/mods/info/error/recovered/raw
+
+#['<timestamp>','<input/*username*/server/console>',':','<message>',[<extra-tags>]]
