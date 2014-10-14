@@ -39,6 +39,28 @@ class irc():
         #temporarily - by that i mean longterm temporarily
         return((self.targetchannels[0],message))
 
+    def temp(self,message,times):
+        inputData = []
+        extratag = 0
+        inputData.append(times)
+        msg = message.split(' ',2)
+        if(msg == 'PRIVMSG'):
+            if(message[0:4] == ':jtv'):
+                pass
+            else:
+                pass
+        elif(msg == 'JOIN'):
+            pass
+        elif(msg == 'PART'):
+            pass
+        elif(msg == '353'):
+            pass
+        elif(msg == '366'):
+            pass
+        elif(msg == 'MODE'):
+            pass
+
+
     def extractChat(self,message,times):
         #put message in error buffer
         inputData=[]

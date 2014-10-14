@@ -20,6 +20,7 @@ class application():
     def begin(self):#this is just temporary until proper controls can be created in GUI
         self.createIRCstreams('twitch')
         self.createIRCclient()
+        #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
             self.joinATwitchChannel(self.config['Twitch Channels']
                                          ['default channel'])
