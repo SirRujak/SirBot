@@ -135,7 +135,8 @@ class irc():
 
     def inFormatPING(self,message,times):
         #temporary
-        return(message)
+        inputData = [times,'','Server',':',message,['Ping']]
+        return(inputData)
 
     def twitchJoin(self,user,channel):
         pass
