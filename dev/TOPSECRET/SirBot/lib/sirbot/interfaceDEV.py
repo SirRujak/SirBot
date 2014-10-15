@@ -28,7 +28,7 @@ class interface():
         self.alt=self.alt*(-1)#temporary
         if(self.alt==1):#temporary
             self.MainWindow.update_idletasks()
-        self.writeInputRAW()#temporary
+        self.writeInput()#temporary
         self.MainWindow.update()
         return(self.status)
         
@@ -217,7 +217,7 @@ class interface():
         self.geomMain = ''
         self.backgroundColor = '#3496B2'
         self.fontColor = 'black'
-        self.raw = 1
+        self.raw = self.config['Interface']['chat']['raw']
 
         #tk control variables
         self.editConfig = tk.IntVar()
@@ -603,9 +603,13 @@ class interface():
 
     def toggleRawChat(self):
         if(self.rawChat.get() == 1):
-            self.raw = 1
+            #self.raw = 1
+            #send command to application.py to change raw setting
+            pass
         else:
-            self.raw = 0
+            #self.raw = 0
+            #same as above
+            pass
 
     def timeStamp(self):
         times = time.asctime(time.localtime(time.time()))
@@ -635,33 +639,40 @@ class interface():
 
 
     def writeInput(self):
-        data = self.inputqueue.get()
-        if(data[4] == 0):
-            data = self.styleChat(data)
-            self.displayToTerminal(data[0],(data[1],'Time'))
-            self.displayToTerminal(data[1],(data[1]))
-            self.displayToTerminal(data[2],(data[1],'Text'))
-            self.displayToTerminal(data[3],(data[1],'Text'))
-            self.displayToTerminal('\n',(data[1]))
-        else:
-            #extend [data[]] by extra tabs and convert to tuple
-            tag = [data[1]]
-            tag.extend(data[4])
-            tag.append('Time')
-            tags = tuple(tag)
-            self.displayToTerminal(data[0],tags)
-            tag.pop()
-            tags = tuple(tag)
-            self.displayToTerminal(data[1],tags)
-            tag.append('Text')
-            tags = tuple(tag)
-            self.displayToTerminal(data[2],tags)
-            self.displayToTerminal(data[3],tags)
-            tag.pop()
-            tags = tuple(tag)
-            self.displayToTerminal('\n',tags)
+        try:
+            data = self.inputqueue.get_nowait()
+            if(data[5] == 0):
+                data = self.styleChat(data)
+                self.displayToTerminal(data[0],(data[1],data[2],'Time'))
+                self.displayToTerminal(data[1],(data[1],data[2],'Channel'))
+                self.displayToTerminal(data[2],(data[1],data[2]))
+                self.displayToTerminal(data[3],(data[1],data[2],'Text'))
+                self.displayToTerminal(data[4],(data[1],data[2],'Text'))
+                self.displayToTerminal('\n',(data[1],data[2]))
+            else:
+                #extend [data[]] by extra tabs and convert to tuple
+                tag = data[1:2]
+                tag.extend(data[5])
+                tag.append('Time')
+                tags = tuple(tag)
+                self.displayToTerminal(data[0],tags)
+                tag.pop()
+                tag.append('Channel')
+                tags = tuple(tag)
+                self.displayToTerminal(data[1],tags)
+                tag.pop()
+                tags = tuple(tag)
+                self.displayToTerminal(data[2],tags)
+                tag.append('Text')
+                tags = tuple(tag)
+                self.displayToTerminal(data[3],tags)
+                self.displayToTerminal(data[4],tags)
+                tag.pop()
+                tags = tuple(tag)
+                self.displayToTerminal('\n',tags)
+        except queue.Empty:
+            pass
             
-        self.MainWindow.update()
 
     def writeInputRAW(self):
         try:
@@ -811,12 +822,12 @@ if __name__ == "__main__":
 
 
 #tags:
-#input/*username*/server/console
+#input/*username*/server/console/channel
 #time/text
 
 #/join/part/welcome/users/ping/mods/info/error/recovered/raw
 
-#['<timestamp>','<input/*username*/server/console>',':','<message>',[<extra-tags>]]
+#['<timestamp>','[channel]','<input/*username*/server/console>',':','<message>',[<extra-tags>]]
 
 
 

@@ -6,10 +6,11 @@ from time import asctime,localtime,time
 
 class irc():
     def __init__(self,config):
-        self.users = []
+        self.config = config
+        self.users = {}
         self.targetchannels = []
-        self.targetchannels.append(config['Twitch Channels']['default channel'])#temporary
-        #self.sendas = config['
+        self.targetchannels.append(self.config['Twitch Channels']['default channel'])#temporary
+        #self.sendas = self.config['
 
     def timeStamp(self):
         times = asctime(localtime(time()))
@@ -32,34 +33,133 @@ class irc():
         return(data)
 
     def inFormat(self,message,times):
-        #temporarily
+        inputData = []
+        extratag = 0
+        channel = None
+        delimiter = ':'
+        inputData.append(times)
+        #message = message.rstrip('\n') #maybe necessary?
+        message = message.split(' ',2)
+        if(message[1] == 'PRIVMSG'):
+            msgID = message[0].split('!',1)[0]
+            if(msgID != ':'):
+                msgID = msgID[1:]
+                message = message[2].split(' ',1)
+                channel = '['+message[0][1:]+']'
+                message = message[1][1:]
+                if(msgID == 'jtv'):
+                    msgID = 'Server'
+                    extratag = ['Info']
+                    if(message[:9]=='USERCOLOR'):
+                        msg = message.split(' ')
+                        channel = None
+                        self.setUserColor(msg.pop(0),msg.pop(0))
+                    elif(message[:8] == 'EMOTESET'):
+                        msg = message.split(' ')
+                        channel = None
+                        self.emoteHandler(msg.pop(0),msg.pop(0))
+                elif(message[:11] == "\\x01ACTION"):
+                    message = message.replace("\\x01ACTION",'').replace("\\x01",'')
+                    delimiter = ''
+                    extratag = ['Action']
+            elif(msgID == ':'):
+                msgID = 'Server'
+                extratag = ['Info']
+                message = message.split(' ',3)
+                msg = message[1][1:]
+                if(msg == 'SPECIALUSER'):
+                    if(message[3] == 'subscriber'):
+                        self.handleSubscribers(message[2])
+                    elif(message[3] == 'staff'):
+                        self.handleStaff(message[2])
+                elif(msg == 'USERCOLOR'):
+                    self.setUserColor(message[2],message[3])
+                elif(msg == 'EMOTESET'):
+                    self.emoteHandler(message[2],message[3])
+                message = " ".join(message)
+        elif(message[1] == 'JOIN'):
+            msgID = 'Server'
+            channel = message[2][1:]
+            msg = message[0].split('!',1)[1][1:]
+            message = msg + ' has joined.'
+            extratag = ['Join']
+            self.twitchJoin(msg,channel)
+        elif(message[1] == 'PART'):
+            msgID = 'Server'
+            channel = message[2][1:]
+            msg = message[0].split('!',1)[1][1:]
+            message = msg + ' has left.'
+            extratag = ['Part']
+            self.twitchPart(msg,channel)
+        elif(message[1] == '353'):
+            msgID = 'Server'
+            extratag = ['Users']
+            msg = message[2].split(' ',2)
+            channel = msg[1][1:]
+            message = msg[2][1:]
+            self.twitchUsersUpdate(message)
+        elif(message[1] == '366'):
+            msgID = 'Server'
+            msg = message[2].split(' ',3)
+            channel = msg[2][1:]
+            message = msg[3][1:]
+            extratag = ['Users']
+        elif(message[1] == 'MODE'):
+            channel = ''
+            msgID = 'Server'
+            extratag = ['Info']
+            msg = message[2].split(' ',2)
+            if(msg[1] == '+o'):
+                message = 'Mods:' + msg[2]
+                self.handleMods(msg[2])
+            else:
+                message = " ".join(msg[1:2])
+        else:
+            msgID = ''
+            message = " ".join(message)
+            delimiter = ''
+            channel = ''
+            if(message != self.config['Interface']['motd']):
+                extratag = ["Error"]
+
+        inputData.append(channel)
+        inputData.append(msgID)
+        inputData.append(delimiter)
+        inputData.append(message)
+        inputData.append(extratag)
+        
+        return(inputData)
+
+    def inFormatPING(self,message,times):
         return(message)
 
+    def twitchJoin(self,user,channel):
+        pass
+
+    def twitchPart(self,user,channel):
+        pass
+
+    def twitchUsersUpdate(self,data):
+        pass
+
+    def setUserColor(self,user,color):
+        pass
+
+    def emoteHandler(self,user,emoteslist):
+        pass
+
+    def handleMods(self,user):
+        pass
+
+    def handleSubscribers(self,user):
+        pass
+
+    def handleStaff(self,user):
+        pass
+    
     def outFormat(self,message):
         #temporarily - by that i mean longterm temporarily
         return((self.targetchannels[0],message))
-
-    def temp(self,message,times):
-        inputData = []
-        extratag = 0
-        inputData.append(times)
-        msg = message.split(' ',2)
-        if(msg == 'PRIVMSG'):
-            if(message[0:4] == ':jtv'):
-                pass
-            else:
-                pass
-        elif(msg == 'JOIN'):
-            pass
-        elif(msg == 'PART'):
-            pass
-        elif(msg == '353'):
-            pass
-        elif(msg == '366'):
-            pass
-        elif(msg == 'MODE'):
-            pass
-
 
     def extractChat(self,message,times):
         #put message in error buffer

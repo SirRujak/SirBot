@@ -20,7 +20,7 @@ class application():
     def begin(self):#this is just temporary until proper controls can be created in GUI
         self.createIRCstreams('twitch')
         self.createIRCclient()
-        #self.automatedIRC.chooseTwitchClient(2)
+        #self.automatedIRC.chooseTwitchClient(3)
         if(self.config['Twitch Channels']['default channel'] != 0):
             self.joinATwitchChannel(self.config['Twitch Channels']
                                          ['default channel'])
@@ -34,6 +34,7 @@ class application():
         self.output = []
         self.streams = []
         self.chatcache = []
+        self.chatcache.append(self.config['Interface']['motd'])
 
     def shutdown(self):
         #save all data from queues to file and close module
@@ -112,12 +113,12 @@ class application():
                 else:
                     self.output.append([24,self.chatcache.pop()])
                 self.chatcache.append(item)
-            elif(item[:6]=="PING :"):
-                self.output.append([24,item])
+            elif(item[:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
+                self.output.append([24,self.chat.inFormat(item,self.chat.timeStamp())])
                 self.sendPong()
             else:
                 fragment = self.chatcache.pop()
-                self.chatcache.append([24,(fragment+item)])
+                self.chatcache.append(fragment+item)
         self.input = []
                 
     def closeApplication(self):
