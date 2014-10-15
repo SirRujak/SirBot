@@ -5,6 +5,7 @@ config
 GUI=True/False
 
 Interface
+-motd='String'
 -map="%dx%d+%d+%d"
 -iconified=True/False
 -user list=True/False
@@ -44,3 +45,4 @@ Twitch Automated Moderator
 
 Misc
 -twitch connect retries=%d
+-twitchclient=0/1/2/3/...
