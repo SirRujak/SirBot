@@ -80,14 +80,14 @@ class irc():
         elif(message[1] == 'JOIN'):
             msgID = 'Server'
             channel = message[2][1:]
-            msg = message[0].split('!',1)[1][1:]
+            msg = message[0].split('!',1)[0][1:]
             message = msg + ' has joined.'
             extratag = ['Join']
             self.twitchJoin(msg,channel)
         elif(message[1] == 'PART'):
             msgID = 'Server'
             channel = message[2][1:]
-            msg = message[0].split('!',1)[1][1:]
+            msg = message[0].split('!',1)[0][1:]
             message = msg + ' has left.'
             extratag = ['Part']
             self.twitchPart(msg,channel)
