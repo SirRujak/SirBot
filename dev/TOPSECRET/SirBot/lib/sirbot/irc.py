@@ -52,11 +52,11 @@ class irc():
                     extratag = ['Info']
                     if(message[:9]=='USERCOLOR'):
                         msg = message.split(' ')
-                        channel = None
+                        channel = ''
                         self.setUserColor(msg.pop(0),msg.pop(0))
                     elif(message[:8] == 'EMOTESET'):
                         msg = message.split(' ')
-                        channel = None
+                        channel = ''
                         self.emoteHandler(msg.pop(0),msg.pop(0))
                 elif(message[:11] == "\\x01ACTION"):
                     message = message.replace("\\x01ACTION",'').replace("\\x01",'')

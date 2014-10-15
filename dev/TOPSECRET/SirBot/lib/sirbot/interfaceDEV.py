@@ -201,6 +201,7 @@ class interface():
         self.top = self.MainWindow.winfo_toplevel()
         self.h = self.MainWindow.winfo_screenheight()
         self.w = self.MainWindow.winfo_screenwidth()
+        self.currentChannel = self.config['Twitch Channels']['default channel']
 
         #informative
         self.botName = 'SirBot'
@@ -374,9 +375,10 @@ class interface():
         self.terminalScroll = ttk.Scrollbar(self.terminalFrame,
                                             orient=tk.VERTICAL)
         self.terminalHistory = tk.Text(self.terminalFrame,bg='white',fg='black',
-                                   height=32,width=75,takefocus=0,
-                                   state='disabled',wrap=tk.WORD,
-                                   yscrollcommand=self.terminalScroll.set)
+                                       height=32,width=75,takefocus=0,
+                                       state='disabled',wrap=tk.WORD,
+                                       relief=tk.FLAT,
+                                       yscrollcommand=self.terminalScroll.set)
         self.terminalScroll['command'] = self.terminalHistory.yview
         
         
@@ -627,6 +629,7 @@ class interface():
         if(message != ''):
             inputData = []
             inputData.append(self.timeStamp())
+            inputData.append('['+self.currentChannel+']')
             inputData.append('Input')
             inputData.append(': ')
             inputData.append(message)
