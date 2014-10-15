@@ -20,7 +20,7 @@ class application():
     def begin(self):#this is just temporary until proper controls can be created in GUI
         self.createIRCstreams('twitch')
         self.createIRCclient()
-        #self.automatedIRC.chooseTwitchClient(3)
+        #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
             self.joinATwitchChannel(self.config['Twitch Channels']
                                          ['default channel'])
@@ -114,7 +114,7 @@ class application():
                     self.output.append([24,self.chatcache.pop()])
                 self.chatcache.append(item)
             elif(item[:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
-                self.output.append([24,self.chat.inFormat(item,self.chat.timeStamp())])
+                self.output.append([24,self.chat.inFormatPING(item,self.chat.timeStamp())])
                 self.sendPong()
             else:
                 fragment = self.chatcache.pop()
@@ -165,7 +165,9 @@ class application():
         #get from interface input queue
         #could grab more items here at some point
         try:
-            self.input.append(self.interoutput.get_nowait())
+            temp = self.interoutput.get_nowait()
+            self.input.append(temp)
+            #print(temp)
         except Empty:
             pass
         except AttributeError:
@@ -177,7 +179,9 @@ class application():
         for element in self.streams:
             try:
                 element.receive()
-                self.input.append(element.inputqueue.get_nowait())
+                temp = element.inputqueue.get_nowait()
+                self.input.append(temp)
+                #print(temp)
             except Empty:
                 pass
 

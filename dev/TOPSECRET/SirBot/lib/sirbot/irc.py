@@ -34,59 +34,57 @@ class irc():
 
     def inFormat(self,message,times):
         inputData = []
+        cache = message
         extratag = 0
         channel = None
         delimiter = ':'
         inputData.append(times)
-        #message = message.rstrip('\n') #maybe necessary?
         message = message.split(' ',2)
         if(message[1] == 'PRIVMSG'):
-            msgID = message[0].split('!',1)[0]
-            if(msgID != ':'):
-                msgID = msgID[1:]
+            msgID = message[0].split('!',1)[0][1:]
+            if(msgID != 'jtv'):
                 message = message[2].split(' ',1)
                 channel = '['+message[0][1:]+']'
                 message = message[1][1:]
-                if(msgID == 'jtv'):
-                    msgID = 'Server'
-                    extratag = ['Info']
-                    if(message[:9]=='USERCOLOR'):
-                        msg = message.split(' ')
-                        channel = ''
-                        self.setUserColor(msg.pop(0),msg.pop(0))
-                    elif(message[:8] == 'EMOTESET'):
-                        msg = message.split(' ')
-                        channel = ''
-                        self.emoteHandler(msg.pop(0),msg.pop(0))
-                elif(message[:11] == "\\x01ACTION"):
-                    message = message.replace("\\x01ACTION",'').replace("\\x01",'')
-                    delimiter = ''
-                    extratag = ['Action']
-            elif(msgID == ':'):
+##                if(str(message[:11]) == "\\x01ACTION"):
+##                    message = str(message).replace("\\x01ACTION",'')
+##                    delimiter = ''
+##                    extratag = ['Action']
+            elif(msgID == 'jtv'):
+                channel = ''
                 msgID = 'Server'
                 extratag = ['Info']
-                message = message.split(' ',3)
-                msg = message[1][1:]
+                message = message[2].split(' ',1)[1]
+                msg = message.split(' ',1)[0][1:]
                 if(msg == 'SPECIALUSER'):
                     if(message[3] == 'subscriber'):
                         self.handleSubscribers(message[2])
                     elif(message[3] == 'staff'):
                         self.handleStaff(message[2])
+                    message = message[1:]
                 elif(msg == 'USERCOLOR'):
                     self.setUserColor(message[2],message[3])
+                    message = message[1:]
                 elif(msg == 'EMOTESET'):
                     self.emoteHandler(message[2],message[3])
-                message = " ".join(message)
+                    message = message[1:]
+                elif(msg == 'HISTORYEND'):
+                    message = message[1:]
+                else:
+                    msgID = ''
+                    delimiter = ''
+                    extratag = ['Error']
+                    message = cache
         elif(message[1] == 'JOIN'):
             msgID = 'Server'
-            channel = message[2][1:]
+            channel = '[' + message[2][1:] + ']'
             msg = message[0].split('!',1)[0][1:]
             message = msg + ' has joined.'
             extratag = ['Join']
             self.twitchJoin(msg,channel)
         elif(message[1] == 'PART'):
             msgID = 'Server'
-            channel = message[2][1:]
+            channel = '[' + message[2][1:] + ']'
             msg = message[0].split('!',1)[0][1:]
             message = msg + ' has left.'
             extratag = ['Part']
@@ -94,29 +92,34 @@ class irc():
         elif(message[1] == '353'):
             msgID = 'Server'
             extratag = ['Users']
-            msg = message[2].split(' ',2)
-            channel = msg[1][1:]
-            message = msg[2][1:]
+            msg = message[2].split(' ',3)
+            channel = '[' + msg[2][1:] + ']'
+            message = msg[3][1:]
             self.twitchUsersUpdate(message)
+            message = 'USERS- ' + message
         elif(message[1] == '366'):
             msgID = 'Server'
-            msg = message[2].split(' ',3)
-            channel = msg[2][1:]
-            message = msg[3][1:]
+            msg = message[2].split(' ',2)
+            channel = '[' + msg[1][1:] + ']'
+            message = msg[2][1:]
             extratag = ['Users']
         elif(message[1] == 'MODE'):
-            channel = ''
             msgID = 'Server'
             extratag = ['Info']
             msg = message[2].split(' ',2)
+            channel = '{' + msg[0][1:] + ']'
             if(msg[1] == '+o'):
-                message = 'Mods:' + msg[2]
+                message = 'MODS- ' + msg[2]
                 self.handleMods(msg[2])
             else:
-                message = " ".join(msg[1:2])
+                msgID = ''
+                delimiter = ''
+                channel = ''
+                message = cache
+                extratag = ['Error']
         else:
             msgID = ''
-            message = " ".join(message)
+            message = cache
             delimiter = ''
             channel = ''
             if(message != self.config['Interface']['motd']):
@@ -131,6 +134,7 @@ class irc():
         return(inputData)
 
     def inFormatPING(self,message,times):
+        #temporary
         return(message)
 
     def twitchJoin(self,user,channel):

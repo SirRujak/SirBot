@@ -34,17 +34,18 @@ class stream():
     def send(self,message):
         #elevate
         if len(message) > 0:
-            self.transmit(message + "\n")
-            #print(message+'\n')#temporary
+            self.transmit(message + "\r\n")
+            print(message+'\n')#temporary
 
     def receive(self,buffer=buffer_length):
         #elevate and leave a replacement possibly without a queue
         try:
             data = self.connection.recv(buffer).decode()
+            print(data)
         except:
             data = None
         if(data):
-            for line in data.split("\n"):
+            for line in data.split("\r\n"):
                 if(len(line)!=0):
                     #print(line)#temporary
                     self.inputqueue.put(line)
@@ -76,6 +77,7 @@ class stream():
             self.twitchConnect(username,token)
             if(self.verifyConnection(username)==True):
                 break
+            sleep(2)
 
     def verifyConnection(self,username):
         #elevate
