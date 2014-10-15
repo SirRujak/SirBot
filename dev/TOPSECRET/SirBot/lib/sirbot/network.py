@@ -35,13 +35,13 @@ class stream():
         #elevate
         if len(message) > 0:
             self.transmit(message + "\r\n")
-            print(message+'\n')#temporary
+            #print(message+'\n')#temporary
 
     def receive(self,buffer=buffer_length):
         #elevate and leave a replacement possibly without a queue
         try:
             data = self.connection.recv(buffer).decode()
-            print(data)
+            #print(data)#temporary
         except:
             data = None
         if(data):
