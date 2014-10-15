@@ -1,0 +1,2 @@
+﻿>start timer when privmsg is sent to channel to see if message is received by client after server processing - if not may have lost connection
+>need a ping timer
