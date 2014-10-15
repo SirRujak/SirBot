@@ -3,3 +3,4 @@
 >add 'learn' mode: bot joins channel and listens to commands/responses of existing bots and "learns" them
 >add timer on chatcache in application.py to make sure messages don't fall dormant if no new ones come to flush them out. 10-30 secs?
 >put timestamp in chatcache
+>TIMERS!!!

@@ -46,7 +46,7 @@ class irc():
                 message = message[2].split(' ',1)
                 channel = '['+message[0][1:]+']'
                 message = message[1][1:]
-##                if(str(message[:11]) == "\\x01ACTION"):
+##                if(str(message[:11]) == "\\x01ACTION"): #not working - neeeds thought
 ##                    message = str(message).replace("\\x01ACTION",'')
 ##                    delimiter = ''
 ##                    extratag = ['Action']
@@ -70,7 +70,11 @@ class irc():
                     message = message[1:]
                 elif(msg == 'HISTORYEND'):
                     message = message[1:]
-                else:
+##                elif(msg == 'The'):
+##                    #this doesn't contain the channel, will need to take some time on this.
+##                    if(message[:34] == ':The moderators of this room are: '):
+##                        pass
+##                else:
                     msgID = ''
                     delimiter = ''
                     extratag = ['Error']
@@ -153,7 +157,7 @@ class irc():
     def emoteHandler(self,user,emoteslist):
         pass
 
-    def handleMods(self,user):
+    def handleMods(self,users):
         pass
 
     def handleSubscribers(self,user):
