@@ -63,9 +63,9 @@ class application():
             """
             if(item[0]<=10):
                 if(item[0]==2):
-                    self.automatedIRC.privmsg(item[1])#needs to be .privmsg with channel
+                    self.automatedIRC.privmsg(item[1][0],item[1][1])#needs to be .privmsg with channel
                 elif(item[0]==3):
-                    self.trustedIRC.privmsg(item[1])#item[1] = (channel,message)
+                    self.trustedIRC.privmsg(item[1][0],item[1][1])#item[1] = (channel,message)
             elif(item[0]<=20):
                 #internal data - mostly ai.py
                 pass
