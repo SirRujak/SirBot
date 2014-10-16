@@ -3,12 +3,14 @@
 #class to embody IRC elements
 
 from time import asctime,localtime,time
+from queue import Queue
 
 class irc():
     def __init__(self,config):
         self.config = config
         self.users = {}
         self.targetchannels = []
+        self.outputqueue = Queue()
         self.targetchannels.append(self.config['Twitch Channels']['default channel'])#temporary
         #self.sendas = self.config['
 
@@ -81,32 +83,37 @@ class irc():
                     message = cache
         elif(message[1] == 'JOIN'):
             msgID = 'Server'
-            channel = '[' + message[2][1:] + ']'
+            chann = message[2][1:]
+            channel = '[' + chann + ']'
             msg = message[0].split('!',1)[0][1:]
             message = msg + ' has joined.'
-            extratag = ['Join']
-            self.twitchJoin(msg,channel)
+            extratag = ['Join','Info']
+            self.twitchJoin(msg,chann)
         elif(message[1] == 'PART'):
             msgID = 'Server'
-            channel = '[' + message[2][1:] + ']'
+            chann = message[2][1:]
+            channel = '[' + chann + ']'
             msg = message[0].split('!',1)[0][1:]
             message = msg + ' has left.'
-            extratag = ['Part']
-            self.twitchPart(msg,channel)
+            extratag = ['Part','Info']
+            self.twitchPart(msg,chann)
         elif(message[1] == '353'):
             msgID = 'Server'
-            extratag = ['Users']
+            extratag = ['Users','Info']
             msg = message[2].split(' ',3)
-            channel = '[' + msg[2][1:] + ']'
+            chann = msg[2][1:]
+            channel = '[' + chann + ']'
             message = msg[3][1:]
-            self.twitchUsersUpdate(message)
+            self.twitchUsersUpdate(chann,message)
             message = 'USERS- ' + message
         elif(message[1] == '366'):
             msgID = 'Server'
             msg = message[2].split(' ',2)
-            channel = '[' + msg[1][1:] + ']'
+            chann = msg[1][1:]
+            channel = '[' + chann + ']'
             message = msg[2][1:]
-            extratag = ['Users']
+            extratag = ['Users','Info']
+            self.twitchUsersUpdate(chann)
         elif(message[1] == 'MODE'):
             msgID = 'Server'
             extratag = ['Info']
@@ -139,17 +146,36 @@ class irc():
 
     def inFormatPING(self,message,times):
         #temporary
-        inputData = [times,'','Server',':',message,['Ping']]
+        inputData = [times,'','Server',':',message,['Ping','Info']]
         return(inputData)
 
     def twitchJoin(self,user,channel):
-        pass
+        if(channel in self.users):
+            self.users[channel][user] = {}
+        else:
+            self.users[channel]={}
+            self.users[channel][user]={}
+        self.twitchUsersUpdate(channel)
 
     def twitchPart(self,user,channel):
-        pass
+        try:
+            if(channel in self.users):
+                if(user in self.users[channel]):
+                    del self.users[channel][user]
+            self.twitchUsersUpdate(channel)
+        except KeyError:
+            pass
 
-    def twitchUsersUpdate(self,data):
-        pass
+    def twitchUsersUpdate(self,channel=None,data=None):
+        if(data):
+            if(channel not in self.users):
+                #add strings to dictionary
+                self.users[channel] = {}
+            for user in data.split(' '):
+                self.users[channel][user] = {}
+        else:
+            #format things
+            self.outputqueue.put([26,['users',list(self.users[self.config['Twitch Channels']['default channel']])]])#temporary
 
     def setUserColor(self,user,color):
         pass

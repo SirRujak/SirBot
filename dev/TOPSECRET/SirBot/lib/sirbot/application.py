@@ -58,7 +58,8 @@ class application():
             11-20=internal data
             21-30=interface data
             --24=irc chat messages
-            --25=interface settings
+            --25=interface configurations (interface to app)
+            --26=interface data (app to interface)
             31-99=overflow internal data
             """
             if(item[0]<=10):
@@ -72,12 +73,19 @@ class application():
             elif(item[0]<=30):
                 if(item[0]==24):
                     try:
-                        self.interinput.put(item[1])
+                        self.interinput.put(item)
                     except AttributeError:
                         pass
                 elif(item[0]==25):
                     try:
-                        self.interinput.put(item[1])
+                        self.interinput.put(item)
+                    except AttributeError:
+                        pass
+                elif(item[0]==26):
+                    #print(item)
+                    try:
+                        self.interinput.put(item)
+                        #print(item)
                     except AttributeError:
                         pass
             else:
@@ -89,6 +97,7 @@ class application():
         if(self.config['GUI']==1):
             self.checkInterface()
         self.checkNetwork()
+        self.checkModules()
 
     def processData(self):
         #perform operations on data using imported modules
@@ -102,6 +111,8 @@ class application():
                 self.output.append([3,self.chat.outFormat(item.pop())])
             elif(item[0]==25):
                 self.applySettings(item[1])
+            elif(item[0] == 26):
+                self.output.append(item)
             elif(item[0]==':'):
                 if(self.config['Interface']['chat']['raw']!=1):
                     try:
@@ -189,6 +200,14 @@ class application():
         self.automatedIRC.joinTwitchChannel(channel)
         if(self.config['Twitch Accounts']['trusted account']['join chat']!=0):
             self.trustedIRC.joinTwitchChannel(channel)
+
+    def checkModules(self):
+        try:
+            temp = self.chat.outputqueue.get_nowait()
+            self.input.append(temp)
+            #print(temp)
+        except Empty:
+            pass
         
     
     #channel,timestamp,sender,message

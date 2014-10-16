@@ -28,10 +28,18 @@ class interface():
         self.alt=self.alt*(-1)#temporary
         if(self.alt==1):#temporary
             self.MainWindow.update_idletasks()
-        self.writeInput()#temporary
+        try:
+            temp = self.inputqueue.get_nowait()
+            if(temp[0] == 24):
+                self.writeInput(temp[1])
+            elif(temp[0] == 25):
+                self.updateConfig(temp[1])
+            elif(temp[0] == 26):
+                self.updateIRCData(temp[1])
+        except queue.Empty:
+            pass
         self.MainWindow.update()
         return(self.status)
-        
 
     def launch(self,config,assets,interinput,interoutput):
         self.createMainWindow()
@@ -641,40 +649,36 @@ class interface():
             self.terminalEntry.focus_set()
 
 
-    def writeInput(self):
-        try:
-            data = self.inputqueue.get_nowait()
-            if(data[5] == 0):
-                data = self.styleChat(data)
-                self.displayToTerminal(data[0],(data[1],data[2],'Time'))
-                self.displayToTerminal(data[1],(data[1],data[2],'Channel'))
-                self.displayToTerminal(data[2],(data[1],data[2]))
-                self.displayToTerminal(data[3],(data[1],data[2],'Text'))
-                self.displayToTerminal(data[4],(data[1],data[2],'Text'))
-                self.displayToTerminal('\n',(data[1],data[2]))
-            else:
-                #extend [data[]] by extra tabs and convert to tuple
-                tag = data[1:2]
-                tag.extend(data[5])
-                tag.append('Time')
-                tags = tuple(tag)
-                self.displayToTerminal(data[0],tags)
-                tag.pop()
-                tag.append('Channel')
-                tags = tuple(tag)
-                self.displayToTerminal(data[1],tags)
-                tag.pop()
-                tags = tuple(tag)
-                self.displayToTerminal(data[2],tags)
-                tag.append('Text')
-                tags = tuple(tag)
-                self.displayToTerminal(data[3],tags)
-                self.displayToTerminal(data[4],tags)
-                tag.pop()
-                tags = tuple(tag)
-                self.displayToTerminal('\n',tags)
-        except queue.Empty:
-            pass
+    def writeInput(self,data):
+        if(data[5] == 0):
+            data = self.styleChat(data)
+            self.displayToTerminal(data[0],(data[1],data[2],'Time'))
+            self.displayToTerminal(data[1],(data[1],data[2],'Channel'))
+            self.displayToTerminal(data[2],(data[1],data[2]))
+            self.displayToTerminal(data[3],(data[1],data[2],'Text'))
+            self.displayToTerminal(data[4],(data[1],data[2],'Text'))
+            self.displayToTerminal('\n',(data[1],data[2]))
+        else:
+            #extend [data[]] by extra tabs and convert to tuple
+            tag = data[1:2]
+            tag.extend(data[5])
+            tag.append('Time')
+            tags = tuple(tag)
+            self.displayToTerminal(data[0],tags)
+            tag.pop()
+            tag.append('Channel')
+            tags = tuple(tag)
+            self.displayToTerminal(data[1],tags)
+            tag.pop()
+            tags = tuple(tag)
+            self.displayToTerminal(data[2],tags)
+            tag.append('Text')
+            tags = tuple(tag)
+            self.displayToTerminal(data[3],tags)
+            self.displayToTerminal(data[4],tags)
+            tag.pop()
+            tags = tuple(tag)
+            self.displayToTerminal('\n',tags)
             
 
     def writeInputRAW(self):
@@ -815,8 +819,17 @@ class interface():
             self.inputqueue.put(inputData)
             self.writeInput()
 
-    def setUsers(self):
-        self.users.set(" ".join(self.using).strip('[').strip(']').replace(','," "))
+    def setUsers(self,data):
+        self.users.set(" ".join(data).strip('[').strip(']').replace(','," "))
+
+    def updateConfig(self,data):
+        pass
+
+    def updateIRCData(self,data):
+        if(data[0] == 'users'):
+            self.setUsers(data[1])
+            #print(data[1])
+
 
 
 if __name__ == "__main__":
