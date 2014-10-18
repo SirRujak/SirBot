@@ -14,8 +14,8 @@ except ImportError:
 
 class interface():
 
-    def __init__(self,config,assets,interinput,interoutput):
-        self.launch(config,assets,interinput,interoutput)
+    def __init__(self,config,assets,interinput,interoutput,root=None):
+        self.launch(root,config,assets,interinput,interoutput)
         self.alt=1#temporary
 
     def display(self):
@@ -41,8 +41,8 @@ class interface():
         self.MainWindow.update()
         return(self.status)
 
-    def launch(self,config,assets,interinput,interoutput):
-        self.createMainWindow()
+    def launch(self,root,config,assets,interinput,interoutput):
+        self.createMainWindow(root)
         self.imports(assets)       
         self.allocateVars(config,interinput,interoutput)
         self.createChildren()
@@ -263,11 +263,16 @@ class interface():
         self.mods = []
         self.specialusers = []
 
-    def createMainWindow(self):
-        self.MainWindow = tk.Tk()
-        self.MainWindow.withdraw()
+    def createMainWindow(self,root):
+        if(root == None):
+            from tkinter import Tk
+            self.MainWindow = Tk()
+        else:
+            self.MainWindow = root
+            self.MainWindow.withdraw()
         #self.MainWindow.geometry('1x1+0+0')
         self.MainWindow.overrideredirect(True)
+        self.MainWindow.wm_attributes('-alpha',1)
         self.MainWindow.protocol("WM_DELETE_WINDOW",self.cleanUp)
         self.mainHeading = tk.Frame(self.MainWindow)
 
@@ -476,11 +481,11 @@ class interface():
                                      padx=0,pady=0)
         self.optionsTabs = ttk.Notebook(self.optionsFrame,padding=0)
         self.dashboardTab = ttk.Frame(self.optionsTabs)
-        try:
-            self.dashboardLabel=ttk.Label(self.dashboardTab,image=self.optheader)
-        except:
+#        try:
+        self.dashboardLabel=ttk.Label(self.dashboardTab,image=self.optheader)
+#        except:
             #log
-            pass
+#            pass
         self.chatTab = tk.Frame(self.optionsTabs,bg=self.backgroundColor)
         try:
             self.chatLabel=ttk.Label(self.chatTab,image=self.optheader)
@@ -833,7 +838,11 @@ class interface():
 
 
 if __name__ == "__main__":
-    app=interface()
+    temp1=queue.Queue()
+    temp2=queue.Queue()
+    cfg={}
+    #
+    app=interface(cfg,assets,temp1,temp2)
     app.MainWindow.mainloop()
 
 

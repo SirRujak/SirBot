@@ -5,13 +5,15 @@
 class splashing():
     def __init__(self):
         #try:
-        import lib.sirbot.splash
+        import lib.sirbot.splash as splash
         #display splash
         self.startsplash=splash.splash()
 
         #except:
             #open a terminal or something to let them know we are gathering assets
             #pass
+    def root(self):
+        return(self.startsplash.getroot())
     def destroySplash(self):
         self.startsplash.destroy()
 

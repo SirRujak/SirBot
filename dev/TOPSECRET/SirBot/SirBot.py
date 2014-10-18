@@ -5,33 +5,12 @@ ON = 1
 SPLASH = 1
 
 ##try:
-##    import lib.sirbot.initialize as initialize
-##
-##    if(SPLASH == 1):
-##        #display splash
-##        splash = initialize.splashing()
-##
-##    #run validation
-##    initialize.validate()
-##
-##except:
-##    try:
-##        import lib.sirbot.setup as setup
-##        #open a terminal or something to let them know we are working
-##        #run setup
-##        import lib.sirbot.initialize as initialize
-##
-##        if(SPLASH == 1):
-##            #display splash
-##            splash = initialize.splashing()
-##
-##        #run validation
-##        initialize.validate()
-##        
-##    except:
-##        #display/log error
-##        #end script
-##        pass
+import lib.sirbot.initialize as initialize
+
+if(SPLASH == 1):
+    #display splash
+    splash = initialize.splashing()
+    root = splash.root()
 
 #import configurations 
 from lib.sirbot.configloader import configloader
@@ -51,6 +30,8 @@ from lib.sirbot.shutdown import shutdown
 from multiprocessing import Queue
 from time import sleep
 
+
+
 if __name__ == '__main__':
 
     #initialize primary modules and queues
@@ -58,14 +39,15 @@ if __name__ == '__main__':
         interinput = Queue()
         interoutput = Queue()
         assets = assetloader()
-        inter = interface(config,assets,interinput,interoutput)
+        inter = interface(config,assets,interinput,interoutput,root)
         app = application(config,interinput,interoutput)
     else:
         app = application(config)
 
+    #destroy splash
     if(SPLASH == True):
         sleep(1)
-##        splash.destroySplash()
+        splash.destroySplash()
     
     #runtime loop - single thread
     idle = 0.01
@@ -94,3 +76,5 @@ if __name__ == '__main__':
     else:
         shutdown(config)
 
+##except:
+##    pass

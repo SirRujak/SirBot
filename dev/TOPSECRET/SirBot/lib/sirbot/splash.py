@@ -4,7 +4,7 @@
 
 from tkinter import ttk
 from tkinter import PhotoImage
-from tkinter import Tk
+from tkinter import Tk,Toplevel
 #from tkinter import Label
 from os.path import dirname
 
@@ -14,21 +14,23 @@ class splash():
         moduleDir = dirname(__file__)
         moduleDir = moduleDir.rsplit('\\',2)[0]
         image = moduleDir+'\\resources\\sirbot\\splash.gif'
+        self.root = Tk()
+        self.root.withdraw()
+        self.loadingSplash = Toplevel()
         splashimage = PhotoImage(file=image)
-        loadingSplash = Tk()
-        loading = ttk.Label(loadingSplash,image=self.splashimage)
-        loadingSplash.overrideredirect(True)
-        loading.pack()
+        self.loading = ttk.Label(self.loadingSplash,image=splashimage)
+        self.loadingSplash.overrideredirect(True)
+        self.loading.pack()
 
-        h = loading.winfo_screenheight()
-        w = loading.winfo_screenwidth()
+        h = self.loading.winfo_screenheight()
+        w = self.loading.winfo_screenwidth()
 
-        loadingSplash.wm_attributes('-alpha',0.75)
-        loadingSplash.update_idletasks()
-        loadingSplash.geometry('262x112+'+str(int(w/2)-131*1)+
+        self.loadingSplash.wm_attributes('-alpha',0.75)
+        self.loadingSplash.update_idletasks()
+        self.loadingSplash.geometry('262x112+'+str(int(w/2)-131*1)+
                                     '+'+str(int(h/2)-56*1))
-        loadingSplash.update_idletasks()
-        loadingSplash.update()
+        self.loadingSplash.update_idletasks()
+        self.loadingSplash.update()
         
 #    except:
 ##        #log
@@ -48,10 +50,13 @@ class splash():
 ##        loadingSplash.update_idletasks()
 ##        loadingSplash.update()
 
-    def destroy():
+    def destroy(self):
         try:
-            loadingSplash.destroy()
+            self.loadingSplash.destroy()
         except:
             #log
             pass
+
+    def getroot(self):
+        return(self.root)
     
