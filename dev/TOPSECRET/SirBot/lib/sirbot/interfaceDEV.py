@@ -773,7 +773,6 @@ class interface():
 
     def goListTop(self):
         self.usersListText.see(0)
-        self.setUsers()
 
     def selectAllUsers(self):
         self.usersListText.selection_set(0,tk.END)

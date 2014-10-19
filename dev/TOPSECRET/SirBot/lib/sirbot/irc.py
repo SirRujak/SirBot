@@ -9,9 +9,12 @@ class irc():
     def __init__(self,config):
         self.config = config
         self.users = {}
-        self.targetchannels = []
+        self.channels = []
+        self.groups = []
+        self.groups.append('Administrators')#temporary - eventually needs to come from config
+        self.groups.append('MODS')
         self.outputqueue = Queue()
-        self.targetchannels.append(self.config['Twitch Channels']['default channel'])#temporary
+        self.channels.append(self.config['Twitch Channels']['default channel'])#temporary
         #self.sendas = self.config['
 
     def timeStamp(self):
@@ -118,10 +121,11 @@ class irc():
             msgID = 'Server'
             extratag = ['Info']
             msg = message[2].split(' ',2)
-            channel = '{' + msg[0][1:] + ']'
+            chann = msg[0][1:]
+            channel = '{' + chann + ']'
             if(msg[1] == '+o'):
                 message = 'MODS- ' + msg[2]
-                self.handleMods(msg[2])
+                self.handleMods(chann,msg[2])
             else:
                 msgID = ''
                 delimiter = ''
@@ -174,8 +178,50 @@ class irc():
             for user in data.split(' '):
                 self.users[channel][user] = {}
         else:
+            #add case for when given a channel
+            userlist = self.sortUsers(self.users)
+            self.outputqueue.put([26,['users',userlist]])
+
+    def sortUsers(self,data):
+        #sorts users. takes either list or dict
+        
+            userlist = []
             #format things
-            self.outputqueue.put([26,['users',list(self.users[self.config['Twitch Channels']['default channel']])]])#temporary
+            for achannel in self.channels:
+                channellist = self.groupUsers(achannel)
+                if(channellist):
+                    userlist.append('#'+achannel)
+                    userlist.extend(channellist)
+            return(userlist)
+
+    def groupUsers(self,achannel):
+        users = set()
+        channellist = []
+        for agroup in self.groups:
+            grouplist = []
+            for user in self.users[achannel]:
+                if(self.users[achannel][user]):
+                    if(agroup in user):
+                        grouplist.append("--" + user)
+                else:
+                    users.add("--" + user)
+            if(grouplist):
+                grouplist = self.orderUsers(grouplist)
+                channellist.append("-"+agroup)
+                channellist.extend(grouplist)
+            if(users):
+                using = self.orderUsers(users)
+                channellist.append("-USERS")
+                channellist.extend(using)
+        return(channellist)
+           
+
+    def orderUsers(self,data):
+        #takes a list/set of users and returns an equivalent, ordered list
+        #currently only capable of alphabetization - TO BE EXTENDED
+        if(self.config['Interface']['user list']['sort']=='alpha'):
+            data = sorted(data)
+        return(data)
 
     def setUserColor(self,user,color):
         pass
@@ -183,8 +229,19 @@ class irc():
     def emoteHandler(self,user,emoteslist):
         pass
 
-    def handleMods(self,users):
-        pass
+    def handleMods(self,channel,user):
+        try:
+            self.users[channel][user]['MODS'] = 1
+        except KeyError:
+            try:
+                self.users[channel][user] = {}
+                self.users[channel][user]['MODS'] = 1
+            except KeyError:
+                self.users[channel] = {}
+                self.users[channel][user] = {}
+                self.users[channel][user]['MODS'] = 1
+            
+            
 
     def handleSubscribers(self,user):
         pass

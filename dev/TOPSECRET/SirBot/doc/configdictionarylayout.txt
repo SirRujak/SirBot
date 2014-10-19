@@ -8,8 +8,14 @@ Interface
 -motd='String'
 -map="%dx%d+%d+%d"
 -iconified=True/False
--user list=True/False
--options menu=True/False
+-user list
+--start open=True/False
+--show channel=True/False
+--show groups=True/False
+--sort='string'
+-options menu
+--start open=True/False
+--default tab='string'
 -send as=automated/trusted
 -target channel=Default/'string'
 -chat
