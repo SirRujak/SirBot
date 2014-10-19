@@ -11,11 +11,11 @@ class irc():
         self.users = {}
         self.channels = []
         self.groups = []
-        self.groups.append('Administrators')#temporary - eventually needs to come from config
+        self.groups.append('ADMINISTRATORS')#temporary - eventually needs to come from config
         self.groups.append('MODS')
         self.outputqueue = Queue()
         self.channels.append(self.config['Twitch Channels']['default channel'])#temporary
-        #self.sendas = self.config['
+        #self.sendas = self.config[' ??
 
     def timeStamp(self):
         times = asctime(localtime(time()))
@@ -24,6 +24,7 @@ class irc():
         return(times)
 
     def styleChat(self,data):
+        #deprecated
         #consider implementing a tag for actions- would need low priority
         if(data[1] is not 'Server'):
             data[3] = data[3].replace("\\'","'")
@@ -79,7 +80,7 @@ class irc():
 ##                    #this doesn't contain the channel, will need to take some time on this.
 ##                    if(message[:34] == ':The moderators of this room are: '):
 ##                        pass
-##                else:
+                else:
                     msgID = ''
                     delimiter = ''
                     extratag = ['Error']
@@ -124,7 +125,7 @@ class irc():
             chann = msg[0][1:]
             channel = '{' + chann + ']'
             if(msg[1] == '+o'):
-                message = 'MODS- ' + msg[2]
+                message = '-MODS- ' + msg[2]
                 self.handleMods(chann,msg[2])
             else:
                 msgID = ''
@@ -159,7 +160,8 @@ class irc():
         else:
             self.users[channel]={}
             self.users[channel][user]={}
-        self.twitchUsersUpdate(channel)
+        self.groupAdministrator(channel,user)
+        self.twitchUsersUpdate(channel)#<-need to run this at intervals, not here
 
     def twitchPart(self,user,channel):
         try:
@@ -177,14 +179,15 @@ class irc():
                 self.users[channel] = {}
             for user in data.split(' '):
                 self.users[channel][user] = {}
+                self.groupAdministrator(channel,user)
         else:
             #add case for when given a channel
-            userlist = self.sortUsers(self.users)
+            userlist = self.sortUsers()#<-preferrably run this
             self.outputqueue.put([26,['users',userlist]])
 
-    def sortUsers(self,data):
+    def sortUsers(self):
         #sorts users. takes either list or dict
-        
+        if(self.config['Interface']['user list']['show channels']==1):
             userlist = []
             #format things
             for achannel in self.channels:
@@ -192,27 +195,58 @@ class irc():
                 if(channellist):
                     userlist.append('#'+achannel)
                     userlist.extend(channellist)
-            return(userlist)
+        else:
+            userlist = self.groupUsers()
+        return(userlist)
 
-    def groupUsers(self,achannel):
-        users = set()
+    def groupUsers(self,achannel=None):
         channellist = []
-        for agroup in self.groups:
-            grouplist = []
-            for user in self.users[achannel]:
-                if(self.users[achannel][user]):
-                    if(agroup in user):
-                        grouplist.append("--" + user)
-                else:
-                    users.add("--" + user)
-            if(grouplist):
-                grouplist = self.orderUsers(grouplist)
-                channellist.append("-"+agroup)
-                channellist.extend(grouplist)
-            if(users):
-                using = self.orderUsers(users)
-                channellist.append("-USERS")
-                channellist.extend(using)
+        if(self.config['Interface']['user list']['show groups']==1):
+            users = set()
+            if(achannel):
+                for agroup in self.groups:
+                    grouplist = []
+                    for user in self.users[achannel]:
+                        if(self.users[achannel][user]):
+                            if(agroup in self.users[achannel][user]):
+                                grouplist.append(user)
+                        else:
+                            users.add(user)
+                    if(grouplist):
+                        grouplist = self.orderUsers(grouplist)
+                        channellist.append("--"+agroup+"--")
+                        channellist.extend(grouplist)
+                if(users):
+                    using = self.orderUsers(users)
+                    channellist.append("--USERS--")
+                    channellist.extend(using)
+            else:
+                for agroup in self.groups:
+                    grouplist = []
+                    for achannel in self.channels:
+                        for user in self.users[achannel]:
+                            if(self.users[achannel][user]):
+                                if(agroup in user):
+                                    grouplist.append(user)
+                            else:
+                                users.add(user)
+                        if(grouplist):
+                            grouplist = self.orderUsers(grouplist)
+                            channellist.append("--" + agroup + "--")
+                            channellist.extend(grouplist)
+                if(users):
+                    using = self.orderUsers(users)
+                    channellist.append("--USERS--")
+                    channellist.extend(using)
+        else:
+            if(achannel):
+                channellist = list(self.users[achannel])
+                channellist = self.orderUsers(channellist)
+            else:
+                for achannel in self.channels:
+                    achannellist = list(self.users[achannel])
+                    channellist.extend(achannellist)
+                channellist = self.orderUsers(channellist)
         return(channellist)
            
 
@@ -222,6 +256,16 @@ class irc():
         if(self.config['Interface']['user list']['sort']=='alpha'):
             data = sorted(data)
         return(data)
+
+    def groupAdministrator(self,channel,user):
+        #add group attributes to members
+        #if(user==self.config['Twitch Accounts']['automated account']['name']):
+        #    self.users[channel][user]['Administrators'] = 1
+        #elif(user==self.config['Twitch Accounts']['trusted account']['name']):
+        #    self.users[channel][user]['Administrators'] = 1
+        if(user==channel):
+            self.users[channel][user]['ADMINISTRATORS'] = 1
+        #need records of user groups per channel to check here
 
     def setUserColor(self,user,color):
         pass
@@ -240,6 +284,7 @@ class irc():
                 self.users[channel] = {}
                 self.users[channel][user] = {}
                 self.users[channel][user]['MODS'] = 1
+        self.twitchUsersUpdate()
             
             
 
@@ -253,213 +298,9 @@ class irc():
         #temporarily - by that i mean longterm temporarily
         return((self.targetchannels[0],message))
 
-    def extractChat(self,message,times):
-        #put message in error buffer
-        inputData=[]
-        extratag = 0
-        inputData.append(times)
-        Error = 'Error.extractChat x'
-        if(message[1:4] == "'',"):
-            msg = message.split("', '")
-            if(len(msg) > 2):
-                msg = msg[1].split(' ')[1]
-                if(msg == 'PRIVMSG'):
-                    msgID = str(message.split("', '")[1].split('.')[0].split('!')[0])
-                    #message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip('"').strip("'")
-                    message = ",".join(message.split(',')[2:])[2:][:-2]
-                    if(msgID == 'jtv'):
-                        msgID = 'Server'
-                        extratag=['Info']
-                        if(message.split(' ')[0]=="USERCOLOR"):
-                            self.addColor(message.split(' ')[2])
-                elif(msg in ['001','002','003','004','375','372','376']):
-                    msgID = 'Server'
-                    message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-                    extratag = ['Welcome']
-                elif(msg == '353'):
-                    msgID = 'Server'
-                    #self.userlisterror.append(message)
-                    #self.messagelen.append(len(message))
-                    #self.extractUsers(len(message))
-                    message =  ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-                    self.extractUsers(message)
-                    message = 'USERS-' + message
-                    extratag = ['Users']
-                elif(msg == '366'):
-                    #self.userlisterror.clear()
-                    self.checkUserMultiplicity()
-                    message = ",".join(message.split(',')[2:]).strip(' ').strip("]").strip("'")
-                    msgID = 'Server'
-                    extratag=['Users']
-                else:
-                    msgID = ''
-                    extratag = ['Error']
-                    #self.chatError(msg,msgID,message)
-                    #self.userlisterror.append(message)
-            elif(len(msg) == 2):
-                if(len(msg[1].split(' '))>=2):
-                    msg=msg[1].split(' ')[1]
-                    if(msg == 'PART'):
-                        msgID = 'Server'
-                        message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                        self.partUsers(message)
-                        message = message + " has left."
-                        extratag = ['Part']
-                    elif(msg == 'JOIN'):
-                        msgID = 'Server'
-                        message = message.split(',')[1].strip(' ').strip("'").strip(' ').split('.')[0].split('@')[0].split('!')[0]
-                        self.joinUsers(message)
-                        message = message + " has joined."
-                        extratag = ['Join']
-                    elif(msg=='353'):
-                        msgID='Server'
-                        extratag = ['Error']
-                        #self.userlisterror.append(message)
-                    elif(msg == 'MODE'):
-                        #potentially other options besides +o to account for here someday - not too sure here
-                        msgID = 'Server'
-                        message = "".join(message.split("', '")[1][9:]).strip(']').strip("'")
-                        if(message.split(' ')[1] == '+o'):
-                            message = 'Mods:' + " ".join(message.split(' ')[2:])
-                            extratag = ['Mods']
-                        else:
-                            extratag = ['Error']
-                    elif(msg == 'PRIVMSG'):
-                        try:
-                            msgID = message.split("', '")[1].split('.')[0].split('!')[0]
-                            #message = ",".join(message.split(',')[2:]).strip(' ').rstrip("]").strip("'").strip('"')
-                            message = ",".join(message.split(',')[2:])[2:][:-2]
-                        except:
-                            msgID = 'PRIVMSG'
-                            extratag = ['Error']
-                        #self.chatError(msg,msgID,message)
-                    else:
-                        msgID = ''
-                        #self.chatError(msg,msgID,message)
-                        extratag = ['Error']
-                else:
-                    msgID = ''
-                    #self.chatError('',msgID,message)
-                    extratag = ['Error']
-            else:
-                msg = msg[1].split(' ')[1]
-                msgID = ''
-                #self.chatError(msg,msgID,message)
-                extratag = ['Error']
-        elif(message[1:8] == "'PING '"):
-            if(message[11:24] == "tmi.twitch.tv"):
-                msgID = 'Server'
-                message = 'PING! '
-                extratag = ['Ping']
-            else:
-                msgID = 'Server'
-                self.chatError('',msgID,message)
-                extratag = ['Ping','Error']
-        else:
-            #further contingencies go here someday
-            msgID = ''
-            #if(self.userlisterror):
-                #self.userlisterror.append(message)
-                #(fixable,temp) = self.fixUserList(message)
-                #if(fixable):
-                    #message = temp
-                    #return('Server:',temp.strip("[']"))
-                #else:
-                    #self.chatError('',msgID,message)
-            #else:
-                #self.chatError('',msgID,message)
-            #return(msgID,(Error +"003: -"+message))
-            extratag = ['Error']
-
-        inputData.append(msgID)
-        inputData.append(': ')
-        inputData.append(message)
-        inputData.append(extratag)
-
-        return(inputData)
-    
-    def chatError(self,data):
-        #message recovery tool
-        pass
-
-    def extractUsers(self,message):
-        self.using.extend(message.split(' '))
-        self.setUsers()
-
-    def joinUsers(self,user):
-        try:
-            self.using.append(user)
-            self.setUsers()
-        except:
-            pass
-
-    def partUsers(self,user):
-        try:
-            self.using.remove(user)
-            self.setUsers()
-        except:
-            pass
-
-    def formatUserList(self):
-        #self.users
-        #insert headings for various tiers
-        pass
-
-    def fixUserList(self,message):
-        fixable = False
-        while(len(self.userlisterror)>2):
-            self.userlisterror.pop(0)
-        if(len(self.userlisterror)==2):
-            if(self.userlisterror[1].find(',')==-1 and self.userlisterror[0].split("', '")[1].split(' ')[1]=='353'):
-                message = self.userlisterror[0].split("', '")[2].strip(']').strip("'").split(' ')
-                message = message[len(message)-1]
-                try:
-                    self.using.remove(message)
-                    self.setUsers()
-                    
-                except:
-                    #this should never happen, but need to make note somehow if it does
-                    pass
-                message = message + self.userlisterror[1].lstrip('[').rstrip(']').strip("'")
-                message = "Recovered:NAMES-" + message
-                fixable = True
-                self.userlisterror.clear()
-            else:
-                message = self.userlisterror[0][:len(self.userlisterror[0])-2]+self.userlisterror[1][2:]
-                tag = message.split("', '")[1].split(' ')[1]
-                if(tag=='353'):
-                    message = "Recovered:NAMES-" + message
-                    fixable = True
-                    self.userlisterror.clear()
-                else:
-                    message=self.userlisterror.pop(0)
-                    self.chatError('','',message)
-        else:
-            pass
-        self.checkUserMultiplicity()
-        return(fixable,message)
-
-    def checkUserMultiplicity(self):
-        #check how many times each user appears in self.using; update self.users
-        #make note in log of occurance
-        #temporarily print out names that have multiplicities
-#        print('Coming soon...')
-        for _user in self.using:
-            while(True):
-                try:
-                    index=self.using.index(_user,self.using.index(_user)+1)
-                    self.using.pop(index)
-                    #print(self.using.pop(index))
-
-                except ValueError:
-                    break
-                except:
-                    #unexpected error needs to be logged
-                    break
-
-        self.setUsers()
 
 
+##NOTES:
 
 #tags:
 #input/*username*/server/console
