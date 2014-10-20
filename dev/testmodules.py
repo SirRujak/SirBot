@@ -58,7 +58,7 @@ def test_twitchData():
     print('\n')
 
 def testdummy():
-    print('Nothing here!'end='')
+    print('Nothing here!',end='')
     time.sleep(5)
     print('..yet...')
 
