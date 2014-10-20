@@ -18,12 +18,16 @@ class application():
         self.allocateVars(config,interinput,interoutput)
 
     def begin(self):#this is just temporary until proper controls can be created in GUI
+        self.createModules()
         self.createIRCstreams('twitch')
         self.createIRCclient()
         #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
             self.joinATwitchChannel(self.config['Twitch Channels']
                                          ['default channel'])
+
+    def createModules(self):
+        pass
 
     def allocateVars(self,config,interinput,interoutput):
         self.config = config

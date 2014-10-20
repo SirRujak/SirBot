@@ -2,11 +2,81 @@
 
 #class for interfacing with twitch.tv
 
-from urllib.request import urlopen
+#######################################################
+#  need to extract requests and sync with network.py  #
+#######################################################
+
+from urllib.request import urlopen #want this out of here
+
 from json import loads
+from queue import Queue,Empty
 
 class twitch():
-    def getStreamInfo(userName):
+    def __init__(self,user):
+        self.inputqueue = Queue()
+        self.outputqueue = Queue()
+        self.user = user
+        self.numberFollowers = self.getFollowerCount(self.user)
+        self.latestFollower = self.getLatestFollower(self.user)
+        self.streamData = None
+        #self.numberSubscriber = 
+        #self.latestSubscriber =
+
+    def tick(self):
+        self.update()
+        self.newFollowers(self.user)
+
+    def update(self):
+        #get latest channel status/etc.
+        self.intakeData()
+        self.requestStreamData(self.user)#
+    
+    def newFollowers(self,user):
+        followers = self.getLatestFollower(user)
+        numfollowers = self.getFollowerCount(user)
+        if(self.latestFollower == followers):
+            if(self.numberFollowers==numfollowers):
+                #no changes
+                pass
+            else:
+                #this is the tricky one
+                #need to check created_at values
+                pass
+        else:
+            #probably have a new follower
+            if(self.numberFollowers<numfollowers):
+                newusers = self.getLatestFollowers(self.user,numfollowers-self.numberFollowers)
+                if(newusers[0]==self.latestFollower):
+                    self.output([14,newusers[1:]])
+                    self.latestFollower = newusers[-1]
+            else:
+                #could also be tricky
+                #some followers have left
+                #but may have new ones
+                pass
+
+    def requestStreamData(self,user):
+        url = 'https://api.twitch.tv/kraken/streams/' + user
+        self.outputqueue.put([7,url])
+
+    def intakeData(self):
+        #take data from inputqueue
+        try:
+            data = self.inputqueue.get_nowait()
+            self.sortData(data)
+        except Empty:
+            pass
+
+    def sortData(self,data):
+        #sort data pulled from queue
+        #should be a list where first entry is an identifier code
+        #if(data[0]==#... etc.
+        #then create different functions for different types of data
+        #need id code for streamData,followerdata,
+        pass
+    
+
+    def getStreamInfo(self,userName):
         errFlag = 0
         try:
             try:
@@ -23,7 +93,7 @@ class twitch():
         return(streamData,errFlag)
 
 
-    def getTwitchState(streamData):
+    def getTwitchState(self,streamData):
         errFlag = 0
         try:
             streamData = loads(streamData.decode())
@@ -52,7 +122,7 @@ class twitch():
 
 
 
-    def getFollowerCount(userName):
+    def getFollowerCount(self,userName):
         errFlag = 0
 
         try:
@@ -85,7 +155,7 @@ class twitch():
         return(followers,errFlag)
 
 
-    def getNewFollowers(userName,lastCheck,newCheck):
+    def getNewFollowers(self,userName,lastCheck,newCheck):
         errFlag = 0
         delta = -1
 
@@ -122,7 +192,7 @@ class twitch():
 
         return(followers,errFlag,delta)
 
-    def getNewFollowersNames(userName,limit,offset):
+    def getNewFollowersNames(self,userName,limit,offset):
         errFlag = 0
         followers = []
 
@@ -183,7 +253,7 @@ class twitch():
 
 
 
-    def getLiveViewerCount(streamData):
+    def getLiveViewerCount(self,streamData):
         errFlag = 0
 
         try:
@@ -202,7 +272,7 @@ class twitch():
         return(currentlyViewing,errFlag)
 
 
-    def getGameTitle(streamData):
+    def getGameTitle(self,streamData):
         errFlag = 0
         try:
             streamData = loads(streamData.decode())
@@ -219,7 +289,7 @@ class twitch():
 
         return(gameTitle,errFlag)
 
-    def getAuthorization(userName):
+    def getAuthorization(self,userName):
         errFlag = 0
 
         try:
@@ -232,7 +302,7 @@ class twitch():
 
         return(passToken,errFlag)
 
-    def getStreamStatus(streamData):
+    def getStreamStatus(self,streamData):
         errFlag = 0
 
         try:
@@ -247,11 +317,15 @@ class twitch():
     def getLatestSubscribers(userName,quantity):
         pass
 
-    def getLatestFollowers(userName,quantity):
+    def getLatestFollowers(self,userName,quantity):
         (followers,errorflag) = self.getNewFollowers(userName,0,quantity)
         return(followers)
 
-    def getAllFollowers(userName):
+    def getLatestFollower(self,userName):
+        (followers,errorflag) = self.getNewFollowers(userName,0,1)
+        return(followers)
+
+    def getAllFollowers(self,userName):
         followers = []
         (count,error1) = self.getFollowerCount(userName)
         if(error1==0):
@@ -290,13 +364,13 @@ class twitch():
         #TODO: write to file
         return(followers,errFlag)
 
-    def getAllSubscribers(userName):
+    def getAllSubscribers(self,userName):
         pass
 
-    def getALlSubscribing(userName):
+    def getAlSubscribing(self,userName):
         pass
 
-    def getAllFollowing(userName):
+    def getAllFollowing(self,userName):
         followings = []
         (count,error1) = self.getFollowingCount(userName)
         if(error1==0):
@@ -335,7 +409,7 @@ class twitch():
         #TODO: write to file
         return(followings,errFlag)
 
-    def getFollowingCount(userName):
+    def getFollowingCount(self,userName):
         errFlag = 0
 
         try:
@@ -368,7 +442,7 @@ class twitch():
         return(followings,errFlag)
 
 
-    def getFollowingNames(userName,limit,offset):
+    def getFollowingNames(self,userName,limit,offset):
         errFlag = 0
         followings = []
 
@@ -426,18 +500,18 @@ class twitch():
 
         return(followings,errFlag)
 
-    def updateAllFollowers(userName,filePath):
+    def updateAllFollowers(self,userName,filePath):
         pass
 
-    def updateAllFollowing(userName,filePath):
+    def updateAllFollowing(self,userName,filePath):
         pass
 
-    def updateAllSubscribers(userName,filePath):
+    def updateAllSubscribers(self,userName,filePath):
         pass
 
-    def updateAllSubscribing(userName,filePath):
+    def updateAllSubscribing(self,userName,filePath):
         pass
 
-    def findLiveStreamerFromFollowing(userName):
+    def findLiveStreamerFromFollowing(self,userName):
         #give preferrence to same gametitle
         pass

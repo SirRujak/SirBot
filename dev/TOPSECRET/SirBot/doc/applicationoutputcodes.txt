@@ -4,6 +4,7 @@
 --3=trusted irc account stream data
 
 11-20=internal data
+--14=web.py follower notices
 
 21-30=interface data
 --24=irc chat messages
