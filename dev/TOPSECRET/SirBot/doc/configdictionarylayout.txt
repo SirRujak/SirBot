@@ -10,7 +10,7 @@ Interface
 -iconified=True/False
 -user list
 --start open=True/False
---show channel=True/False
+--show channels=True/False
 --show groups=True/False
 --sort='string'
 -options menu
