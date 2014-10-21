@@ -52,10 +52,10 @@ class irc():
                 message = message[2].split(' ',1)
                 channel = '['+message[0][1:]+']'
                 message = message[1][1:]
-##                if(str(message[:11]) == "\\x01ACTION"): #not working - neeeds thought
-##                    message = str(message).replace("\\x01ACTION",'')
-##                    delimiter = ''
-##                    extratag = ['Action']
+                if(str(message[:7]) == "\x01ACTION"): #not working - neeeds thought
+                    message = str(message).replace("\x01ACTION",'').replace("\x01",'')
+                    delimiter = ''
+                    extratag = ['Action']
             elif(msgID == 'jtv'):
                 channel = ''
                 msgID = 'Server'
@@ -296,7 +296,7 @@ class irc():
     
     def outFormat(self,message):
         #temporarily - by that i mean longterm temporarily
-        return((self.targetchannels[0],message))
+        return((self.channels[0],message))
 
 
 

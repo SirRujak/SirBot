@@ -647,9 +647,9 @@ class interface():
             inputData.append(': ')
             inputData.append(message)
             inputData.append(0)
-            self.inputqueue.put(inputData)
+##            self.inputqueue.put(inputData)
             self.terminalEntry.delete(0,tk.END)
-            self.writeInput()
+            self.writeInput(inputData)
             self.sendOutput(message)
             self.terminalEntry.focus_set()
 
@@ -694,11 +694,6 @@ class interface():
         except queue.Empty:
             pass
 
-        
-    def parseCommands(self,data):
-        #bot frame eventually goes here
-        #if data is not local command, then:
-        self.sendOutput(data)
 
     def sendOutput(self,data):
         self.outputqueue.put([2,data])
