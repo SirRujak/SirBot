@@ -52,7 +52,7 @@ class irc():
                 message = message[2].split(' ',1)
                 channel = '['+message[0][1:]+']'
                 message = message[1][1:]
-                if(str(message[:7]) == "\x01ACTION"): #not working - neeeds thought
+                if(str(message[:7]) == "\x01ACTION"):
                     message = str(message).replace("\x01ACTION",'').replace("\x01",'')
                     delimiter = ''
                     extratag = ['Action']
