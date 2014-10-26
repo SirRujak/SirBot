@@ -263,7 +263,7 @@ class interface():
         self.mods = []
         self.specialusers = []
 
-    def createMainWindow(self,root):
+    def createMainWindow(self,root=None):
         if(root == None):
             from tkinter import Tk
             self.MainWindow = Tk()
