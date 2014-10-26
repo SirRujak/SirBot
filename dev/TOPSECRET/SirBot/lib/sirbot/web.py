@@ -16,11 +16,17 @@ class twitch():
         self.inputqueue = Queue()
         self.outputqueue = Queue()
         self.user = user
-        self.numberFollowers = self.getFollowerCount(self.user)
-        self.latestFollower = self.getLatestFollower(self.user)
+        self.numberFollowers = None
+        self.latestFollower = None
+        self.getInitialFollowerInfo()#uh oh
+        self.getInitialLatestFollowers()#double uh oh
         self.streamData = None
         #self.numberSubscriber = 
         #self.latestSubscriber =
+
+    def getFollowersInfo(self):
+        url = 'https://api.twitch.tv/kraken/channels/'+self.user+'/follows?limit=10'
+        self.outputqueue.put([7,[1,url]])
 
     def tick(self):
         self.update()
@@ -57,7 +63,7 @@ class twitch():
 
     def requestStreamData(self,user):
         url = 'https://api.twitch.tv/kraken/streams/' + user
-        self.outputqueue.put([7,url])
+        self.outputqueue.put([7,[2,url]])
 
     def intakeData(self):
         #take data from inputqueue
@@ -77,6 +83,7 @@ class twitch():
     
 
     def getStreamInfo(self,userName):
+        #deprecated
         errFlag = 0
         try:
             try:

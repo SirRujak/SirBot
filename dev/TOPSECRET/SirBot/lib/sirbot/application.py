@@ -19,15 +19,14 @@ class application():
 
     def begin(self):#this is just temporary until proper controls can be created in GUI
         self.createModules()
-        self.createIRCstreams('twitch')
-        self.createIRCclient()
         #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
             self.joinATwitchChannel(self.config['Twitch Channels']
                                          ['default channel'])
 
     def createModules(self):
-        pass
+        self.createIRCclient()
+        self.createIRCstreams('twitch')
 
     def allocateVars(self,config,interinput,interoutput):
         self.config = config
@@ -59,7 +58,9 @@ class application():
             0-10=outbound internet data
             --2=automated irc account stream chat
             --3=trusted irc account stream chat
+            --7=web.py twitch.tv requests
             11-20=internal data
+            --17=web.py twitch follower notices
             21-30=interface data
             --24=irc chat messages
             --25=interface configurations (interface to app)
@@ -212,6 +213,7 @@ class application():
             #print(temp)
         except Empty:
             pass
+        
         
     
     #channel,timestamp,sender,message

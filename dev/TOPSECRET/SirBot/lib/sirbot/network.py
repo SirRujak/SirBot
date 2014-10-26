@@ -4,6 +4,7 @@
 
 
 from socket import socket,AF_INET,SOCK_STREAM,SHUT_RDWR
+from ssl import SSLContext,PROTOCOL_TLSv1_2,CERT_REQUIRED
 from urllib.request import urlopen
 from queue import Queue
 from time import sleep
@@ -11,6 +12,11 @@ from time import sleep
 class request():
     def __init__(self):
         pass
+
+class secureStream(stream):
+    def __init__(self):
+        stream.__init__()
+        
 
 class stream():
     """Class for creating streaming connections, i.e., IRC threads."""
