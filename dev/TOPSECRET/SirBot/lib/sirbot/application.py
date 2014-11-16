@@ -6,7 +6,7 @@
 
 from lib.sirbot.irc import irc
 
-from time import sleep
+from time import sleep, time
 
 from queue import Empty
 
@@ -35,6 +35,7 @@ class application():
 
 
     def allocateVars(self,config,interinput,interoutput):
+        self.idletime = 0
         self.config = config
         self.interinput = interinput
         self.interoutput = interoutput
@@ -122,6 +123,21 @@ class application():
 
         #module ticks
         self.twitchWeb.tick()
+
+        #idle chat check - for pings mostly
+        if(time()-self.idletime > 15):
+            try:
+                message = self.chatcache.pop()
+                if(message[0]==':'):
+                    self.chat.inFormat(message,self.chat.timeStamp())
+                elif(message[0]=='P'):
+                    self.chat.inFormatPING(message,self.chat.timeStamp())
+                    self.sendPong()
+                else:
+                    self.chatcache.append(message)
+            except IndexError:
+                pass
+            self.idletime = time()
         
         for item in self.input:
             if(item[0]==10):
@@ -133,12 +149,14 @@ class application():
                                                                    self.chat.timeStamp())])
                         except IndexError:
                             self.chatcache.append(item[1])
+                            self.idletime = time()
                     else:
                         self.output.append([24,self.chatcache.pop()])
                 #self.chatcache.append(item[1])
                 elif(item[1][:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
                     self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
                     self.sendPong()
+                    print(True)
                 else:
                     fragment = self.chatcache.pop()
                     self.chatcache.append(fragment+item[1])
