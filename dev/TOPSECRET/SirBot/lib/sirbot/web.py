@@ -16,6 +16,7 @@ class twitch():
     def __init__(self,user):
         self.initialized = 0
         self.state = 0
+        self.intaketries = 0
         self.inputqueue = Queue()
         self.outputqueue = Queue()
         self.cache = Queue()
@@ -119,7 +120,11 @@ class twitch():
         try:
             data = self.inputqueue.get_nowait()
         except Empty:
-            pass
+            if(self.intaketries < 1000):
+                self.intaketries = self.intaketries + 1
+            else:
+                self.state = 0
+                self.intaketries = 0
         else:
             self.workingstack.append(data)
             self.state = 2
@@ -128,20 +133,24 @@ class twitch():
         #prepare input for processing
         data = self.workingstack.pop()
         data = data[1]
-        data = data.split("\r\n\r\n")
-        data = data[1]
-        data = data.split('\r\n')
         try:
+            data = data.split("\r\n\r\n")
             data = data[1]
         except IndexError:
-            data = data[0]
-        try:
-            data = loads(data)
-        except ValueError:
             self.state = 0
         else:
-            self.workingstack.append(data)
-            self.state = 3
+            data = data.split('\r\n')
+            try:
+                data = data[1]
+            except IndexError:
+                data = data[0]
+            try:
+                data = loads(data)
+            except ValueError:
+                self.state = 0
+            else:
+                self.workingstack.append(data)
+                self.state = 3
 
     def check(self):
         #process input
@@ -153,13 +162,15 @@ class twitch():
             
         except KeyError:
             try:
-                item = data["stream"]#not finished
+                if(data["stream"]):#need to research "null" behavior
+                    pass#not finished
                 self.state = 0
             except KeyError:
                 self.state = 0
                 #not finished
 
         else:
+            self.numberFollowers = int(data["_total"])
             #may need to trim followers list at some point
             for user in newlist:
                 if user in self.followers:
@@ -183,7 +194,7 @@ class twitch():
         self.state = 0
 
     def newFollowerMessage(self,user):
-        #send notification for new follower to chat
+        #send notification for new follower to chat - or something else..
         self.outputqueue.put([2,user+" has been assimilated. Resistance is futile."])
             
 

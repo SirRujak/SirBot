@@ -148,6 +148,16 @@ class secureStream(stream):
         else:
             return(data)
 
+    def transmit(self,data):
+        data = data.encode()
+        try:
+            self.connection.sendall(data)
+        except ConnectionAbortedError:
+            self.twitchconnect()
+
+    def close(self):
+        self.connection.close()
+
         
 if __name__ == "__main__":
     user = ''

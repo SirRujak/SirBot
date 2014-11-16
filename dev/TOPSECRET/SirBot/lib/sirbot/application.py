@@ -180,6 +180,9 @@ class application():
         for element in self.IRCstreams:
             element.close()
 
+        for element in self.DataStreams:
+            element.close()
+
     def applySettings(self,data):
         #apply settings to application or update config
         if(data == 0):
