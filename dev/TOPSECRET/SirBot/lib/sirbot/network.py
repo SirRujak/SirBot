@@ -4,7 +4,7 @@
 
 
 from socket import socket,AF_INET,SOCK_STREAM,SHUT_RDWR
-from ssl import SSLContext,PROTOCOL_TLSv1_2,CERT_REQUIRED
+from ssl import SSLContext,PROTOCOL_TLSv1_2,CERT_REQUIRED,SSLError
 from urllib.request import urlopen
 from queue import Queue
 from time import sleep
@@ -153,12 +153,16 @@ class secureStream(stream):
             return(data)
 
     def transmit(self,data):
+        junk = self.receive()
         data = data.encode()
         try:
             self.connection.sendall(data)
         except ConnectionAbortedError:
+            self.connection = None
             stream.createsocket(stream)
+        except SSLError:
             self.twitchconnect()
+        junk = None
 
     def close(self):
         self.connection.close()

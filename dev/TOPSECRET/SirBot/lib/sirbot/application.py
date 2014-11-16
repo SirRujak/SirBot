@@ -123,6 +123,7 @@ class application():
 
         #module ticks
         self.twitchWeb.tick()
+        self.chat.tick()
 
         #idle chat check - for pings mostly
         if(time()-self.idletime > 15):

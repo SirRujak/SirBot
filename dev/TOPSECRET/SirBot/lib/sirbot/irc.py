@@ -15,7 +15,16 @@ class irc():
         self.groups.append('MODS')
         self.outputqueue = Queue()
         self.channels.append(self.config['Twitch Channels']['default channel'])#temporary
+        self.delta = time()
+        self.outputqueue.put([26,['users',["Loading..."]]])
         #self.sendas = self.config[' ??
+
+    def tick(self):
+        now = time()
+        if(now - self.delta > 22):
+            self.delta = now
+            self.twitchUsersUpdate()
+            
 
     def timeStamp(self):
         times = asctime(localtime(time()))
@@ -117,7 +126,7 @@ class irc():
             channel = '[' + chann + ']'
             message = msg[2][1:]
             extratag = ['Users','Info']
-            self.twitchUsersUpdate(chann)
+            #self.twitchUsersUpdate(chann)
         elif(message[1] == 'MODE'):
             msgID = 'Server'
             extratag = ['Info']
@@ -161,7 +170,7 @@ class irc():
             self.users[channel]={}
             self.users[channel][user]={}
         self.groupAdministrator(channel,user)
-        self.twitchUsersUpdate(channel)#<-need to run this at intervals, not here
+        #self.twitchUsersUpdate(channel)#<-need to run this at intervals, not here
 
     def twitchPart(self,user,channel):
         try:
@@ -206,12 +215,15 @@ class irc():
             if(achannel):
                 for agroup in self.groups:
                     grouplist = []
-                    for user in self.users[achannel]:
-                        if(self.users[achannel][user]):
-                            if(agroup in self.users[achannel][user]):
-                                grouplist.append(user)
-                        else:
-                            users.add(user)
+                    try:
+                        for user in self.users[achannel]:
+                            if(self.users[achannel][user]):
+                                if(agroup in self.users[achannel][user]):
+                                    grouplist.append(user)
+                            else:
+                                users.add(user)
+                    except KeyError:
+                        self.users[achannel]={}
                     if(grouplist):
                         grouplist = self.orderUsers(grouplist)
                         channellist.append("--"+agroup+"--")
