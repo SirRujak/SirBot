@@ -1,8 +1,13 @@
 """
-0-10=outbound internet data
+0-5=outbound internet data
 --2=automated irc account stream data
 --3=trusted irc account stream data
---7=twitch web.py requests
+--4=twitch web.py requests
+
+6-10=inbound internet data
+--7twitch web.py responses
+
+
 
 11-20=internal data
 --17=web.py twitch follower notices

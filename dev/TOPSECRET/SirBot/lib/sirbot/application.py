@@ -10,7 +10,9 @@ from time import sleep
 
 from queue import Empty
 
-from lib.sirbot.network import stream
+from lib.sirbot.network import stream, secureStream
+
+from lib.sirbot.web import twitch
 
 class application():
     def __init__(self,config,interinput = None,interoutput = None):
@@ -21,12 +23,16 @@ class application():
         self.createModules()
         #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
-            self.joinATwitchChannel(self.config['Twitch Channels']
-                                         ['default channel'])
+            self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
+        if(self.config['Twitch Automated Moderator']['watch for followers']):
+            self.twitchDataSource.twitchconnect()
 
     def createModules(self):
         self.createIRCclient()
         self.createIRCstreams('twitch')
+        self.createDataStreams()
+        self.twitchWeb = twitch(self.config['Twitch Channels']['default channel'])
+
 
     def allocateVars(self,config,interinput,interoutput):
         self.config = config
@@ -72,6 +78,10 @@ class application():
                     self.automatedIRC.privmsg(item[1][0],item[1][1])#needs to be .privmsg with channel
                 elif(item[0]==3):
                     self.trustedIRC.privmsg(item[1][0],item[1][1])#item[1] = (channel,message)
+                elif(item[0]==4):
+                    self.twitchDataSource.transmit(item[1])
+                elif(item[0]==7):
+                    self.twitchWeb.inputqueue.put(item)
             elif(item[0]<=20):
                 #internal data - mostly ai.py
                 pass
@@ -109,32 +119,42 @@ class application():
         #for now just irc
         #retrieve incoming data from self.input
         #deposit outgoing data into self.output
+
+        #module ticks
+        self.twitchWeb.tick()
+        
         for item in self.input:
-            if(item[0]==2):
+            if(item[0]==10):
+                if(item[1][0]==':'):
+                    if(self.config['Interface']['chat']['raw']!=1):
+                        try:
+                            self.output.append([24,
+                                                self.chat.inFormat(self.chatcache.pop(),
+                                                                   self.chat.timeStamp())])
+                        except IndexError:
+                            self.chatcache.append(item[1])
+                    else:
+                        self.output.append([24,self.chatcache.pop()])
+                #self.chatcache.append(item[1])
+                elif(item[1][:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
+                    self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
+                    self.sendPong()
+                else:
+                    fragment = self.chatcache.pop()
+                    self.chatcache.append(fragment+item[1])
+            elif(item[0]==2):
                 self.output.append([2,self.chat.outFormat(item.pop())])
             elif(item[0]==3):
                 self.output.append([3,self.chat.outFormat(item.pop())])
+            elif(item[0]==4):
+                self.output.append(item)
+            elif(item[0]==7):
+                self.output.append(item)
             elif(item[0]==25):
                 self.applySettings(item[1])
+                self.output.append(item)
             elif(item[0] == 26):
                 self.output.append(item)
-            elif(item[0]==':'):
-                if(self.config['Interface']['chat']['raw']!=1):
-                    try:
-                        self.output.append([24,
-                                            self.chat.inFormat(self.chatcache.pop(),
-                                                               self.chat.timeStamp())])
-                    except IndexError:
-                        pass
-                else:
-                    self.output.append([24,self.chatcache.pop()])
-                self.chatcache.append(item)
-            elif(item[:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
-                self.output.append([24,self.chat.inFormatPING(item,self.chat.timeStamp())])
-                self.sendPong()
-            else:
-                fragment = self.chatcache.pop()
-                self.chatcache.append(fragment+item)
         self.input = []
                 
     def closeApplication(self):
@@ -148,10 +168,11 @@ class application():
             self.status = 0
     
     def sendPong(self):
+        #consider elevating to IRC.py?
         self.automatedIRC.pong()
         if(self.config['Twitch Accounts']['trusted account']['join chat']==1):
             self.trustedIRC.pong()
-            
+     
     def createIRCclient(self):
         self.chat = irc(self.config)
 
@@ -176,7 +197,11 @@ class application():
                                                     ['token'],retries)
                 self.IRCstreams.append(self.trustedIRC)
         self.streams.extend(self.IRCstreams)
-            
+
+    def createDataStreams(self):
+        if(self.config['Twitch Automated Moderator']['watch for followers']):
+            self.twitchDataSource = secureStream()
+            self.DataSources = [self.twitchDataSource]
     def checkInterface(self):
         #get from interface input queue
         #could grab more items here at some point
@@ -198,9 +223,14 @@ class application():
                 temp = element.inputqueue.get_nowait()
                 self.input.append(temp)
                 #print(temp)
+                temp = None
             except Empty:
                 pass
-
+        for element in self.DataSources:
+            data = element.receive()
+            if(data):
+                self.input.append([7,data])
+                
     def joinATwitchChannel(self,channel):
         self.automatedIRC.joinTwitchChannel(channel)
         if(self.config['Twitch Accounts']['trusted account']['join chat']!=0):
@@ -213,7 +243,18 @@ class application():
             #print(temp)
         except Empty:
             pass
-        
+
+        try:
+            temp = self.twitchWeb.outputqueue.get_nowait()
+            self.input.append(temp)
+        except Empty:
+            pass
+
+        try:
+            temp = self.twitchWeb.outputqueue.get_nowait()
+            self.input.append(temp)
+        except Empty:
+            pass
         
     
     #channel,timestamp,sender,message

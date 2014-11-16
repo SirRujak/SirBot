@@ -10,16 +10,24 @@ from urllib.request import urlopen #want this out of here
 
 from json import loads
 from queue import Queue,Empty
+from time import time
 
 class twitch():
     def __init__(self,user):
+        self.initialized = 0
+        self.state = 0
         self.inputqueue = Queue()
         self.outputqueue = Queue()
-        self.user = user
+        self.cache = Queue()
+        self.workingstack = []
+        self.channels = {}
+        self.addChannel(user)
+        self.followers = []
+        self.newFollowers = []
         self.numberFollowers = None
         self.latestFollower = None
-        self.getInitialFollowerInfo()#uh oh
-        self.getInitialLatestFollowers()#double uh oh
+        #self.getInitialFollowerInfo()#uh oh
+        #self.getInitialLatestFollowers()#double uh oh
         self.streamData = None
         #self.numberSubscriber = 
         #self.latestSubscriber =
@@ -29,13 +37,25 @@ class twitch():
         self.outputqueue.put([7,[1,url]])
 
     def tick(self):
-        self.update()
-        self.newFollowers(self.user)
+        if(self.state==0):
+            self.request()
+        elif(self.state==1):
+            self.intake()
+        elif(self.state==2):
+            self.prepare()
+        elif(self.state==3):
+            self.check()
+        elif(self.state==4):
+            self.notify()
+        #self.newFollowers(self.user)
 
     def update(self):
         #get latest channel status/etc.
         self.intakeData()
-        self.requestStreamData(self.user)#
+        #self.requestStreamData(self.user)#
+
+    def addChannel(self,channel):
+        self.channels[channel]=[int(0),int(0)]
     
     def newFollowers(self,user):
         followers = self.getLatestFollower(user)
@@ -61,17 +81,111 @@ class twitch():
                 #but may have new ones
                 pass
 
+    def requestFollowerData(self,user,limit='5'):
+        request = "GET /kraken/channels/" + user
+        request = request + "/follows?limit=" + limit
+        request = request + " HTTP/1.1\r\nHost: api.twitch.tv\r\n\r\n"
+        self.outputqueue.put([4,request])
+
     def requestStreamData(self,user):
-        url = 'https://api.twitch.tv/kraken/streams/' + user
-        self.outputqueue.put([7,[2,url]])
+        #get stream status/info
+        request = "GET /kraken/streams/" + user
+        request = request + " HTTP/1.1\r\nHost: api.twitch.tv\r\n\r\n"
+        self.outputqueue.put([4,request])
 
     def intakeData(self):
         #take data from inputqueue
         try:
             data = self.inputqueue.get_nowait()
-            self.sortData(data)
         except Empty:
             pass
+
+    def request(self):
+        #request either follower/subscriber/stream data based on time elapsed
+        for channel in self.channels:
+            now = time()
+            if(now - self.channels[channel][0] > 30):
+                self.channels[channel][0] = now
+                self.requestStreamData(channel)
+                self.state = 1
+            elif(now - self.channels[channel][1] > 15):
+                self.channels[channel][1] = now
+                self.requestFollowerData(channel)
+                self.state = 1
+                
+
+    def intake(self):
+        #take data from inputqueue if time differential is great enough
+        try:
+            data = self.inputqueue.get_nowait()
+        except Empty:
+            pass
+        else:
+            self.workingstack.append(data)
+            self.state = 2
+
+    def prepare(self):
+        #prepare input for processing
+        data = self.workingstack.pop()
+        data = data[1]
+        data = data.split("\r\n\r\n")
+        data = data[1]
+        data = data.split('\r\n')
+        try:
+            data = data[1]
+        except IndexError:
+            data = data[0]
+        try:
+            data = loads(data)
+        except ValueError:
+            self.state = 0
+        else:
+            self.workingstack.append(data)
+            self.state = 3
+
+    def check(self):
+        #process input
+        data = self.workingstack.pop()
+        try:
+            newlist = []
+            for item in data["follows"]:
+                newlist.append(item["user"]["display_name"])
+            
+        except KeyError:
+            try:
+                item = data["stream"]#not finished
+                self.state = 0
+            except KeyError:
+                self.state = 0
+                #not finished
+
+        else:
+            #may need to trim followers list at some point
+            for user in newlist:
+                if user in self.followers:
+                    pass
+                else:
+                    self.followers.append(user)
+                    self.newFollowers.append(user)
+            if(self.newFollowers):
+                self.state = 4
+            else:
+                self.state = 0
+
+    def notify(self):
+        #notify streamer of new follower
+        if(self.initialized == 1):
+            for user in self.newFollowers:
+                self.newFollowerMessage(user)
+        else:
+            self.initialized = 1
+        self.newFollowers = []
+        self.state = 0
+
+    def newFollowerMessage(self,user):
+        #send notification for new follower to chat
+        self.outputqueue.put([2,user+" has been assimilated. Resistance is futile."])
+            
 
     def sortData(self,data):
         #sort data pulled from queue
@@ -79,8 +193,9 @@ class twitch():
         #if(data[0]==#... etc.
         #then create different functions for different types of data
         #need id code for streamData,followerdata,
+        #if(data[0]==7):
+            #self.createJSONobject(data[1])
         pass
-    
 
     def getStreamInfo(self,userName):
         #deprecated

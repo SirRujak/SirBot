@@ -48,6 +48,8 @@ Twitch Automated Moderator
 -echo=True/False/Terminal
 -monitor chat content=True/False
 -allow custom commands=True/False
+-watch for followers=True/False
+-watch for subscribers=True/False
 
 Misc
 -twitch connect retries=%d

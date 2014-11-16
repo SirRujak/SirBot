@@ -13,11 +13,6 @@ class request():
     def __init__(self):
         pass
 
-class secureStream(stream):
-    def __init__(self):
-        stream.__init__()
-        
-
 class stream():
     """Class for creating streaming connections, i.e., IRC threads."""
     def __init__(self):
@@ -54,7 +49,7 @@ class stream():
             for line in data.split("\r\n"):
                 if(len(line)!=0):
                     #print(line)#temporary
-                    self.inputqueue.put(line)
+                    self.inputqueue.put([10,line])
 
     def twitchConnect(self,username,token):
         #elevate
@@ -95,7 +90,7 @@ class stream():
         self.connection.settimeout(0)
         for key in range(7):
             msg = self.inputqueue.get()
-            if(msg.split()[1] == 'NOTICE'):
+            if(msg[1].split()[1] == 'NOTICE'):
                 state = False
         return(state)
 
@@ -128,6 +123,32 @@ class stream():
         self.send('.clear')
             
 
+class secureStream(stream):
+    def __init__(self):
+        stream.__init__(stream)
+        self.contxt = SSLContext(PROTOCOL_TLSv1_2)
+        self.contxt.verify_mode = CERT_REQUIRED
+        self.contxt.load_default_certs()
+
+    def connect(self,host,port):
+        stream.connect(stream,host,port)
+        self.connection.settimeout(5)
+        self.connection = self.contxt.wrap_socket(self.connection)#stream.connection
+        self.connection.settimeout(0)
+
+    def twitchconnect(self):
+        self.connect('api.twitch.tv',443)
+
+    def receive(self,buffer=4096):
+        try:
+            data = self.connection.recv(buffer).decode()
+            #print(data)#temporary
+        except:
+            return(None)
+        else:
+            return(data)
+
+        
 if __name__ == "__main__":
     user = ''
     channel = ''
@@ -155,3 +176,6 @@ if __name__ == "__main__":
     x.receive()
     x.close()
     
+
+        
+        
