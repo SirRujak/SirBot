@@ -10,7 +10,7 @@ try:
     from sys import platform
 
 except ImportError:
-    pass
+    print("Unable to import one of: queue, time, tkinter, platform")
 
 class interface():
 
