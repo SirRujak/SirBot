@@ -156,7 +156,6 @@ class application():
                 elif(item[1][:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
                     self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
                     self.sendPong()
-                    print(True)
                 else:
                     fragment = self.chatcache.pop()
                     self.chatcache.append(fragment+item[1])

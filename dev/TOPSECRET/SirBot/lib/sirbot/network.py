@@ -16,12 +16,16 @@ class request():
 class stream():
     """Class for creating streaming connections, i.e., IRC threads."""
     def __init__(self):
-        self.connection = socket(AF_INET,SOCK_STREAM)
-        self.connection.set_inheritable(True) #we might have to do this
-        self.connection.setblocking(False)
         self.inputqueue = Queue()#this could be leaving
+        self.createsocket()
 
     buffer_length = 4096
+
+    def createsocket(self,blocking=False):
+        self.connection = socket(AF_INET,SOCK_STREAM)
+        self.connection.set_inheritable(True) #we might have to do this
+        self.connection.setblocking(blocking)
+
 
     def connect(self,host,port):
         self.connection.settimeout(5)
@@ -125,7 +129,7 @@ class stream():
 
 class secureStream(stream):
     def __init__(self):
-        stream.__init__(stream)
+        stream.createsocket(stream)
         self.contxt = SSLContext(PROTOCOL_TLSv1_2)
         self.contxt.verify_mode = CERT_REQUIRED
         self.contxt.load_default_certs()
@@ -153,6 +157,7 @@ class secureStream(stream):
         try:
             self.connection.sendall(data)
         except ConnectionAbortedError:
+            stream.createsocket(stream)
             self.twitchconnect()
 
     def close(self):
