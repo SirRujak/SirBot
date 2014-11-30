@@ -28,7 +28,7 @@ class stream():
 
 
     def connect(self,host,port):
-        self.connection.settimeout(5)
+        self.connection.settimeout(15)
         self.connection.connect((host,port))
         self.connection.settimeout(0)
 
@@ -135,8 +135,8 @@ class secureStream(stream):
         self.contxt.load_default_certs()
 
     def connect(self,host,port):
-        stream.connect(stream,host,port)
-        self.connection.settimeout(5)
+        self.connection.settimeout(15)
+        self.connection.connect((host,port))
         self.connection = self.contxt.wrap_socket(self.connection)#stream.connection
         self.connection.settimeout(0)
 
@@ -159,9 +159,9 @@ class secureStream(stream):
             self.connection.sendall(data)
         except ConnectionAbortedError:
             self.connection = None
-            stream.createsocket(stream)
-        except SSLError:
+            self.connection = socket(AF_INET,SOCK_STREAM)
             self.twitchconnect()
+            self.connection.settimeout(0)
         junk = None
 
     def close(self):
