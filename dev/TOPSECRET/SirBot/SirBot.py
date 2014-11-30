@@ -66,7 +66,7 @@ if __name__ == '__main__':
         app.begin()#temporary
         while(ON):
             ON = ON * app.tick()
-            slee(idle)
+            sleep(idle)
 
         app.shutdown()
 
