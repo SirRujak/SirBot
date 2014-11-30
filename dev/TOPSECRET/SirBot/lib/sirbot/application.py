@@ -31,7 +31,8 @@ class application():
         self.createIRCclient()
         self.createIRCstreams('twitch')
         self.createDataStreams()
-        self.twitchWeb = twitch(self.config['Twitch Channels']['default channel'])
+        if(self.config['Twitch Automated Moderator']['watch for followers']):
+            self.twitchWeb = twitch(self.config['Twitch Channels']['default channel'])
 
 
     def allocateVars(self,config,interinput,interoutput):
@@ -122,8 +123,11 @@ class application():
         #deposit outgoing data into self.output
 
         #module ticks
-        self.twitchWeb.tick()
-        self.chat.tick()
+        try:
+            self.twitchWeb.tick()
+            self.chat.tick()
+        except AttributeError:
+            pass
 
         #idle chat check - for pings mostly
         if(time()-self.idletime > 15):
@@ -247,10 +251,14 @@ class application():
                 temp = None
             except Empty:
                 pass
-        for element in self.DataSources:
-            data = element.receive()
-            if(data):
-                self.input.append([7,data])
+
+        try:
+            for element in self.DataSources:
+                data = element.receive()
+                if(data):
+                    self.input.append([7,data])
+        except AttributeError:
+            pass
                 
     def joinATwitchChannel(self,channel):
         self.automatedIRC.joinTwitchChannel(channel)
@@ -270,12 +278,8 @@ class application():
             self.input.append(temp)
         except Empty:
             pass
-
-        try:
-            temp = self.twitchWeb.outputqueue.get_nowait()
-            self.input.append(temp)
-        except Empty:
+        except AttributeError:
             pass
-        
+
     
     #channel,timestamp,sender,message
