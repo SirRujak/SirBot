@@ -210,7 +210,8 @@ class interface():
         self.h = self.MainWindow.winfo_screenheight()
         self.w = self.MainWindow.winfo_screenwidth()
         self.currentChannel = self.config['Twitch Channels']['default channel']
-
+        self.speaker = self.config['Twitch Accounts']['automated account']['name']
+        
         #informative
         self.botName = 'SirBot'
         self.botVersion = '0.0.0'
@@ -643,8 +644,8 @@ class interface():
             inputData = []
             inputData.append(self.timeStamp())
             inputData.append('['+self.currentChannel+']')
-            inputData.append('Input')
-            inputData.append(': ')
+            inputData.append(self.speaker)
+            inputData.append(':')
             inputData.append(message)
             inputData.append(0)
 ##            self.inputqueue.put(inputData)
@@ -789,6 +790,8 @@ class interface():
         #self.terminalHistory.tag_config('Input',elide=1)
         #self.terminalHistory.tag_config('User',foreground='red')
         self.terminalHistory.tag_config('Text',foreground='black')
+        self.terminalHistory.tag_config('Info',elide=1)
+        self.terminalHistory.tag_config('Channel',elide=1)
         #print(self.terminalScroll.get())
         #print(tk.END)
         if(self.terminalScroll.get()[1]==1.0):
