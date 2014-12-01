@@ -136,6 +136,13 @@ class irc():
             if(msg[1] == '+o'):
                 message = '-MODS- ' + msg[2]
                 self.handleMods(chann,msg[2])
+            elif(msg[1] == '-o'):
+                message = '-UNMODS-' + msg[2]
+                #self.handleUnMods(chann,msg[2])
+                #this has issues on twitch's end-
+                #servers are constantly unmodding mods
+                #regardless of action taken by streamer
+                ### need to revisit in future ###
             else:
                 msgID = ''
                 delimiter = ''
