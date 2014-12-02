@@ -166,8 +166,18 @@ class application():
                     self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
                     self.sendPong()
                 else:
-                    fragment = self.chatcache.pop()
-                    self.chatcache.append(fragment+item[1])
+                    try:
+                        fragment = self.chatcache.pop()
+                    except IndexError:
+                        pass
+                    else:
+                        try:
+                            self.output.append([24,
+                                            self.chat.inFormat(fragment+item[1],
+                                                               self.chat.timeStamp())])
+                        except:
+                            #add item[1] to the chat cache here?
+                            pass
             elif(item[0]==2):
                 self.output.append([2,self.chat.outFormat(item.pop())])
             elif(item[0]==3):
