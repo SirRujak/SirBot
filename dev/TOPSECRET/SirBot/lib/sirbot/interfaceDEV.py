@@ -657,13 +657,15 @@ class interface():
 
     def writeInput(self,data):
         if(data[5] == 0):
-            data = self.styleChat(data)
+            #data = self.styleChat(data)
+            self.displayToTerminal('\n',(data[1],data[2]))
             self.displayToTerminal(data[0],(data[1],data[2],'Time'))
             self.displayToTerminal(data[1],(data[1],data[2],'Channel'))
             self.displayToTerminal(data[2],(data[1],data[2]))
             self.displayToTerminal(data[3],(data[1],data[2],'Text'))
             self.displayToTerminal(data[4],(data[1],data[2],'Text'))
-            self.displayToTerminal('\n',(data[1],data[2]))
+        elif(data[5] == -1):
+            self.displayToTerminal(data[4],(data[1],data[2],'Text','Fragment'))
         else:
             #extend [data[]] by extra tabs and convert to tuple
             tag = data[1:2]
