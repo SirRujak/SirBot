@@ -37,39 +37,39 @@ class chatHandler:
         def banUser(self, userData):
                 tempString = self.twitchCommandDictionary['BAN']
                 tempString = tempString.substitute(userName = userData)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def unbanUser(self, userData):
                 tempString = self.twitchCommandDictionary['UNBAN']
                 tempString = tempString.substitute(userName = userData)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def activateSlow(self, timeData):
                 tempString = self.twitchCommandDictionary['SLOW']
                 tempString = tempString.substitute(duration = timeData)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def deactivateSlow(self):
                 tempString = self.twitchCommandDictionary['SLOWOFF']
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def activateSubMode(self):
                 tempString = self.twitchCommandDictionary['SUBSCRIBERS']
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def deactivateSubMode(self):
                 tempString = self.twitchCommandDictionary['SUBSCRIBERSOFF']
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def clearChat(self):
                 tempString = self.twitchCommandDictionary['CLEAR']
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def startCommercial(self, timeData):
@@ -79,39 +79,42 @@ class chatHandler:
                         tempDict = dict(duration = '30')
                 tempString = self.twitchCommandDictionary['COMMERCIAL']
                 tempString = tempString.substitute(tempDict)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def hostChannel(self, channelData):
                 tempString = self.twitchCommandDictionary['SLOW']
                 tempString = tempString.substitute(channelName = channelData)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def unhostChannel(self):
                 tempString = self.twitchCommandDictionary['UNHOST']
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def demoteUserToLevel(self, userData, level, mod):
-                if (mod == Fale):
+                if (mod == False):
                         self.makeUserViewer(userData)
-                tempOut = outputContainer("INTERNAL", level)
+                tempOut = outputContainer("INTERNAL", level, "SETLEVEL)
                 self.addToOutputQueue(tempOut)
 
         def promoteUserToLevel(self, userData level, mod):
-                pass
+                if (mod == True):
+                        self.makeUserMod(userData)
+                tempOut = outputContainer("INTERNAL", level, "SETLEVEL)
+                self.addToOutputQueue(tempOut)
 
         def makeUserMod(self, userData):
                 tempString = self.twitchCommandDictionary['MOD']
                 tempString = tempString.substitute(userName = userData)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def makeUserViewer(self, userData):
                 tempString = self.twitchCommandDictionary['UNMOD']
                 tempString = tempString.substitute(userName = userData)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
 
         def timeoutUser(self, userData, timeData):
@@ -123,7 +126,7 @@ class chatHandler:
                                         duration = '600')
                 tempString = self.twitchCommandDictionary['TIMEOUT']
                 tempString = tempString.substitute(tempDict)
-                tempOut = outputContainer("COMMAND", tempString)
+                tempOut = outputContainer("COMMAND", tempString, None)
                 self.addToOutputQueue(tempOut)
 
         ## Funcitons that should possibly be in the API.
@@ -167,7 +170,7 @@ class chatHandler:
                 self.twitchCommandDictionary = {}
 
         def addToOutputQueue(self, leavingData):
-                pass
+                self.outputQueue.put(leavingData)
 
         def removeFromInputQueue(self):
                 pass
@@ -184,9 +187,10 @@ class chatDataMessage:
                 pass
 
 class outputContainer:
-        def __init__(self, chatType, message):
+        def __init__(self, chatType, message, subType):
                 self.chatType = chatType
                 self.message = message
+                self.subType = subType
                 
 
 class channelData:
