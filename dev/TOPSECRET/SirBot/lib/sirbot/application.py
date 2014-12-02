@@ -130,13 +130,15 @@ class application():
             pass
 
         #idle chat check - for pings mostly
-        if(time()-self.idletime > 15):
+        if(time()-self.idletime > 10):
             try:
                 message = self.chatcache.pop()
                 if(message[0]==':'):
-                    self.chat.inFormat(message,self.chat.timeStamp())
-                elif(message[0]=='P'):
-                    self.chat.inFormatPING(message,self.chat.timeStamp())
+                    self.output.append([24,self.chat.inFormat(message,
+                                                              self.chat.timeStamp())])
+                elif(message[:4]=='PING'):
+                    self.output.append([24,self.chat.inFormatPING(message,
+                                                                  self.chat.timeStamp())])
                     self.sendPong()
                 else:
                     self.chatcache.append(message)
@@ -153,11 +155,13 @@ class application():
                                                 self.chat.inFormat(self.chatcache.pop(),
                                                                    self.chat.timeStamp())])
                         except IndexError:
-                            self.chatcache.append(item[1])
-                            self.idletime = time()
+                            #expected ocassionally
+                            pass
+                        self.chatcache.append(item[1])
+                        self.idletime = time()
                     else:
                         self.output.append([24,self.chatcache.pop()])
-                #self.chatcache.append(item[1])
+                        self.chatcache.append(item[1])
                 elif(item[1][:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
                     self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
                     self.sendPong()
