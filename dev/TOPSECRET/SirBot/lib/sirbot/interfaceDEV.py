@@ -31,7 +31,10 @@ class interface():
         try:
             temp = self.inputqueue.get_nowait()
             if(temp[0] == 24):
-                self.writeInput(temp[1])
+                if(self.raw):
+                    self.writeInputRAW(temp[1])
+                else:
+                    self.writeInput(temp[1])
             elif(temp[0] == 25):
                 self.updateConfig(temp[1])
             elif(temp[0] == 26):
@@ -687,13 +690,9 @@ class interface():
             self.displayToTerminal('\n',tags)
             
 
-    def writeInputRAW(self):
-        try:
-            data = self.inputqueue.get_nowait()
-            self.displayToTerminal('\n','Raw')
-            self.displayToTerminal(data,'Raw')
-        except queue.Empty:
-            pass
+    def writeInputRAW(self,data):
+        self.displayToTerminal(data,'Raw')
+        self.displayToTerminal('\n','Raw')
 
 
     def sendOutput(self,data):
