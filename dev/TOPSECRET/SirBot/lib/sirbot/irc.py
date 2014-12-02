@@ -18,6 +18,8 @@ class irc():
         self.delta = time()
         self.outputqueue.put([26,['users',["Loading..."]]])
         #self.sendas = self.config[' ??
+        self.lastID='Info'
+        self.lastChannel = 'Error'
 
     def tick(self):
         now = time()
