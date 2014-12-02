@@ -47,14 +47,116 @@ class irc():
                 data[2] = ''
         return(data)
 
-    def inFormatFragment(self,message):
+    def inFormat(self,message,times):
         inputData = []
-        extratag = -1
-        channel = self.lastChannel
-        msgID = self.lastID
-        delimiter = ''
+        cache = message
+        extratag = 0
+        channel = None
+        delimiter = ':'
+        inputData.append(times)
+        message = message.split(' ',2)
+        if(message[1] == 'PRIVMSG'):
+            msgID = message[0].split('!',1)[0][1:]
+            if(msgID != 'jtv'):
+                message = message[2].split(' ',1)
+                channel = '['+message[0][1:]+']'
+                message = message[1][1:]
+                if(str(message[:7]) == "\x01ACTION"):
+                    message = str(message).replace("\x01ACTION",'').replace("\x01",'')
+                    delimiter = ''
+                    extratag = ['Action']
+            elif(msgID == 'jtv'):
+                channel = ''
+                msgID = 'Server'
+                extratag = ['Info']
+                message = message[2].split(' ',1)[1]
+                msg = message.split(' ',1)[0][1:]
+                if(msg == 'SPECIALUSER'):
+                    if(message[3] == 'subscriber'):
+                        self.handleSubscribers(message[2])
+                    elif(message[3] == 'staff'):
+                        self.handleStaff(message[2])
+                    message = message[1:]
+                elif(msg == 'USERCOLOR'):
+                    self.setUserColor(message[2],message[3])
+                    message = message[1:]
+                elif(msg == 'EMOTESET'):
+                    self.emoteHandler(message[2],message[3])
+                    message = message[1:]
+                elif(msg == 'HISTORYEND'):
+                    message = message[1:]
+##                elif(msg == 'The'):
+##                    #this doesn't contain the channel, will need to take some time on this.
+##                    if(message[:34] == ':The moderators of this room are: '):
+##                        pass
+                else:
+                    msgID = ''
+                    delimiter = ''
+                    extratag = ['Error']
+                    message = cache
+        elif(message[1] == 'JOIN'):
+            msgID = 'Server'
+            chann = message[2][1:]
+            channel = '[' + chann + ']'
+            msg = message[0].split('!',1)[0][1:]
+            message = msg + ' has joined.'
+            extratag = ['Join','Info']
+            self.twitchJoin(msg,chann)
+        elif(message[1] == 'PART'):
+            msgID = 'Server'
+            chann = message[2][1:]
+            channel = '[' + chann + ']'
+            msg = message[0].split('!',1)[0][1:]
+            message = msg + ' has left.'
+            extratag = ['Part','Info']
+            self.twitchPart(msg,chann)
+        elif(message[1] == '353'):
+            msgID = 'Server'
+            extratag = ['Users','Info']
+            msg = message[2].split(' ',3)
+            chann = msg[2][1:]
+            channel = '[' + chann + ']'
+            message = msg[3][1:]
+            self.twitchUsersUpdate(chann,message)
+            message = 'USERS- ' + message
+        elif(message[1] == '366'):
+            msgID = 'Server'
+            msg = message[2].split(' ',2)
+            chann = msg[1][1:]
+            channel = '[' + chann + ']'
+            message = msg[2][1:]
+            extratag = ['Users','Info']
+            #self.twitchUsersUpdate(chann)
+        elif(message[1] == 'MODE'):
+            msgID = 'Server'
+            extratag = ['Info']
+            msg = message[2].split(' ',2)
+            chann = msg[0][1:]
+            channel = '{' + chann + ']'
+            if(msg[1] == '+o'):
+                message = '-MODS- ' + msg[2]
+                self.handleMods(chann,msg[2])
+            elif(msg[1] == '-o'):
+                message = '-UNMODS-' + msg[2]
+                #self.handleUnMods(chann,msg[2])
+                #this has issues on twitch's end-
+                #servers are constantly unmodding mods
+                #regardless of action taken by streamer
+                ### need to revisit in future ###
+            else:
+                msgID = ''
+                delimiter = ''
+                channel = ''
+                message = cache
+                extratag = ['Error']
+        else:
+            msgID = ''
+            message = cache
+            delimiter = ''
+            channel = ''
+            if(message != self.config['Interface']['motd']):
+                extratag = ["Error"]
 
-        inputData.append('')
         inputData.append(channel)
         inputData.append(msgID)
         inputData.append(delimiter)
@@ -62,134 +164,6 @@ class irc():
         inputData.append(extratag)
         
         return(inputData)
-
-        
-
-    def inFormat(self,message,times):
-        try:
-            inputData = []
-            cache = message
-            extratag = 0
-            channel = None
-            delimiter = ':'
-            inputData.append(times)
-            message = message.split(' ',2)
-            if(message[1] == 'PRIVMSG'):
-                msgID = message[0].split('!',1)[0][1:]
-                if(msgID != 'jtv'):
-                    message = message[2].split(' ',1)
-                    channel = '['+message[0][1:]+']'
-                    message = message[1][1:]
-                    if(str(message[:7]) == "\x01ACTION"):
-                        #print(message)
-                        message = str(message).replace("\x01ACTION",'').replace("\x01",'')
-                        #print(message)
-                        delimiter = ''
-                        extratag = ['Action']
-                elif(msgID == 'jtv'):
-                    channel = ''
-                    msgID = 'Server'
-                    extratag = ['Info']
-                    message = message[2].split(' ',1)[1]
-                    msg = message.split(' ',1)[0][1:]
-                    if(msg == 'SPECIALUSER'):
-                        if(message[3] == 'subscriber'):
-                            self.handleSubscribers(message[2])
-                        elif(message[3] == 'staff'):
-                            self.handleStaff(message[2])
-                        message = message[1:]
-                    elif(msg == 'USERCOLOR'):
-                        self.setUserColor(message[2],message[3])
-                        message = message[1:]
-                    elif(msg == 'EMOTESET'):
-                        self.emoteHandler(message[2],message[3])
-                        message = message[1:]
-                    elif(msg == 'HISTORYEND'):
-                        message = message[1:]
-    ##                elif(msg == 'The'):
-    ##                    #this doesn't contain the channel, will need to take some time on this.
-    ##                    if(message[:34] == ':The moderators of this room are: '):
-    ##                        pass
-                    else:
-                        msgID = ''
-                        delimiter = ''
-                        extratag = ['Error']
-                        message = cache
-            elif(message[1] == 'JOIN'):
-                msgID = 'Server'
-                chann = message[2][1:]
-                channel = '[' + chann + ']'
-                msg = message[0].split('!',1)[0][1:]
-                message = msg + ' has joined.'
-                extratag = ['Join','Info']
-                self.twitchJoin(msg,chann)
-            elif(message[1] == 'PART'):
-                msgID = 'Server'
-                chann = message[2][1:]
-                channel = '[' + chann + ']'
-                msg = message[0].split('!',1)[0][1:]
-                message = msg + ' has left.'
-                extratag = ['Part','Info']
-                self.twitchPart(msg,chann)
-            elif(message[1] == '353'):
-                msgID = 'Server'
-                extratag = ['Users','Info']
-                msg = message[2].split(' ',3)
-                chann = msg[2][1:]
-                channel = '[' + chann + ']'
-                message = msg[3][1:]
-                self.twitchUsersUpdate(chann,message)
-                message = 'USERS- ' + message
-            elif(message[1] == '366'):
-                msgID = 'Server'
-                msg = message[2].split(' ',2)
-                chann = msg[1][1:]
-                channel = '[' + chann + ']'
-                message = msg[2][1:]
-                extratag = ['Users','Info']
-                #self.twitchUsersUpdate(chann)
-            elif(message[1] == 'MODE'):
-                msgID = 'Server'
-                extratag = ['Info']
-                msg = message[2].split(' ',2)
-                chann = msg[0][1:]
-                channel = '{' + chann + ']'
-                if(msg[1] == '+o'):
-                    message = '-MODS- ' + msg[2]
-                    self.handleMods(chann,msg[2])
-                elif(msg[1] == '-o'):
-                    message = '-UNMODS-' + msg[2]
-                    #self.handleUnMods(chann,msg[2])
-                    #this has issues on twitch's end-
-                    #servers are constantly unmodding mods
-                    #regardless of action taken by streamer
-                    ### need to revisit in future ###
-                else:
-                    msgID = ''
-                    delimiter = ''
-                    channel = ''
-                    message = cache
-                    extratag = ['Error']
-            else:
-                msgID = ''
-                message = cache
-                delimiter = ''
-                channel = ''
-                if(message != self.config['Interface']['motd']):
-                    extratag = ["Error"]
-
-            self.lastChannel = channel
-            self.lastID = msgID
-
-            inputData.append(channel)
-            inputData.append(msgID)
-            inputData.append(delimiter)
-            inputData.append(message)
-            inputData.append(extratag)
-            
-            return(inputData)
-        except IndexError:
-            return(None)
 
     def inFormatPING(self,message,times):
         #temporary
