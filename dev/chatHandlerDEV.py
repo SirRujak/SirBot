@@ -21,17 +21,35 @@ class chatHandler:
         ## Needs to have all of the base functions made
         ## Base functions are timeout, ban, promote to level, demote to level,
         ## Needs channelName, temp, modList, spamLevel, spamFilter variables where temp is the message
-        def __init__(self):
+        def __init__(self, channelName):
+                self.boundChannel = channelName
+                
+                self.commandDictionaryFileName = ''
+                self.commandDictionaryFile = None
+                self.userLevelDictionary = None
                 self.inputQueue = Queue()
                 self.outputQueue = Queue()
                 self.commandDictionary = {}
                 self.spamDictionary = {}
+                self.twitchDictionaryFileName = ''
+                self.twitchDictionaryFile = None
                 self.twitchCommandDictionary = {}
+                self.timerList = []
+                self.timerListFile = None
+                self.timerListFileName = ''
                 pass
 
-        ## Base functions that must be in the API.
+        ## Base functions that must be in the API. ##
         ## Skip this one for now
+        ## Timer input list = [name, currTime, timerLen, chatHandler, commandData, channel]
+        
         def createTimer(self, timerData):
+                pass
+
+        def deleteTimer(self, timerKey):
+                pass
+
+        def checkTimers(self):
                 pass
         
         def banUser(self, userData):
@@ -96,13 +114,15 @@ class chatHandler:
         def demoteUserToLevel(self, userData, level, mod):
                 if (mod == False):
                         self.makeUserViewer(userData)
-                tempOut = outputContainer("INTERNAL", level, "SETLEVEL)
+                tempOut = outputContainer("INTERNAL", level, "SETLEVEL")
+                ## Change "SETLEVEL" to the SETLEVEL code once made
                 self.addToOutputQueue(tempOut)
 
-        def promoteUserToLevel(self, userData level, mod):
+        def promoteUserToLevel(self, userData, level, mod):
                 if (mod == True):
                         self.makeUserMod(userData)
-                tempOut = outputContainer("INTERNAL", level, "SETLEVEL)
+                tempOut = outputContainer("INTERNAL", level, "SETLEVEL")
+                ## Change "SETLEVEL" to the SETLEVEL code once made
                 self.addToOutputQueue(tempOut)
 
         def makeUserMod(self, userData):
@@ -129,42 +149,58 @@ class chatHandler:
                 tempOut = outputContainer("COMMAND", tempString, None)
                 self.addToOutputQueue(tempOut)
 
-        ## Funcitons that should possibly be in the API.
+        def activateNotification(self, notificationType):
+                ## Time for pseudocode!!! :D
+                ## tempOut = outputContainer('INTERNAL', [notificationType, 1], NOTIFICATIONCODE)
+                ## self.addToOutputQueue(tempOut)
+                pass
+
+        def deactivateNotification(self, notificationType):
+                ## Time for pseudocode!!! :D
+                ## tempOut = outputContainer('INTERNAL', [notificationType, 0], NOTIFICATIONCODE)
+                ## self.addToOutputQueue(tempOut)
+                pass
+
+        def createCommand(self, commandKey, resposneValue,
+                          commandLevel, callLevel):
+                pass
+
+        def deleteCommand(self, commandKey, commandLevel, callLevel):
+                pass
+
+        ## Command Level is optional, None give all levels.
+        def listCommands(self, commandLevel):
+                pass
+
+        ## Funcitons that should possibly be in the API. ##
         def joinChannel(self, channelData):
                 pass
 
         def leaveChannel(self, channelData):
                 pass
 
-        ## Other functions.
+        ## Other functions. ##
         def checkChatCMD(self, chatData):
                 pass
 
-        def updateCommandDict(self, dictFile):
+        def updateCommandDict(self):
+                pass
+
+        def openCommandDictFile(self):
                 pass
         
-        def loadCommandDict(self, dictFile):
-                tempString = dictFile.read()
+        def loadCommandDict(self):
+                tempString = self.commandDictionaryFile.read()
                 self.commandDictionary = json.loads(tempString)
-                dictFile.close()
 
         def delCommandDict(self):
                 self.commandDictionary = {}
 
-        def updateSpamDict(self, dictFile):
-                pass
-        
-        def loadSpamDict(self, dictFile):
-                tempString = dictFile.read()
-                self.spamDictionary = json.loads(tempString)
-                dictFile.close()
-
-        def delSpamDict(self):
-                self.spamDictionary = {}
-
+        ## NEED TO FIX THIS ONE
         def loadTwitchDict(self, dictFile):
                 tempString = dictFile.read()
                 self.twitchCommandDictionary = json.loads(tempString)
+                pass
 
         def delTwitchDict(self):
                 self.twitchCommandDictionary = {}
@@ -172,19 +208,39 @@ class chatHandler:
         def addToOutputQueue(self, leavingData):
                 self.outputQueue.put(leavingData)
 
-        def removeFromInputQueue(self):
-                pass
+        def enQueue(self, data):
+                self.addToInputQueue(data)
 
-        ## Don't do for now
+        def addToInputQueue(self, data):
+                tempData = chatDataMessage(data)
+                self.inputQueue.put(tempData)
+
+        def removeFromInputQueue(self):
+                tempHolder = self.inputQueue.get()
+                self.checkChatCMD(tempHolder)
+
+        ## Split a multiple command line into multiple single commands.
         def splitMultiCMD(self, multiCMD):
-                pass
+                newCMDs = multiCMD.messageContents.split('\&')
+                for CMD in newCMDs:
+                        multiCMD.messageContents = CMD
+                        self.addToInputQueue(multiCMD)
+
+        def setBoundChannel(self, channelName):
+                this.boundChannel = channelName
 
 
 ## Secondary classes.
 class chatDataMessage:
-        def __init__(self, userName, channelName, timeStamp, messageContents,
-                     isLocal, chatType):
-                pass
+##        def __init__(self, userName, channelName, timeStamp, messageContents,
+##                     isLocal, chatType):
+        def __init__(self, infoList):
+                self.userName = infoList[0]
+                self.channelName = infoList[1]
+                self.channelName = infoList[2]
+                self.messageContents = infoList[3]
+                self.isLocal = infoList[4]
+                self.chatType = infoList[5]
 
 class outputContainer:
         def __init__(self, chatType, message, subType):
