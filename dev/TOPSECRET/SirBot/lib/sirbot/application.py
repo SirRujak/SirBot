@@ -129,39 +129,18 @@ class application():
         except AttributeError:
             pass
 
-        #idle chat check - for pings mostly
-        if(time()-self.idletime > 10):
-            try:
-                message = self.chatcache.pop()
-                if(message[0]==':'):
-                    self.output.append([24,self.chat.inFormat(message,
-                                                              self.chat.timeStamp())])
-                elif(message[:4]=='PING'):
-                    self.output.append([24,self.chat.inFormatPING(message,
-                                                                  self.chat.timeStamp())])
-                    self.sendPong()
-                else:
-                    self.chatcache.append(message)
-            except IndexError:
-                pass
-            self.idletime = time()
-        
         for item in self.input:
             if(item[0]==10):
                 if(item[1][0]==':'):
+                if(item[1][0]==':'):
                     if(self.config['Interface']['chat']['raw']!=1):
-                        try:
-                            self.output.append([24,
-                                                self.chat.inFormat(self.chatcache.pop(),
-                                                                   self.chat.timeStamp())])
-                        except IndexError:
-                            #expected ocassionally
-                            pass
-                        self.chatcache.append(item[1])
-                        self.idletime = time()
+                        self.output.append([24,
+                                            self.chat.inFormat(item[1],
+                                                               self.chat.timeStamp())])
+                            self.chatcache.append(item[1])
+                            self.idletime = time()
                     else:
-                        self.output.append([24,self.chatcache.pop()])
-                        self.chatcache.append(item[1])
+                        self.output.append([24,item[1]])
                 elif(item[1][:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
                     self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
                     self.sendPong()
@@ -169,15 +148,16 @@ class application():
                     try:
                         fragment = self.chatcache.pop()
                     except IndexError:
-                        pass
+                        self.chatcache.append(item[1])
                     else:
                         try:
-                            self.output.append([24,
-                                            self.chat.inFormat(fragment+item[1],
-                                                               self.chat.timeStamp())])
+                            self.chat.inFormat(fragment+item[1],self.chat.timeStamp())
                         except:
-                            #add item[1] to the chat cache here?
+                            self.chatcache.append(item[1])
+                        else:
+                            #send recovered items to chat with 'Error' tags
                             pass
+                            
             elif(item[0]==2):
                 self.output.append([2,self.chat.outFormat(item.pop())])
             elif(item[0]==3):
@@ -192,6 +172,25 @@ class application():
             elif(item[0] == 26):
                 self.output.append(item)
         self.input = []
+
+##        #idle chat check - for pings mostly
+##        #make this far more robust in checking for pings!
+##        if(time()-self.idletime > 30):
+##            try:
+##                message = self.chatcache.pop()
+##                if(message[0]==':'):
+##                    self.output.append([24,self.chat.inFormat(message,
+##                                                              self.chat.timeStamp())])
+##                elif(message[:4]=='PING'):
+##                    self.output.append([24,self.chat.inFormatPING(message,
+##                                                                  self.chat.timeStamp())])
+##                    self.sendPong()
+##                else:
+##                    self.chatcache.append(message)
+##            except IndexError:
+##                pass
+##            self.idletime = time()
+        
                 
     def closeApplication(self):
         self.status = 0
