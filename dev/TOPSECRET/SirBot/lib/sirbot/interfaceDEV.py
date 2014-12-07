@@ -698,8 +698,8 @@ class interface():
             
 
     def writeInputRAW(self,data):
-        self.displayToTerminal(data,'Raw')
         self.displayToTerminal('\n','Raw')
+        self.displayToTerminal(data,'Raw')
 
 
     def sendOutput(self,data):
