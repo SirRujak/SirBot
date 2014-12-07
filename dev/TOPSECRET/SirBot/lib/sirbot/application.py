@@ -140,15 +140,22 @@ class application():
             if(item[0]==10):
                 if(item[1][0]==':'):
                     if(self.config['Interface']['chat']['raw']!=1):
-                        self.output.append([24,
-                                            self.chat.inFormat(item[1],
-                                                               self.chat.timeStamp())])
+                        try:
+                            self.output.append([24,
+                                                self.chat.inFormat(item[1],
+                                                                   self.chat.timeStamp())])
+                        except IndexError:
+                            self.chatcache = []
                         self.chatcache.append(item[1])
                         self.idletime = time()
                     else:
                         self.output.append([24,item[1]])
                 elif(item[1][:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(
-                    self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
+                    try:
+                        self.output.append([24,self.chat.inFormatPING(item[1],self.chat.timeStamp())])
+                    except:
+                        #need to make this an error specific exception
+                        pass
                     self.sendPong()
                 else:
                     try:
@@ -157,12 +164,16 @@ class application():
                         self.chatcache.append(item[1])
                     else:
                         try:
-                            self.chat.inFormat(fragment+item[1],self.chat.timeStamp())
+                            data = self.chat.inFormat(fragment+item[1],self.chat.timeStamp())
                         except:
                             self.chatcache.append(item[1])
                         else:
                             #send recovered items to chat with 'Error' tags
-                            pass
+                            try:
+                                data[5].append('Error')
+                            except AttributeError:
+                                data[5] = ['Error']
+                            self.output.append([24,data])
                             
             elif(item[0]==2):
                 self.output.append([2,self.chat.outFormat(item.pop())])
