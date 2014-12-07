@@ -794,7 +794,8 @@ class interface():
         print(self.terminalScroll.get())
         #print(tk.END)
         pos = self.terminalScroll.get()
-        if(11*pos[1] - pos[0] < 10):
+        #return to bottom if user has scrolled up less than 10% of page
+        if(11*pos[1] - pos[0] > 10):
             self.terminalHistory.yview(tk.END)
         #self.terminalHistory.yview(tk.END)
         self.terminalHistory.config(state='disabled')
@@ -808,6 +809,7 @@ class interface():
         self.terminalHistory.tag_config('Text',foreground='black')
         self.terminalHistory.tag_config('Info',elide=1)
         self.terminalHistory.tag_config('Channel',elide=1)
+        self.terminalHistory.tag_config('Error',elide=1)
         self.terminalHistory.config(state='disabled')
         
 
