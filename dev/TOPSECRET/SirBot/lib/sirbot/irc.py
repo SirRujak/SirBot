@@ -329,4 +329,4 @@ class irc():
 
 #/join/part/welcome/users/ping/mods/info/error/recovered/raw
 
-#['<timestamp>','<input/*username*/server/console>',':','<message>',[<extra-tags>]]
+#['<timestamp>','<channel>','<input/*username*/server/console>',':','<message>',[<extra-tags>]]
