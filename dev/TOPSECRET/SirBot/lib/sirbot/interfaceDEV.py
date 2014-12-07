@@ -795,7 +795,7 @@ class interface():
             tags.append('Error')
             tag = tuple(tags)
             self.terminalHistory.insert(tk.END,"<Unable to display text>",tag)
-        print(self.terminalScroll.get())
+        #print(self.terminalScroll.get())
         #print(tk.END)
         pos = self.terminalScroll.get()
         #return to bottom if user has scrolled up less than 10% of page
