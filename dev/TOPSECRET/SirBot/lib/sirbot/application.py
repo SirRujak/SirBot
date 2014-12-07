@@ -45,7 +45,7 @@ class application():
         self.output = []
         self.streams = []
         self.chatcache = []
-        self.chatcache.append(self.config['Interface']['motd'])
+        #self.chatcache.append(self.config['Interface']['motd'])
 
     def shutdown(self):
         #save all data from queues to file and close module
@@ -125,6 +125,9 @@ class application():
         #module ticks
         try:
             self.twitchWeb.tick()
+        except AttributeError:
+            pass
+        try:
             self.chat.tick()
         except AttributeError:
             pass
@@ -132,13 +135,12 @@ class application():
         for item in self.input:
             if(item[0]==10):
                 if(item[1][0]==':'):
-                if(item[1][0]==':'):
                     if(self.config['Interface']['chat']['raw']!=1):
                         self.output.append([24,
                                             self.chat.inFormat(item[1],
                                                                self.chat.timeStamp())])
-                            self.chatcache.append(item[1])
-                            self.idletime = time()
+                        self.chatcache.append(item[1])
+                        self.idletime = time()
                     else:
                         self.output.append([24,item[1]])
                 elif(item[1][:19] == "PING :tmi.twitch.tv"):#change to inFormatPING(

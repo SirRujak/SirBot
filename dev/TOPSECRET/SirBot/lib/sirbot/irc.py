@@ -54,7 +54,7 @@ class irc():
         cache = message
         extratag = 0
         channel = None
-        delimiter = ':'
+        delimiter = ': '
         inputData.append(times)
         message = message.split(' ',2)
         if(message[1] == 'PRIVMSG'):

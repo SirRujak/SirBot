@@ -21,9 +21,15 @@ class interface():
     def display(self):
         self.geomMain = self.config['Interface']['map']
         self.loadMainWindow()
+        self.configureTags()
         self.MainWindow.update()
         self.MainWindow.update_idletasks()
+        self.start()#temporary
 
+    def start(self):
+        self.displayToTerminal(self.config['Interface']['motd'],'MOTD')
+        self.terminalHistory.yview(tk.END)
+        
     def tick(self):
         self.alt=self.alt*(-1)#temporary
         if(self.alt==1):#temporary
@@ -648,7 +654,7 @@ class interface():
             inputData.append(self.timeStamp())
             inputData.append('['+self.currentChannel+']')
             inputData.append(self.speaker)
-            inputData.append(':')
+            inputData.append(': ')
             inputData.append(message)
             inputData.append(0)
 ##            self.inputqueue.put(inputData)
@@ -671,6 +677,8 @@ class interface():
             #extend [data[]] by extra tabs and convert to tuple
             tag = data[1:2]
             tag.extend(data[5])
+            tags = tuple(tag)
+            self.displayToTerminal('\n',tags)
             tag.append('Time')
             tags = tuple(tag)
             self.displayToTerminal(data[0],tags)
@@ -687,7 +695,6 @@ class interface():
             self.displayToTerminal(data[4],tags)
             tag.pop()
             tags = tuple(tag)
-            self.displayToTerminal('\n',tags)
             
 
     def writeInputRAW(self,data):
@@ -784,6 +791,16 @@ class interface():
             tags.append('Error')
             tag = tuple(tags)
             self.terminalHistory.insert(tk.END,"<Unable to display text>",tag)
+        print(self.terminalScroll.get())
+        #print(tk.END)
+        pos = self.terminalScroll.get()
+        if(11*pos[1] - pos[0] < 10):
+            self.terminalHistory.yview(tk.END)
+        #self.terminalHistory.yview(tk.END)
+        self.terminalHistory.config(state='disabled')
+
+    def configureTags(self):
+        self.terminalHistory.config(state='normal')
         self.terminalHistory.tag_config('Time',foreground='grey')
         #self.terminalHistory.tag_config('Input',foreground='red')
         #self.terminalHistory.tag_config('Input',elide=1)
@@ -791,11 +808,8 @@ class interface():
         self.terminalHistory.tag_config('Text',foreground='black')
         self.terminalHistory.tag_config('Info',elide=1)
         self.terminalHistory.tag_config('Channel',elide=1)
-        #print(self.terminalScroll.get())
-        #print(tk.END)
-        if(self.terminalScroll.get()[1]==1.0):
-            self.terminalHistory.yview(tk.END)
         self.terminalHistory.config(state='disabled')
+        
 
     def incomingMessage(self,message):
         if(self.raw == 0):
