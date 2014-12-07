@@ -294,7 +294,7 @@ class interface():
         self.OptionsMenu.withdraw()
         self.UsersList.withdraw()
         #do tasks - save queue members
-        self.outputqueue.put([25,0])
+        self.outputqueue.put([25,[0]])
         self.status = 0
     
     def shutdown(self):
@@ -628,12 +628,16 @@ class interface():
 
     def toggleRawChat(self):
         if(self.rawChat.get() == 1):
-            #self.raw = 1
+            self.raw = 1
             #send command to application.py to change raw setting
+            data = [2,self.raw]
+            self.outputqueue.put([25,data])
             pass
         else:
-            #self.raw = 0
+            self.raw = 0
             #same as above
+            data = [2,self.raw]
+            self.outputqueue.put([25,data])
             pass
 
     def timeStamp(self):

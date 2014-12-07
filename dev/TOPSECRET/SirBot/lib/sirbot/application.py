@@ -94,9 +94,13 @@ class application():
                     except AttributeError:
                         pass
                 elif(item[0]==25):
-                    try:
-                        self.interinput.put(item)
-                    except AttributeError:
+                    item = item[1]
+                    if(item[0] == 0):
+                        self.status = 0
+                    elif(item[0] == 2):
+                        self.config['Interface']['chat']['raw'] = item[1]
+                    else:
+                        #log
                         pass
                 elif(item[0]==26):
                     #print(item)
