@@ -6,11 +6,15 @@
 #  need to extract requests and sync with network.py  #
 #######################################################
 
-from urllib.request import urlopen #want this out of here
+#from urllib.request import urlopen #want this out of here
 
 from json import loads
 from queue import Queue,Empty
 from time import time
+
+###### TEMPORARY ######
+import webserver
+#######################
 
 class twitch():
     def __init__(self,user):
@@ -196,7 +200,13 @@ class twitch():
     def newFollowerMessage(self,user):
         #send notification for new follower to chat - or something else..
         self.outputqueue.put([2,user+" has been assimilated. Resistance is futile."])
-            
+
+        ###### TEMPORARY ######
+        try:
+            webserver.newFollowerAnimation(user)
+        except:
+            pass
+        #######################
 
     def sortData(self,data):
         #sort data pulled from queue
