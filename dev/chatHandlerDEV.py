@@ -232,12 +232,12 @@ class chatHandler:
 
 ## Secondary classes.
 class chatDataMessage:
-##        def __init__(self, userName, channelName, timeStamp, messageContents,
+##        def __init__(self, userName, channelInfo, timeStamp, messageContents,
 ##                     isLocal, chatType):
         def __init__(self, infoList):
                 self.userName = infoList[0]
-                self.channelName = infoList[1]
-                self.channelName = infoList[2]
+                self.channelInfo = infoList[1]
+                self.timeStamp = infoList[2]
                 self.messageContents = infoList[3]
                 self.isLocal = infoList[4]
                 self.chatType = infoList[5]
