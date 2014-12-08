@@ -110,7 +110,7 @@ import webbrowser
 
     def pagex(i,name):
         data = """ <h""" + str(i) + """ class="notify">"""+str(name).upper()+"""</h"""+str(i)+">"
-##                +"""\n<audio src="r2d2notice.mp3" type="audio/mp3" autoplay></audio>"""
+##                +"""\n<audio src="r2d2notify.ogg" type="audio/ogg" autoplay></audio>"""
         data = data.encode()
         return(data)
 

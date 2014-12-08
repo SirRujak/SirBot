@@ -36,6 +36,7 @@ class twitch():
         self.streamData = None
         #self.numberSubscriber = 
         #self.latestSubscriber =
+        webserver.start()
 
     def getFollowersInfo(self):
         url = 'https://api.twitch.tv/kraken/channels/'+self.user+'/follows?limit=10'
