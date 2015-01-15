@@ -2,6 +2,7 @@
 
 #classes containing machinery for artifically intelligent operations
 #i.e. data parsing and command execution
+from time import time
 
 class baseTimer():
         def __init__(self, currTime, timerLen,
@@ -39,8 +40,25 @@ class timerHolder():
                 self.resetQueue = Queue()
                 pass
 
+        def getCurentTime():
+                return(time())
+
         def activateTimer(self, timerName):
-                pass
+                tempItem = self.inactiveTimerDict[timerName]
+                del self.inactiveTimerDict[timerName]
+                self.timerEnQueue(tempItem)
+
+        def timerEnQueue(self, queueItem):
+                tempTimeRemainingOnItem = queueItem.nextTime
+                tempFoundSpot = 0
+                tempCounter = 0
+                tempActiveList = self.activeTimerList
+                while (tempFoundSpot != 1):
+                        if (tempTimeRemainingOnItem <= tempActiveList[tempCounter].nextTime):
+                                tempFoundSpot = 1
+                        else:
+                                tempCounter += 1
+                self.activeTimerList.insert(tempCounter, queueItem)
 
         def deactivateTimer(self, timerName):
                 pass
