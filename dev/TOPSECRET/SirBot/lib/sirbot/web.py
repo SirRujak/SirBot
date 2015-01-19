@@ -13,7 +13,7 @@ from queue import Queue,Empty
 from time import time
 
 ###### TEMPORARY ######
-import webserver
+#import webserver
 #######################
 
 class twitch():
@@ -36,7 +36,9 @@ class twitch():
         self.streamData = None
         #self.numberSubscriber = 
         #self.latestSubscriber =
-        webserver.start()
+        ###### TEMPORARY ######
+        #webserver.start()
+        #######################
 
     def getFollowersInfo(self):
         url = 'https://api.twitch.tv/kraken/channels/'+self.user+'/follows?limit=10'
@@ -200,13 +202,13 @@ class twitch():
 
     def newFollowerMessage(self,user):
         #send notification for new follower to chat - or something else..
-        self.outputqueue.put([2,user+" has been assimilated. Resistance is futile."])
+        self.outputqueue.put([2,"Resistance is futile. "+user+" has been assimilated. Welcome to the collective."])
 
         ###### TEMPORARY ######
-        try:
-            webserver.newFollowerAnimation(user)
-        except:
-            pass
+        #try:
+        #    webserver.newFollowerAnimation(user)
+        #except:
+        #    pass
         #######################
 
     def sortData(self,data):
