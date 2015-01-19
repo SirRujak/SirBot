@@ -1,0 +1,1 @@
+:jtv!jtv@jtv.tmi.twitch.tv PRIVMSG <username> :This room is in subscribers only mode. To talk, purchase a channel subscription at http://www.twitch.tv/yogscast/subscribe?ref=subscriber_only_mode_chat
