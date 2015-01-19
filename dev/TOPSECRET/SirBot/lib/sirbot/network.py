@@ -4,7 +4,7 @@
 
 
 from socket import socket,AF_INET,SOCK_STREAM,SHUT_RDWR
-from ssl import SSLContext,PROTOCOL_TLSv1_2,CERT_REQUIRED,SSLError
+from ssl import SSLContext,PROTOCOL_TLSv1_2,PROTOCOL_SSLv3,CERT_REQUIRED,SSLError
 from urllib.request import urlopen
 from queue import Queue
 from time import sleep
@@ -158,10 +158,19 @@ class secureStream(stream):
         try:
             self.connection.sendall(data)
         except ConnectionAbortedError:
+            print('Break detected!')
             self.connection = None
             self.connection = socket(AF_INET,SOCK_STREAM)
             self.twitchconnect()
             self.connection.settimeout(0)
+        except ConnectionResetError:
+            print('Break detected!')
+            self.connection = None
+            self.connection = socket(AF_INET,SOCK_STREAM)
+            self.twitchconnect()
+            self.connection.settimeout(0)
+
+            
         junk = None
 
     def close(self):
