@@ -22,10 +22,16 @@ class baseTimer():
                 self.currTime = currTime
         def setTimerLen(self, timerLen):
                 self.timerLen = timerLen
+        def setNextTime(self):
+                self.nextTime = self.currTime + self.timerLen
         def checkIfTimePassed(self):
                 timeLeft = self.nextTime - self.currTime
                 if ( timeLeft <= 0):
+                        self.setNextTime()
                         self.doAction()
+                        return 1
+                else:
+                        return 0
         def doAction(self):
                 tempList = [0,self.channel,self.currTime,self.commandData,True,
                             None]
@@ -33,31 +39,72 @@ class baseTimer():
                 self.holderLoopBack.reQueue(self.timerName)
 
 class timerHolder():
-        def __init__(self, chatHandler, channel):
+        def __init__(self, chatHandler, channel, timerDictFile):
                 self.activeTimerList = []
                 self.activeTimerListDeactKey = {}
                 self.timersForDeletion = {}
                 self.inactiveTimerDict = {}
-                self.resetQueue = Queue()
+                self.inQueue = Queue()
                 self.timerNames = {}
                 self.chatHandler = chatHandler
                 self.channel = channel
-                pass
-
-        def startup():
-                pass
-
-        def tick():
+                ## Make sure this is opened in read and write mode
+                self.timerDictFile = timerDictFile
+                self.alteredTimers = 0
+                self.alteredTimerDict = {}
+        
+        def tick(self):
                 ## need to check for:
                 ## items being deactivated
                 ## items being deleted
+                ## is it time to work on the new one?
+                if self.timersForDeletion:
+                        for item in self.timersForDeletion:
+                                self.deleteTimer(item)
+                if (len(self.activeTimerList[0]) != 0):
+                        if self.activeTimerList[0] in self.activeTimerListDeactKey:
+                                tempTimer = self.activeTimerList.pop()
+                                self.inactiveTimerDict[tempTimer.timerName] = tempTimer
+                else:
+                        if (self.activeTimerList[0].timerName in self.alteredTimerDict):
+                                self.alterTimer(self.alteredTimerDict[self.activeTimerList[0].timerName])
+                        if (self.activeTimerList[0].checkIfTimePassed() == 1):
+                                self.reQueue()
                 pass
 
-        def idletick():
+        def idletick(self):
+                if self.inQueue.empty():
+                        pass
+                else:
+                        tempMessage = self.inQueue.get()
+                        ## Add new timer
+                        if (tempMessage[0] == 0):
+                                ## tempMessage = [type, name, [HH, MM, SS], command, startsActive]
+                                ## startsActive: 1-true, 0-false
+                                if (tempMessage[4] == 1):
+                                        self.createAndActivateTimer(tempMessage[1:4])
+                                else:
+                                        self.createTimer(tempMessage[1:4])
+                        ## Delete timer
+                        elif (tempMessage[0] == 1):
+                                ## tempMessage = [type, name]
+                                self.deleteTimer(tempMessage[1])
+                        ## Alter timer
+                        elif (tempMessage[0] == 2):
+                                ## tempMessage = [type, name, [HH, MM, SS], command]
+                                self.alteredTimers += 1
+                                self.alteredTimerDict[tempMessage[1]] = tempMessage[2:]
                 pass
 
-        def shutdown():
-                pass
+        def shutdown(self):
+                self.saveTimerDict()
+                
+        def startup(self):
+                self.loadTimerDict()
+
+        def alterTimer(infoList):
+                self.activeTimerList[0].timerLen = infoList[0]
+                self.activeTimerList[0].commandData = infoList[1]
 
         def getCurrentTime():
                 return(time())
@@ -95,7 +142,7 @@ class timerHolder():
 
         def createTimer(self, timerInfoList):
                 ## timerInfoList will contain [name, amount of time, commands]
-                ## time is in form [HH, MM, SS]
+                ## time is in form [HH, MM, SS] or SS
                 if (timerInfoList[0] in self.timerNames):
                         return 1
                 else:
@@ -103,13 +150,17 @@ class timerHolder():
                         ## chatHandler, commandData,
                         ## channel, holderLoopBack,
                         ## timerName
-                        tempLen = self.timeToSeconds(timerInfoList[1])
+                        try:
+                                tempLen = self.timeToSeconds(timerInfoList[1])
+                        except:
+                                tempLen = timerInfoList[0]
                         tempTimer = baseTimer(self.getCurrentTime(),
                                               tempLen, self.chatHandler,
                                               timerInfoList[2], self.channel,
                                               self, timerInfoList[0])
                         self.inactiveTimerDict[timerInfoList[0]] = tempTimer
                         self.timerNames.add(timerInfoList[0])
+                        self.saveTimerDict()
                         return 0
 
         def timeToSeconds(combinedTime):
@@ -120,27 +171,52 @@ class timerHolder():
                 if (timerName in self.timerNames):
                         if (timerName in self.inactiveTimerDict):
                                 del self.inactiveTimerDict[timerName]
+                                self.saveTimerDict()
                         else:
                                 self.timerForDeletion.add(timerName)
                                 self.activeTimerListDeactKey.add(timerName)
-                        
 
-        def createTimerDict(self):
-                pass
-
+        ## Not currently in use
         def deleteTimerDict(self):
-                pass
+                self.activeTimerList = []
+                self.activeTimerListDeactKey = {}
+                self.timersForDeletion = {}
+                self.inactiveTimerDict = {}
+                self.resetQueue = Queue()
+                self.timerNames = {}
 
         def loadTimerDict(self):
-                pass
-
-        def unloadTimerDict(self):
-                pass
+                tempJSON = self.timerDictFile.read()
+                tempDict = json.loads(tempJSON)
+                tempList = tempDict['ACTIVE-LIST']
+                del tempDict['ACTIVE-LIST']
+                for item in tempDict:
+                        self.createTimer(item)
+                for item in tempList:
+                        self.activateTimer(item)
 
         def saveTimerDict(self):
-                pass
+                tempDict = self.inactiveTimerDict
+                tempList = []
+                for item in self.activeTimerList:
+                        tempDict[item.timerName] = item
+                        tempList.append(item.timerName)
+                #currTime, timerLen,
+                     #chatHandler, commandData,
+                     #channel, holderLoopBack,
+                     #timerName
+                tempDict2 = {}
+                for item in tempDict:
+                        if item in self.alteredTimerDict:
+                                tempTime = self.timeToSeconds(self.alteredTimerDict[item][0])
+                                tempDict2[item] = [item, tempTime, self.alteredTimeDict[item][1]]
+                        else:
+                                tempDict2[item] = [tempDict[item].timerName,tempDict[item].timerLen,tempDict[item].commandData]
+                tempDict2['ACTIVE-LIST'] = tempList
+                tempJSON = json.dumps(tempDict2)
+                self.timerDictFile.write(tempJson)
 
-        def reQueue(self, timerName):
+        def reQueue(self):
                 tempTimer = self.activeTimerList.pop()
                 self.timerEnQueue(tempTimer)
 
