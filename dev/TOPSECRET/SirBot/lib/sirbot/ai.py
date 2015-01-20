@@ -65,12 +65,11 @@ class timerHolder():
                         if self.activeTimerList[0] in self.activeTimerListDeactKey:
                                 tempTimer = self.activeTimerList.pop()
                                 self.inactiveTimerDict[tempTimer.timerName] = tempTimer
-                else:
-                        if (self.activeTimerList[0].timerName in self.alteredTimerDict):
-                                self.alterTimer(self.alteredTimerDict[self.activeTimerList[0].timerName])
-                        if (self.activeTimerList[0].checkIfTimePassed() == 1):
-                                self.reQueue()
-                pass
+                        else:
+                                if (self.activeTimerList[0].timerName in self.alteredTimerDict):
+                                        self.alterTimer(self.alteredTimerDict[self.activeTimerList[0].timerName])
+                                if (self.activeTimerList[0].checkIfTimePassed() == 1):
+                                        self.reQueue()
 
         def idletick(self):
                 if self.inQueue.empty():
@@ -94,7 +93,6 @@ class timerHolder():
                                 ## tempMessage = [type, name, [HH, MM, SS], command]
                                 self.alteredTimers += 1
                                 self.alteredTimerDict[tempMessage[1]] = tempMessage[2:]
-                pass
 
         def shutdown(self):
                 self.saveTimerDict()
