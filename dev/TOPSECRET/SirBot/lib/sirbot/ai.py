@@ -277,6 +277,19 @@ class chatHandler:
                 self.timerHolder = timerHolder()
                 #chatHandler, channel, timerDictFile
                 self.timerHolder.startup(self,channelName,timerDictFile)
+                pass
+
+        def tick():
+                self.timeHolder.tick()
+                pass
+
+        def idletick():
+                self.timeHolder.idletick()
+                pass
+
+        def shutdown():
+                self.timeHolder.shutdown()
+                pass
 
         ## Base functions that must be in the API. ##
         ## Skip this one for now
