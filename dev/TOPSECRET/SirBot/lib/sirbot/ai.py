@@ -35,7 +35,8 @@ class baseTimer():
         def doAction(self):
                 tempList = [0,self.channel,self.currTime,self.commandData,True,
                             None]
-                self.chatHandler.enQueue(tempList)
+                tempContainer = chatDataMessage(tempList)
+                self.chatHandler.enQueue(tempContainer)
                 self.holderLoopBack.reQueue(self.timerName)
 
 class timerHolder():
@@ -100,7 +101,7 @@ class timerHolder():
         def startup(self):
                 self.loadTimerDict()
 
-        def alterTimer(infoList):
+        def alterTimer(self,infoList):
                 self.activeTimerList[0].timerLen = infoList[0]
                 self.activeTimerList[0].commandData = infoList[1]
 
@@ -112,6 +113,18 @@ class timerHolder():
                 del self.inactiveTimerDict[timerName]
                 self.timerEnQueue(tempItem)
 
+        def checkTimers(self):
+                tempDict = {}
+                tempList = []
+                for item in self.activeTimerList:
+                        tempList.append(item)
+                tempDict['ACTIVE'] = tempList
+                tempList = []
+                for item in self.inactiveTimerDict:
+                        tempList.append(item)
+                tempDict['INACTIVE'] = tempList
+                return tempDict
+        
         def timerEnQueue(self, queueItem):
                 tempTimeRemainingOnItem = queueItem.nextTime
                 tempFoundSpot = 0
@@ -242,8 +255,8 @@ class chatHandler:
         ## Needs to have all of the base functions made
         ## Base functions are timeout, ban, promote to level, demote to level,
         ## Needs channelName, temp, modList, spamLevel, spamFilter variables where temp is the message
-        def __init__(self, channelName):
-                self.boundChannel = channelName
+        def __init__(self):
+                self.boundChannel = ''
                 
                 self.commandDictionaryFileName = ''
                 self.commandDictionaryFile = None
@@ -255,23 +268,57 @@ class chatHandler:
                 self.twitchDictionaryFileName = ''
                 self.twitchDictionaryFile = None
                 self.twitchCommandDictionary = {}
-                self.timerList = []
-                self.timerListFile = None
-                self.timerListFileName = ''
+                self.timerDictFile = None
+                self.timerDictFileName = ''
                 pass
+
+        def startup(self, channelName, timerDictFile):
+                self.boundChannel = channelName
+                self.timerHolder = timerHolder()
+                #chatHandler, channel, timerDictFile
+                self.timerHolder.startup(self,channelName,timerDictFile)
 
         ## Base functions that must be in the API. ##
         ## Skip this one for now
         ## Timer input list = [name, currTime, timerLen, chatHandler, commandData, channel]
         
         def createTimer(self, timerData):
-                pass
+                ## timerInfoList will contain [name, amount of time, commands] + [activeNow]
+                ## time is in form [HH, MM, SS] or SS
+                if (timerData[3] == 0):
+                        self.timerHolder.createTimer(timerData[0:3])
+                else:
+                        self.timerHolder.createAndActivateTimer(timerData[0:3])
 
-        def deleteTimer(self, timerKey):
-                pass
+        def deleteTimer(self, timerName):
+                self.timerHolder.deleteTimer(timerName)
 
+        def changeTimerState(self, timerName, newState):
+                if (newState == 0):
+                        self.timerHolder.deactivateTimer(timerName)
+                else:
+                        self.timerHolder.activateTimer(timerName)
+
+        def alterTimer(self, name, time, command):
+                ## Name, time, command
+                self.timerHolder.alterTimer([name, time, command])
+        
         def checkTimers(self):
-                pass
+                tempDict = self.timerHolder.checkTimers()
+                tempList = tempDict['ACTIVE']
+                tempString = 'Active timers:'
+                for item in tempDict['ACTIVE']:
+                        tempString = tempString + ' ' + item
+                self.outputText(tempString)
+                tempList = tempDict['INACTIVE']
+                tempString = 'Inactive timers:'
+                for item in tempDict['INACTIVE']:
+                        tempString = tempString + ' ' + item
+                self.outputText(tempString)
+
+        def outputText(self, outputString):
+                tempOut = outputContainer("CHAT", outputString, None)
+                self.outputQueue.put(tempOut)
         
         def banUser(self, userData):
                 tempString = self.twitchCommandDictionary['BAN']
