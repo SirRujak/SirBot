@@ -272,11 +272,14 @@ class chatHandler:
                 self.timerDictFileName = ''
                 pass
 
-        def startup(self, channelName, timerDictFile):
+        def startup(self, channelName, timerDictFile, commandDictFile):
                 self.boundChannel = channelName
                 self.timerHolder = timerHolder()
                 #chatHandler, channel, timerDictFile
                 self.timerHolder.startup(self,channelName,timerDictFile)
+
+                self.openCommandDictFile(commandDictFile)
+                self.openTwitchDict(twitchDictFile)
                 pass
 
         def tick():
@@ -290,6 +293,11 @@ class chatHandler:
         def shutdown():
                 self.timeHolder.shutdown()
                 pass
+
+        def makeDictPathName(self, basePath):
+                self.pathCommandName = basePath + '//data//sirbot//commands//channel//commands.json'
+                self.pathTimerName = basePath + '//data//sirbot//timers//channel//timers.json'
+                self.pathTwitchName = basePath + '//data//sirbot//twitchcommands//twitchcommands.json'
 
         ## Base functions that must be in the API. ##
         ## Skip this one for now
@@ -453,35 +461,40 @@ class chatHandler:
         def listCommands(self, commandLevel):
                 pass
 
-        ## Funcitons that should possibly be in the API. ##
-        def joinChannel(self, channelData):
-                pass
-
-        def leaveChannel(self, channelData):
-                pass
-
         ## Other functions. ##
         def checkChatCMD(self, chatData):
                 pass
 
-        def updateCommandDict(self):
-                pass
+        def updateCommandDict(self, dictFileLocation):
+                tempFile = open(dictFileLocation, 'w')
+                tempString = json.dumps(self.commandDictionary)
+                tempFile.write(tempString)
+                tempFile.close()
 
-        def openCommandDictFile(self):
-                pass
+        def openCommandDictFile(self, dictFileLocation):
+                tempFile = open(dictFileLocation, 'r')
+                tempResponse = self.loadCommandDict(tempFile)
         
-        def loadCommandDict(self):
-                tempString = self.commandDictionaryFile.read()
+        def loadCommandDict(self, dictFile):
+                tempString = dictFile.read()
                 self.commandDictionary = json.loads(tempString)
+                
 
         def delCommandDict(self):
                 self.commandDictionary = {}
 
-        ## NEED TO FIX THIS ONE
+        def openTwitchDict(self, dictFileLocation):
+                tempFile = open(dictFileLocation, 'r')
+                tempResponse = self.loadTwitchDict(tempFile)
+                tempFile.close()
+                
         def loadTwitchDict(self, dictFile):
                 tempString = dictFile.read()
-                self.twitchCommandDictionary = json.loads(tempString)
-                pass
+                try:
+                        self.twitchCommandDictionary = json.loads(tempString)
+                        return 0
+                except:
+                        return 1
 
         def delTwitchDict(self):
                 self.twitchCommandDictionary = {}
