@@ -52,7 +52,7 @@ class timerHolder():
                 ## Make sure this is opened in read and write mode
                 self.timerDictFile = timerDictFile
                 self.alteredTimers = 0
-                self.alteredTimerDict = {}
+                self.currentTimerValues = {}
         
         def tick(self):
                 ## need to check for:
@@ -67,10 +67,20 @@ class timerHolder():
                                 tempTimer = self.activeTimerList.pop()
                                 self.inactiveTimerDict[tempTimer.timerName] = tempTimer
                         else:
-                                if (self.activeTimerList[0].timerName in self.alteredTimerDict):
-                                        self.alterTimer(self.alteredTimerDict[self.activeTimerList[0].timerName])
-                                if (self.activeTimerList[0].checkIfTimePassed() == 1):
-                                        self.reQueue()
+                                tempResponse = self.checkIfTimerChanged()
+                                if (tempResponse == 0):
+                                        if (self.activeTimerList[0].checkIfTimePassed() == 1):
+                                                self.reQueue()
+                                else:
+                                        self.activeTimerList.pop()
+
+        def checkIfTimerChanged(self):
+                tempTimer = self.activeTimerList[0]
+                tempValues = self.currentTimerValues[tempTimer.timerName]
+                if (tempTimer.timeLen == tempValues[0] && tempTimer.commandData == tempValues[1]):
+                        return 0
+                else:
+                        return 1
 
         def idletick(self):
                 if self.inQueue.empty():
@@ -92,8 +102,7 @@ class timerHolder():
                         ## Alter timer
                         elif (tempMessage[0] == 2):
                                 ## tempMessage = [type, name, [HH, MM, SS], command]
-                                self.alteredTimers += 1
-                                self.alteredTimerDict[tempMessage[1]] = tempMessage[2:]
+                                self.alterTimer(tempMessage[2:])
 
         def shutdown(self):
                 self.saveTimerDict()
@@ -102,16 +111,22 @@ class timerHolder():
                 self.loadTimerDict()
 
         def alterTimer(self,infoList):
-                self.activeTimerList[0].timerLen = infoList[0]
-                self.activeTimerList[0].commandData = infoList[1]
+                del self.timerNames[activeTimerList[0]]
+                self.createAndActivateTimer(infoList)
 
         def getCurrentTime():
                 return(time())
 
         def activateTimer(self, timerName):
-                tempItem = self.inactiveTimerDict[timerName]
-                del self.inactiveTimerDict[timerName]
-                self.timerEnQueue(tempItem)
+                if timerName in self.activeTimerListDeactKey:
+                        del self.activeTimerListDeactKey[timerName]
+                else:
+                        if timerName in self.inactiveTimerDict:
+                                pass
+                        else:
+                                tempItem = self.inactiveTimerDict[timerName]
+                                del self.inactiveTimerDict[timerName]
+                                self.timerEnQueue(tempItem)
 
         def checkTimers(self):
                 tempDict = {}
@@ -171,6 +186,7 @@ class timerHolder():
                                               self, timerInfoList[0])
                         self.inactiveTimerDict[timerInfoList[0]] = tempTimer
                         self.timerNames.add(timerInfoList[0])
+                        self.currentTimerValues[timerInfoList[0]] = [tempLen,timerInfoList[2]]
                         self.saveTimerDict()
                         return 0
 
@@ -182,6 +198,8 @@ class timerHolder():
                 if (timerName in self.timerNames):
                         if (timerName in self.inactiveTimerDict):
                                 del self.inactiveTimerDict[timerName]
+                                del self.timerNames[timerName]
+                                del self.currentTimerValues[timerName]
                                 self.saveTimerDict()
                         else:
                                 self.timerForDeletion.add(timerName)
@@ -322,7 +340,7 @@ class chatHandler:
 
         def alterTimer(self, name, time, command):
                 ## Name, time, command
-                self.timerHolder.alterTimer([name, time, command])
+                self.timerHolder.inQueue.put([2,name, time, command])
         
         def checkTimers(self):
                 tempDict = self.timerHolder.checkTimers()
