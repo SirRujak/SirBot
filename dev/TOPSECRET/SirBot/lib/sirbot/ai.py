@@ -275,29 +275,30 @@ class chatHandler:
         ## Needs channelName, temp, modList, spamLevel, spamFilter variables where temp is the message
         def __init__(self):
                 self.boundChannel = ''
-                
-                self.commandDictionaryFileName = ''
                 self.commandDictionaryFile = None
                 self.userLevelDictionary = None
                 self.inputQueue = Queue()
                 self.outputQueue = Queue()
                 self.commandDictionary = {}
                 self.spamDictionary = {}
-                self.twitchDictionaryFileName = ''
                 self.twitchDictionaryFile = None
                 self.twitchCommandDictionary = {}
                 self.timerDictFile = None
-                self.timerDictFileName = ''
+                self.pathCommandName = ''
+                self.pathTimerName = ''
+                self.pathTwitchName = ''
                 pass
 
-        def startup(self, channelName, timerDictFile, commandDictFile):
+        def startup(self, basePath, channelName):
+                self.makeDictPathName(basePath, channelName) ##channelName, basePath
+                self.openCommandDictFile(commandDictFile) ##commandDictFile
+                self.openTwitchDict(twitchDictFile) ##twitchDictFile
                 self.boundChannel = channelName
                 self.timerHolder = timerHolder()
                 #chatHandler, channel, timerDictFile
-                self.timerHolder.startup(self,channelName,timerDictFile)
+                self.timerHolder.startup(self,channelName,timerDictFile) ##channelName, timerDictFile
 
-                self.openCommandDictFile(commandDictFile)
-                self.openTwitchDict(twitchDictFile)
+                
                 pass
 
         def tick():
@@ -312,9 +313,9 @@ class chatHandler:
                 self.timeHolder.shutdown()
                 pass
 
-        def makeDictPathName(self, basePath):
-                self.pathCommandName = basePath + '//data//sirbot//commands//channel//commands.json'
-                self.pathTimerName = basePath + '//data//sirbot//timers//channel//timers.json'
+        def makeDictPathName(self, basePath, channelName):
+                self.pathCommandName = basePath + '//data//sirbot//commands//' + channelName + '//commands.json'
+                self.pathTimerName = basePath + '//data//sirbot//timers//' + channelName + '//timers.json'
                 self.pathTwitchName = basePath + '//data//sirbot//twitchcommands//twitchcommands.json'
 
         ## Base functions that must be in the API. ##
