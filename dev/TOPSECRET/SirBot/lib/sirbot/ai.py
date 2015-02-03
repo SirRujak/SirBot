@@ -280,6 +280,7 @@ class chatHandler:
                 self.inputQueue = Queue()
                 self.outputQueue = Queue()
                 self.commandDictionary = {}
+                self.timerDictionary = {}
                 self.spamDictionary = {}
                 self.twitchDictionaryFile = None
                 self.twitchCommandDictionary = {}
@@ -291,12 +292,13 @@ class chatHandler:
 
         def startup(self, basePath, channelName):
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
-                self.openCommandDictFile(commandDictFile) ##commandDictFile
-                self.openTwitchDict(twitchDictFile) ##twitchDictFile
+                self.openCommandDictFile()
+                self.openTimerDictFile()
+                self.openTwitchDictFile()
                 self.boundChannel = channelName
                 self.timerHolder = timerHolder()
                 #chatHandler, channel, timerDictFile
-                self.timerHolder.startup(self,channelName,timerDictFile) ##channelName, timerDictFile
+                self.timerHolder.startup(self,channelName,self.timerDictFile) ##channelName, timerDictFile
 
                 
                 pass
@@ -490,20 +492,23 @@ class chatHandler:
                 tempFile.write(tempString)
                 tempFile.close()
 
-        def openCommandDictFile(self, dictFileLocation):
-                tempFile = open(dictFileLocation, 'r')
+        def openCommandDictFile(self):
+                tempFile = open(self.pathCommandName, 'r')
                 tempResponse = self.loadCommandDict(tempFile)
         
         def loadCommandDict(self, dictFile):
                 tempString = dictFile.read()
                 self.commandDictionary = json.loads(tempString)
                 
-
+        def openTimerDictFile(self):
+                tempFile = open(self.pathTimerName, 'r')
+                self.timerDictFile = tempFile
+                
         def delCommandDict(self):
                 self.commandDictionary = {}
 
-        def openTwitchDict(self, dictFileLocation):
-                tempFile = open(dictFileLocation, 'r')
+        def openTwitchDictFile(self):
+                tempFile = open(self.pathTwitchName, 'r')
                 tempResponse = self.loadTwitchDict(tempFile)
                 tempFile.close()
                 
