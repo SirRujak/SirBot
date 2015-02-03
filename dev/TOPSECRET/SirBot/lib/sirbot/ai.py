@@ -2,7 +2,9 @@
 
 #classes containing machinery for artifically intelligent operations
 #i.e. data parsing and command execution
+import json
 from time import time
+import queue
 
 class baseTimer():
         def __init__(self, currTime, timerLen,
@@ -45,7 +47,7 @@ class timerHolder():
                 self.activeTimerListDeactKey = {}
                 self.timersForDeletion = {}
                 self.inactiveTimerDict = {}
-                self.inQueue = Queue()
+                self.inQueue = queue.Queue()
                 self.timerNames = {}
                 self.chatHandler = chatHandler
                 self.channel = channel
@@ -77,7 +79,7 @@ class timerHolder():
         def checkIfTimerChanged(self):
                 tempTimer = self.activeTimerList[0]
                 tempValues = self.currentTimerValues[tempTimer.timerName]
-                if (tempTimer.timeLen == tempValues[0] && tempTimer.commandData == tempValues[1]):
+                if (tempTimer.timeLen == tempValues[0] and tempTimer.commandData == tempValues[1]):
                         return 0
                 else:
                         return 1
@@ -277,8 +279,8 @@ class chatHandler:
                 self.boundChannel = ''
                 self.commandDictionaryFile = None
                 self.userLevelDictionary = None
-                self.inputQueue = Queue()
-                self.outputQueue = Queue()
+                self.inputQueue = queue.Queue()
+                self.outputQueue = queue.Queue()
                 self.commandDictionary = {}
                 self.timerDictionary = {}
                 self.spamDictionary = {}
@@ -292,16 +294,23 @@ class chatHandler:
 
         def startup(self, basePath, channelName):
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
-                self.openCommandDictFile()
-                self.openTimerDictFile()
-                self.openTwitchDictFile()
-                self.boundChannel = channelName
-                self.timerHolder = timerHolder()
-                #chatHandler, channel, timerDictFile
-                self.timerHolder.startup(self,channelName,self.timerDictFile) ##channelName, timerDictFile
-
-                
-                pass
+                try:
+                        self.openCommandDictFile()
+                except Exception as e:
+                        return([1,e])
+                try:
+                        self.openTimerDictFile()
+                        self.boundChannel = channelName
+                        self.timerHolder = timerHolder(self,channelName,self.timerDictFile)
+                        #chatHandler, channel, timerDictFile
+                        self.timerHolder.startup() ##channelName, timerDictFile
+                except Exception as e:
+                        return([2,e])
+                try:
+                        self.openTwitchDictFile()
+                except Exception as e:
+                        return([3,e])
+                return([0,None])
 
         def tick():
                 self.timeHolder.tick()
@@ -600,3 +609,12 @@ class spamFilter():
                 json.dumps(self.filterHolder, spamFile)
                 spamFile.close()
 
+
+if __name__ == "__main__":
+        from os.path import expanduser
+        home = expanduser('~')
+        testDirectory = home + '\\Documents\\SirBotTest'
+        testName = 'CoolName'
+        test = chatHandler()
+        tempResponse = test.startup(testDirectory, testName)
+        print(tempResponse)
