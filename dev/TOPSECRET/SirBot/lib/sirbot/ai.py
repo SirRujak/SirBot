@@ -48,7 +48,7 @@ class timerHolder():
                 self.timersForDeletion = {}
                 self.inactiveTimerDict = {}
                 self.inQueue = queue.Queue()
-                self.timerNames = {}
+                self.timerNames = ()
                 self.chatHandler = chatHandler
                 self.channel = channel
                 ## Make sure this is opened in read and write mode
@@ -64,17 +64,18 @@ class timerHolder():
                 if self.timersForDeletion:
                         for item in self.timersForDeletion:
                                 self.deleteTimer(item)
-                if (len(self.activeTimerList[0]) != 0):
-                        if self.activeTimerList[0] in self.activeTimerListDeactKey:
-                                tempTimer = self.activeTimerList.pop()
-                                self.inactiveTimerDict[tempTimer.timerName] = tempTimer
-                        else:
-                                tempResponse = self.checkIfTimerChanged()
-                                if (tempResponse == 0):
-                                        if (self.activeTimerList[0].checkIfTimePassed() == 1):
-                                                self.reQueue()
+                if (self.activeTimerList):
+                        if (len(self.activeTimerList[0]) != 0):
+                                if self.activeTimerList[0] in self.activeTimerListDeactKey:
+                                        tempTimer = self.activeTimerList.pop()
+                                        self.inactiveTimerDict[tempTimer.timerName] = tempTimer
                                 else:
-                                        self.activeTimerList.pop()
+                                        tempResponse = self.checkIfTimerChanged()
+                                        if (tempResponse == 0):
+                                                if (self.activeTimerList[0].checkIfTimePassed() == 1):
+                                                        self.reQueue()
+                                        else:
+                                                self.activeTimerList.pop()
 
         def checkIfTimerChanged(self):
                 tempTimer = self.activeTimerList[0]
@@ -312,16 +313,16 @@ class chatHandler:
                         return([3,e])
                 return([0,None])
 
-        def tick():
-                self.timeHolder.tick()
+        def tick(self):
+                self.timerHolder.tick()
                 pass
 
-        def idletick():
-                self.timeHolder.idletick()
+        def idletick(self):
+                self.timerHolder.idletick()
                 pass
 
-        def shutdown():
-                self.timeHolder.shutdown()
+        def shutdown(self):
+                self.timerHolder.shutdown()
                 pass
 
         def makeDictPathName(self, basePath, channelName):
@@ -420,7 +421,7 @@ class chatHandler:
                 self.outputQueue.put(tempOut)
 
         def hostChannel(self, channelData):
-                tempString = self.twitchCommandDictionary['SLOW']
+                tempString = self.twitchCommandDictionary['HOST']
                 tempString = tempString.substitute(channelName = channelData)
                 tempOut = outputContainer("COMMAND", tempString, None)
                 self.outputQueue.put(tempOut)
@@ -617,4 +618,8 @@ if __name__ == "__main__":
         testName = 'CoolName'
         test = chatHandler()
         tempResponse = test.startup(testDirectory, testName)
-        print(tempResponse)
+        print("Startup response: ", tempResponse)
+        for i in range(10):
+                test.tick()
+                test.idletick()
+        print("Done")
