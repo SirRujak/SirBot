@@ -674,7 +674,7 @@ class chatHandler:
                         if (len(tempItems[i][1]) == 1):
                             finalList[1] = [tempItems[i][1]]
                         else:
-                            tempList = tempItems[i][1].split(',')
+                            tempList = tempItems[i][1].split('\%')
                             finalList[1] = tempList
                 elif (tempItems[i][0] == 'level'):
                     if (tempItems[i][1] == ''):
