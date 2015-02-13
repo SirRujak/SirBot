@@ -569,6 +569,8 @@ class chatHandler:
                         inputItems[i] = '-1'
                     elif (i == 7):
                         inputItems[i] = [['>','-1']]
+                    elif (i == 8):
+                        inputItems[i] = '0'
             inputItems[2] = [inputItems[2][0].lower()]
             return inputItems
 
@@ -583,7 +585,7 @@ class chatHandler:
                          ##callLevel,isActive,lineLimit,timeLimit,responseLimits):
             filledEntries = self.checkForEmptySlots(inputItems)
             print(filledEntries)
-            if (len(filledEntries) == 8):
+            if (len(filledEntries) == 9):
                 
                 commandKey = inputItems[0]
                 responseValue = inputItems[1]
@@ -593,6 +595,7 @@ class chatHandler:
                 lineLimit = inputItems[5]
                 timeLimit = inputItems[6]
                 responseLimits = inputItems[7]
+                accessLevel = inputItems[8]
 
                 toContinue = self.checkAllValues(filledEntries)
                 
@@ -618,11 +621,11 @@ class chatHandler:
                         for i in range(len(commandLevel)):
                             if not commandLevel[i] in self.commandDictionary["LINKS"]:
                                 self.commandDictionary["LVLS"].append(commandLevel[i])
-                                self.commandDictionary["LINKS"][commandLevel[i]] = {}
+                                self.commandDictionary["LINKS"][commandLevel[i]] = {'INFO':{'ACCESSLEVEL':accessLevel}}
                     else:
                         for i in range(len(commandLevel)):
                             self.commandDictionary["LVLS"].append(commandLevel[i])
-                            self.commandDictionary["LINKS"][commandLevel[i]] = {}
+                            self.commandDictionary["LINKS"][commandLevel[i]] = {'INFO':{'ACCESSLEVEL':accessLevel}}
 
                     ## Add command to the 'CMDS' dict
                     if ' ' in commandKey:
@@ -662,7 +665,7 @@ class chatHandler:
             tempItems = []
             for i in range(len(tempCommandList)):
                 tempItems.append(tempCommandList[i].split(':'))
-            finalList = [None]*8
+            finalList = [None]*9
             for i in range(len(tempItems)):
                 if (tempItems[i][0] == 'cmd'):
                     if (tempItems[i][1] == ''):
@@ -716,6 +719,11 @@ class chatHandler:
                                     if (len(tempIndividualConditions[i][j]) == 2):
                                         finalConditions.append([tempIndividualConditions[i][j][0],tempIndividualConditions[i][j][1]])
                         finalList[7] = finalConditions
+                elif (tempItems[i][0] == 'access'):
+                    if (tempItems[i][1] == ''):
+                        finalList[8] = None
+                    else:
+                        finalList[8] = tempItems[i][1]
             finalList[3] = userName
             return(finalList)
 
