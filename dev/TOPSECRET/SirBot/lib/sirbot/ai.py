@@ -560,7 +560,7 @@ class chatHandler:
             for i in range(len(inputItems)):
                 if (inputItems[i] == None):
                     if (i == 2):
-                        inputItems[i] = ['Everyone']
+                        inputItems[i] = ['everyone']
                     elif (i == 4):
                         inputItems[i] = '1'
                     elif (i == 5):
@@ -569,6 +569,7 @@ class chatHandler:
                         inputItems[i] = '-1'
                     elif (i == 7):
                         inputItems[i] = [['>','-1']]
+            inputItems[2] = [inputItems[2][0].lower()]
             return inputItems
 
         def checkAllValues(self, filledEntries):
