@@ -291,6 +291,7 @@ class chatHandler:
                 self.pathCommandName = ''
                 self.pathTimerName = ''
                 self.pathTwitchName = ''
+                self.tempKeyList = []
                 pass
 
         def startup(self, basePath, channelName):
@@ -324,6 +325,11 @@ class chatHandler:
         def shutdown(self):
                 self.timerHolder.shutdown()
                 pass
+
+        def checkChat(self, item): ## item is a list of format [type, [list with other stuff]]
+                if item:
+                        if (item[0] == 1):
+                              pass  
 
         def makeDictPathName(self, basePath, channelName):
                 self.pathCommandName = basePath + '//data//sirbot//commands//' + channelName + '//commands.json'
@@ -481,9 +487,237 @@ class chatHandler:
                 ## self.addToOutputQueue(tempOut)
                 pass
 
-        def createCommand(self, commandKey, resposneValue,
-                          commandLevel, callLevel):
-                pass
+        ## commandList contains commandKey, responseValue, commandLevel, callLevel, isActive, responseKey in that order
+        def getOpenInKey(self):
+            valFound = False
+            tempVal = 1
+            while not valFound:
+                if (str(tempVal) in self.commandDictionary['LINKDICT']):
+                    tempVal += 1
+                else:
+                    valFound = True
+                    return tempVal
+
+        def getOpenOutKey(self):
+            valFound = False
+            tempVal = 1
+            while not valFound:
+                if (str(tempVal) in self.commandDictionary['OUTLINKS'] or str(tempVal) in self.tempKeyList):
+                    tempVal += 1
+                else:
+                    valFound = True
+                    self.tempKeyList.append(str(tempVal))
+                    return tempVal
+
+        def checkIfCommandKeyExists(self, tempKey):
+            tempVar = 0
+            splitKey = tempKey.split(' ')
+            tempDict = self.commandDictionary['CMDS']
+            tempVar = self.extendCheck(splitKey, tempDict)
+            if (tempVar == 1):
+                return 1
+            else:
+                return 0
+
+        def extendCheck(self, tempList, tempDict):
+            if tempList:
+                tempVal = tempList.pop()
+                if tempVal in tempDict:
+                    tempResponse = self.extendCheck(tempList,tempDict[tempVal])
+                    if (tempResponse == 1):
+                        return 1
+                else:
+                    return 0
+            else:
+                return 1
+
+        def checkIfResponseExists(self, tempResponse):
+            tempList = []
+            for i in range(len(tempResponse)):
+                if tempResponse[i] in self.commandDictionary['RESPONSEDICT']:
+                    tempList.append(self.commandDictionary['RESPONSEDICT'][tempResponse[i]])
+                else:
+                    tempList.append(None)
+            return tempList
+
+        def sortResponseLimits(self, tempLimits):
+            for i in range(len(tempLimits)):
+                if tempLimits[i][0] == None:
+                    tempLimits[i][1] = 0
+                else:
+                    tempLimits[i][1] = int(tempLimits[i][1])
+            sortedLimits = sorted(tempLimits, key=lambda x: x[1])
+            sortedLimits.reverse()
+            
+            for i in range(len(sortedLimits)):
+                    if sortedLimits[i][1] == 0:
+                        sortedLimits[i][1] = None
+                    else:
+                        sortedLimits[i][1] = str(sortedLimits[i][1])
+            return(sortedLimits)
+            
+        def checkForEmptySlots(self, inputItems):
+            for i in range(len(inputItems)):
+                if (inputItems[i] == None):
+                    if (i == 2):
+                        inputItems[i] = ['Everyone']
+                    elif (i == 4):
+                        inputItems[i] = '1'
+                    elif (i == 5):
+                        inputItems[i] = '-1'
+                    elif (i == 6):
+                        inputItems[i] = '-1'
+                    elif (i == 7):
+                        inputItems[i] = [['>','-1']]
+            return inputItems
+
+        def checkAllValues(self, filledEntries):
+            if None in filledEntries:
+                return 1
+            else:
+                return None
+        
+        ## commandLevel should be a set containing all the desired command levels
+        def makeNewEntry(self,inputItems):##,commandKey,responseValue,commandLevel,
+                         ##callLevel,isActive,lineLimit,timeLimit,responseLimits):
+            filledEntries = self.checkForEmptySlots(inputItems)
+            print(filledEntries)
+            if (len(filledEntries) == 8):
+                
+                commandKey = inputItems[0]
+                responseValue = inputItems[1]
+                commandLevel = inputItems[2]
+                callLevel = inputItems[3]
+                isActive = inputItems[4]
+                lineLimit = inputItems[5]
+                timeLimit = inputItems[6]
+                responseLimits = inputItems[7]
+
+                toContinue = self.checkAllValues(filledEntries)
+                
+                if not self.checkIfCommandKeyExists(commandKey) and not toContinue:
+                    ## Check to see if response or command exists if not make them
+                    ## and their links.
+                    tempOutKey = self.checkIfResponseExists(responseValue)
+                    tempInKey = self.getOpenInKey()
+                    self.tempKeyList = []
+                    tempTypeList = []
+                    for i in range(len(tempOutKey)):
+                        if (tempOutKey[i] == None):
+                            tempOutKey[i] = self.getOpenOutKey()
+                    for i in range(len(responseValue)):
+                        
+                        if '\&' in responseValue[i]:
+                            tempTypeList.append(1)
+                        else:
+                            tempTypeList.append(0)
+
+                    ## Check to see if the command levels exist and if not make them
+                    if self.commandDictionary["LVLS"]:
+                        for i in range(len(commandLevel)):
+                            if not commandLevel[i] in self.commandDictionary["LINKS"]:
+                                self.commandDictionary["LVLS"].append(commandLevel[i])
+                                self.commandDictionary["LINKS"][commandLevel[i]] = {}
+                    else:
+                        for i in range(len(commandLevel)):
+                            self.commandDictionary["LVLS"].append(commandLevel[i])
+                            self.commandDictionary["LINKS"][commandLevel[i]] = {}
+
+                    ## Add command to the 'CMDS' dict
+                    if ' ' in commandKey:
+                        pass
+                    else:
+                        self.commandDictionary['CMDS'][commandKey] = {"LINK":str(tempInKey),
+                                                                      "ACTIVE":isActive}
+
+                    ## Add links to OUTLINKS
+                    for i in range(len(tempOutKey)):
+                        self.commandDictionary['OUTLINKS'].append(str(tempOutKey[i]))
+                    ## Add links to LINKDICT
+                    tempOutStrKey = []
+                    for i in range(len(tempOutKey)):
+                        tempOutStrKey.append(str(tempOutKey[i]))
+                    
+                    self.commandDictionary['LINKDICT'][str(tempInKey)] = tempOutStrKey
+                    ## Add links to CONDITIONS
+                    tempLimits = self.sortResponseLimits(responseLimits)
+                    self.commandDictionary['CONDITIONS'][str(tempInKey)] = str(tempLimits)
+                    ## Add info for RESPONSEDICT
+                    for i in range(len(responseValue)):
+                        self.commandDictionary['RESPONSEDICT'][str(responseValue[i])] = str(tempOutKey[i])
+                    ## Add info for LINKS
+                    for i in range(len(tempOutKey)):
+                        print(timeLimit,lineLimit,tempOutKey[i])
+                        tempString = str(tempOutKey[i])
+                        print(commandLevel)
+                        self.commandDictionary['LINKS'][commandLevel[0]][tempString] = {"RESPONSE":responseValue[i],
+                                                                                        "TYPE":str(tempTypeList[i]),"LIMITS":{"LENGTH":str(lineLimit),
+                                                                                                                              "TIME":str(timeLimit)}}
+                else:
+                    return 1
+                
+        def parseForNewCommand(self, commandString, userName):
+            tempCommandList = commandString.split(' -')
+            tempItems = []
+            for i in range(len(tempCommandList)):
+                tempItems.append(tempCommandList[i].split(':'))
+            finalList = [None]*8
+            for i in range(len(tempItems)):
+                if (tempItems[i][0] == 'cmd'):
+                    if (tempItems[i][1] == ''):
+                        finalList[0] = None
+                    finalList[0] = tempItems[i][1]
+                elif (tempItems[i][0] == 'response'):
+                    if (tempItems[i][1] == ''):
+                        finalList[1] = None
+                    else:
+                        if (len(tempItems[i][1]) == 1):
+                            finalList[1] = [tempItems[i][1]]
+                        else:
+                            tempList = tempItems[i][1].split(',')
+                            finalList[1] = tempList
+                elif (tempItems[i][0] == 'level'):
+                    if (tempItems[i][1] == ''):
+                        finalList[2] = None
+                    else:
+                        finalList[2] = [tempItems[i][1]]
+                elif (tempItems[i][0] == 'active'):
+                    if (tempItems[i][1] == ''):
+                        finalList[4] = None
+                    else:
+                        finalList[4] = tempItems[i][1]
+                elif (tempItems[i][0] == 'timelim'):
+                    if (tempItems[i][1] == ''):
+                        finalList[5] = None
+                    else:
+                        finalList[5] = tempItems[i][1]
+                elif (tempItems[i][0] == 'linelim'):
+                    if (tempItems[i][1] == ''):
+                        finalList[6] = None
+                    else:
+                        finalList[6] = tempItems[i][1]
+                elif (tempItems[i][0] == 'conditions'):
+                    if (tempItems[i][1] == ''):
+                        finalList[7] = None
+                    else:
+                        tempConditions = tempItems[i][1].split(',')
+                        tempIndividualConditions = []
+                        for i in range(len(tempConditions)):
+                            tempIndividualConditions.append(tempConditions[i].split('&'))
+                        finalConditions = []
+                        for i in range(len(tempIndividualConditions)):
+                            if (len(tempIndividualConditions[i]) == 2):
+                                for j in range(len(tempIndividualConditions[i])):
+                                    if (len(tempIndividualConditions[i][j]) == 2):
+                                        finalConditions.append([tempIndividualConditions[i][j][0],tempIndividualConditions[i][j][1]])
+                            elif (len(tempIndividualConditions[i]) == 1):
+                                for j in range(len(tempIndividualConditions[i])):
+                                    if (len(tempIndividualConditions[i][j]) == 2):
+                                        finalConditions.append([tempIndividualConditions[i][j][0],tempIndividualConditions[i][j][1]])
+                        finalList[7] = finalConditions
+            finalList[3] = userName
+            return(finalList)
+
 
         def deleteCommand(self, commandKey, commandLevel, callLevel):
                 pass
