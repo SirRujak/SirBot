@@ -55,7 +55,7 @@ class timerHolder():
                 self.timerDictFile = timerDictFile
                 self.alteredTimers = 0
                 self.currentTimerValues = {}
-        
+
         def tick(self):
                 ## need to check for:
                 ## items being deactivated
@@ -109,7 +109,7 @@ class timerHolder():
 
         def shutdown(self):
                 self.saveTimerDict()
-                
+
         def startup(self):
                 self.loadTimerDict()
 
@@ -142,7 +142,7 @@ class timerHolder():
                         tempList.append(item)
                 tempDict['INACTIVE'] = tempList
                 return tempDict
-        
+
         def timerEnQueue(self, queueItem):
                 tempTimeRemainingOnItem = queueItem.nextTime
                 tempFoundSpot = 0
@@ -252,7 +252,7 @@ class timerHolder():
                 tempTimer = self.activeTimerList.pop()
                 self.timerEnQueue(tempTimer)
 
-        
+
 ###############################################################
 ###############################################################
 
@@ -318,11 +318,11 @@ class chatHandler:
 
         def tick(self, data):
                 self.timerHolder.tick()
+                if (data[0] == 0):
+                    self.checkChatCMD(data)
                 pass
 
         def idletick(self, data):
-                if (data[0] == 0):
-                    self.checkChatCMD(data)
                 self.timerHolder.idletick()
                 pass
 
@@ -333,7 +333,7 @@ class chatHandler:
         def checkChat(self, item): ## item is a list of format [type, [list with other stuff]]
                 if item:
                         if (item[0] == 1):
-                              pass  
+                              pass
 
         def makeDictPathName(self, basePath, channelName):
                 self.pathCommandName = basePath + '//data//sirbot//commands//' + channelName + '//commands.json'
@@ -343,7 +343,7 @@ class chatHandler:
         ## Base functions that must be in the API. ##
         ## Skip this one for now
         ## Timer input list = [name, currTime, timerLen, chatHandler, commandData, channel]
-        
+
         def createTimer(self, timerData):
                 ## timerInfoList will contain [name, amount of time, commands] + [activeNow]
                 ## time is in form [HH, MM, SS] or SS
@@ -364,7 +364,7 @@ class chatHandler:
         def alterTimer(self, name, time, command):
                 ## Name, time, command
                 self.timerHolder.inQueue.put([2,name, time, command])
-        
+
         def checkTimers(self):
                 tempDict = self.timerHolder.checkTimers()
                 tempList = tempDict['ACTIVE']
@@ -381,7 +381,7 @@ class chatHandler:
         def outputText(self, outputString):
                 tempOut = outputContainer("CHAT", outputString, None)
                 self.outputQueue.put(tempOut)
-        
+
         def banUser(self, userData):
                 tempString = self.twitchCommandDictionary['BAN']
                 tempString = tempString.substitute(userName = userData)
@@ -554,14 +554,14 @@ class chatHandler:
                     tempLimits[i][1] = int(tempLimits[i][1])
             sortedLimits = sorted(tempLimits, key=lambda x: x[1])
             sortedLimits.reverse()
-            
+
             for i in range(len(sortedLimits)):
                     if sortedLimits[i][1] == 0:
                         sortedLimits[i][1] = None
                     else:
                         sortedLimits[i][1] = str(sortedLimits[i][1])
             return(sortedLimits)
-            
+
         def checkForEmptySlots(self, inputItems):
             for i in range(len(inputItems)):
                 if (inputItems[i] == None):
@@ -591,19 +591,25 @@ class chatHandler:
         def createDictNest(self, tempList, dictLocation):
             if tempList:
                 tempItem = tempList.pop(0)
-                dictLocation.update({tempItem:{}})
+                print(len(dictLocation))
+                print(tempItem)
+                print(dictLocation)
+                if tempItem in dictLocation:
+                    print('test')
+                else:
+                    dictLocation.update({tempItem:{}})
                 returnLocation = self.createDictNest(tempList,dictLocation[tempItem])
                 return 1
             else:
                 return 1
-            
-        
+
+
         ## commandLevel should be a set containing all the desired command levels
         def makeNewEntry(self,inputItems):##,commandKey,responseValue,commandLevel,
                          ##callLevel,isActive,lineLimit,timeLimit,responseLimits):
             filledEntries = self.checkForEmptySlots(inputItems)
             if (len(filledEntries) == 10):
-                
+
                 commandKey = inputItems[0]
                 responseValue = inputItems[1]
                 commandLevel = inputItems[2]
@@ -616,7 +622,7 @@ class chatHandler:
                 subGroup = inputItems[9].split('group.')
 
                 toContinue = self.checkAllValues(filledEntries)
-                
+
                 if not self.checkIfCommandKeyExists(commandKey) and not toContinue:
                     ## Check to see if response or command exists if not make them
                     ## and their links.
@@ -628,7 +634,7 @@ class chatHandler:
                         if (tempOutKey[i] == None):
                             tempOutKey[i] = self.getOpenOutKey()
                     for i in range(len(responseValue)):
-                        
+
                         if '\&' in responseValue[i]:
                             tempTypeList.append(1)
                         else:
@@ -653,11 +659,15 @@ class chatHandler:
                         finalLocation = self.commandDictionary['CMDS']
                         for i in range(len(tempKey2)-1):
                             finalLocation = finalLocation[tempKey2[i]]
-                        finalLocation[tempKey2[-1]] = {"LINK":str(tempInKey),
-                                         "ACTIVE":isActive}
+                        if not finalLocation[tempKey2[-1]]:
+                            finalLocation[tempKey2[-1]] = {}
+                        print(finalLocation[tempKey2[-1]])
+                        finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),"ACTIVE":isActive}})
                     else:
-                        self.commandDictionary['CMDS'][commandKey] = {"LINK":str(tempInKey),
-                                                                      "ACTIVE":isActive}
+                        tempDict = self.commandDictionary['CMDS']
+                        tempDict[commandKey] = {}
+                        tempDict[commandKey]['COMMAND']={"LINK":str(tempInKey),
+                                                         "ACTIVE":isActive}
 
                     ## Add links to OUTLINKS
                     for i in range(len(tempOutKey)):
@@ -666,7 +676,7 @@ class chatHandler:
                     tempOutStrKey = []
                     for i in range(len(tempOutKey)):
                         tempOutStrKey.append(str(tempOutKey[i]))
-                    
+
                     self.commandDictionary['LINKDICT'][str(tempInKey)] = tempOutStrKey
                     ## Add links to CONDITIONS
                     tempLimits = self.sortResponseLimits(responseLimits)
@@ -692,7 +702,7 @@ class chatHandler:
                     ## Change this to deal with ones that are there and you are editing them
                     ## pretty much, take what is there and then change anything that was passed
                     ## otherwise leave things the same and change the editor
-                
+
         def parseForNewCommand(self, commandString, userName):
             tempCommandList = commandString.split(' -')
             tempItems = []
@@ -767,7 +777,34 @@ class chatHandler:
 
 
         def deleteCommand(self, itemList):
-            self.get
+            delString = itemList[3].split('-cmd:')[1]
+            tempResponse = self.checkIfCommandKeyExists(delString)
+            if (tempResponse == 1):
+                tempDict = self.commandDictionary['CMDS']
+                if ' ' in delString:
+                    splitKey = delString.split(' ')
+                    dictLists = []
+                    for i in range(len(splitKey)-1):
+                        dictLists.append(tempDict[splitKey[i]])
+                    isLone = 1
+                    for i in range(len(dictLists)):
+                        if (len(dictLists[i]) != 1):
+                            isLone = 0
+                    if (isLone == 1):
+                        del tempDict[splitKey[0]]
+                    else:
+                        pass
+                else:
+                    if delString in tempDict:
+                        tempLink = tempDict[delString]['COMMAND']['LINK']
+                        if (len(tempDict[delString]) == 1):
+                            del tempDict[delString]
+                        else:
+                            del tempDict[delString]['COMMAND']
+                ## Use tempLink here
+                pass
+            else:
+                return 1
             pass
 
         ## Command Level is optional, None give all levels.
@@ -795,15 +832,15 @@ class chatHandler:
         def openCommandDictFile(self):
                 tempFile = open(self.pathCommandName, 'r')
                 tempResponse = self.loadCommandDict(tempFile)
-        
+
         def loadCommandDict(self, dictFile):
                 tempString = dictFile.read()
                 self.commandDictionary = json.loads(tempString)
-                
+
         def openTimerDictFile(self):
                 tempFile = open(self.pathTimerName, 'r')
                 self.timerDictFile = tempFile
-                
+
         def delCommandDict(self):
                 self.commandDictionary = {}
 
@@ -811,7 +848,7 @@ class chatHandler:
                 tempFile = open(self.pathTwitchName, 'r')
                 tempResponse = self.loadTwitchDict(tempFile)
                 tempFile.close()
-                
+
         def loadTwitchDict(self, dictFile):
                 tempString = dictFile.read()
                 try:
@@ -864,7 +901,7 @@ class outputContainer:
                 self.chatType = chatType
                 self.message = message
                 self.subType = subType
-                
+
 
 class channelData:
         def __init__():
@@ -875,7 +912,7 @@ class channelData:
 ###############################################################
 
 
-                
+
 class spamFilter():
         def __init__(self, currentLevel, filterHolder = {'zero':[]}):
                 self.currentLevel = currentLevel
@@ -924,18 +961,21 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:USERNAME has been banished. -level:Moderators',0,0],
-                      
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:2 USERNAME has been banished. -level:Moderators',0,0],
+
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!banish2 USERNAME -response:USERNAME has been banished. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!boop USERNAME -response:USERNAME got booped! Be nice! -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0]]
-        delcomTest = [0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0]
+                      [0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME now! -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]]
+        delcomTest = [[0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0]]
+                      #[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME',0,0]]
         test = chatHandler()
         tempResponse = test.startup(testDirectory, testName, userDict)
         print("Startup response: ", tempResponse)
         for i in range(len(eneijaTest)):
                 test.tick(eneijaTest[i])
                 test.idletick(eneijaTest[i])
-        test.tick(delcomTest)
+        for i in range(len(delcomTest)):
+            test.tick(delcomTest[i])
         fullResponse = 1
         if (fullResponse != 1):
             try:
