@@ -292,9 +292,11 @@ class chatHandler:
                 self.pathTimerName = ''
                 self.pathTwitchName = ''
                 self.tempKeyList = []
+                self.userDict = {}
                 pass
 
-        def startup(self, basePath, channelName):
+        def startup(self, basePath, channelName, userDict):
+                self.userDict = userDict
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
                 try:
                         self.openCommandDictFile()
@@ -314,11 +316,13 @@ class chatHandler:
                         return([3,e])
                 return([0,None])
 
-        def tick(self):
+        def tick(self, data):
                 self.timerHolder.tick()
                 pass
 
-        def idletick(self):
+        def idletick(self, data):
+                if (data[0] == 0):
+                    self.checkChatCMD(data)
                 self.timerHolder.idletick()
                 pass
 
@@ -571,6 +575,8 @@ class chatHandler:
                         inputItems[i] = [['>','-1']]
                     elif (i == 8):
                         inputItems[i] = '0'
+                    elif (i == 9):
+                        inputItems[i] = 'group.default'
             inputItems[2] = [inputItems[2][0].lower()]
             return inputItems
 
@@ -584,8 +590,7 @@ class chatHandler:
         def makeNewEntry(self,inputItems):##,commandKey,responseValue,commandLevel,
                          ##callLevel,isActive,lineLimit,timeLimit,responseLimits):
             filledEntries = self.checkForEmptySlots(inputItems)
-            print(filledEntries)
-            if (len(filledEntries) == 9):
+            if (len(filledEntries) == 10):
                 
                 commandKey = inputItems[0]
                 responseValue = inputItems[1]
@@ -596,6 +601,7 @@ class chatHandler:
                 timeLimit = inputItems[6]
                 responseLimits = inputItems[7]
                 accessLevel = inputItems[8]
+                subGroup = inputItems[9].split('group.')
 
                 toContinue = self.checkAllValues(filledEntries)
                 
@@ -621,7 +627,7 @@ class chatHandler:
                         for i in range(len(commandLevel)):
                             if not commandLevel[i] in self.commandDictionary["LINKS"]:
                                 self.commandDictionary["LVLS"].append(commandLevel[i])
-                                self.commandDictionary["LINKS"][commandLevel[i]] = {'INFO':{'ACCESSLEVEL':accessLevel}}
+                                self.commandDictionary["LINKS"][commandLevel[i]] = {'INFO':{'ACCESSLEVEL':accessLevel,'CREATOR':callLevel}}
                     else:
                         for i in range(len(commandLevel)):
                             self.commandDictionary["LVLS"].append(commandLevel[i])
@@ -651,21 +657,29 @@ class chatHandler:
                         self.commandDictionary['RESPONSEDICT'][str(responseValue[i])] = str(tempOutKey[i])
                     ## Add info for LINKS
                     for i in range(len(tempOutKey)):
-                        print(timeLimit,lineLimit,tempOutKey[i])
                         tempString = str(tempOutKey[i])
-                        print(commandLevel)
-                        self.commandDictionary['LINKS'][commandLevel[0]][tempString] = {"RESPONSE":responseValue[i],
-                                                                                        "TYPE":str(tempTypeList[i]),"LIMITS":{"LENGTH":str(lineLimit),
-                                                                                                                              "TIME":str(timeLimit)}}
+                        try:
+                            self.commandDictionary['LINKS'][commandLevel[0]][subGroup[1]]
+                        except:
+                            self.commandDictionary['LINKS'][commandLevel[0]][subGroup[1]] = {}
+                        self.commandDictionary['LINKS'][commandLevel[0]][subGroup[1]][tempString] = {"RESPONSE":responseValue[i],
+                                                                                                     "TYPE":str(tempTypeList[i]),
+                                                                                                     "LIMITS":{"LENGTH":str(lineLimit),
+                                                                                                               "TIME":str(timeLimit)},
+                                                                                                     'CREATOR':callLevel,
+                                                                                                     'LASTEDITOR':''}
                 else:
                     return 1
+                    ## Change this to deal with ones that are there and you are editing them
+                    ## pretty much, take what is there and then change anything that was passed
+                    ## otherwise leave things the same and change the editor
                 
         def parseForNewCommand(self, commandString, userName):
             tempCommandList = commandString.split(' -')
             tempItems = []
             for i in range(len(tempCommandList)):
                 tempItems.append(tempCommandList[i].split(':'))
-            finalList = [None]*9
+            finalList = [None]*10
             for i in range(len(tempItems)):
                 if (tempItems[i][0] == 'cmd'):
                     if (tempItems[i][1] == ''):
@@ -724,20 +738,28 @@ class chatHandler:
                         finalList[8] = None
                     else:
                         finalList[8] = tempItems[i][1]
+                elif (tempItems[i][0] == 'users'):
+                    if (tempItems[i][1] == ''):
+                        finalList[9] = None
+                    else:
+                        finalList[9] = tempItems[i][1]
             finalList[3] = userName
             return(finalList)
 
 
         def deleteCommand(self, commandKey, commandLevel, callLevel):
-                pass
+            pass
 
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
-                pass
+            pass
 
         ## Other functions. ##
         def checkChatCMD(self, chatData):
-                pass
+            if (chatData[3][:6] == 'addcom'):
+                self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
+                print('yay!')
+            pass
 
         def updateCommandDict(self, dictFileLocation):
                 tempFile = open(dictFileLocation, 'w')
@@ -857,12 +879,33 @@ class spamFilter():
 if __name__ == "__main__":
         from os.path import expanduser
         home = expanduser('~')
+        userDict = {'SirRujak':{},'Avoloc':{},'Eneija':{}}
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
+        testData = [0,'SirRujak','timePlaceholder','',0,0]
+        'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
+        eneijaTest = [[0,'SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!piddleparty -response:\'Neija gotta pee! Go getchur refills and piddle to your heart\'s content! -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!raided USERNAME -response:Thanks for the raid USERNAME ! Be sure to check out their channel: http:www.twitch.tv/USERNAME -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!yt -response:Ze NomTubes // http://www.youtube.com/eneija -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!timeshot -response:TimeShot // http://www.reddit.com/r/TimeShot/ -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:USERNAME has been banished. -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!boop USERNAME -response:USERNAME got booped! Be nice! -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0]]
         test = chatHandler()
-        tempResponse = test.startup(testDirectory, testName)
+        tempResponse = test.startup(testDirectory, testName, userDict)
         print("Startup response: ", tempResponse)
         for i in range(10):
-                test.tick()
-                test.idletick()
+                test.tick(eneijaTest[i])
+                test.idletick(eneijaTest[i])
+        print(json.dumps(test.commandDictionary, sort_keys=True, indent=4))
         print("Done")
