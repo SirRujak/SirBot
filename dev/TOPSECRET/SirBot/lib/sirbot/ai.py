@@ -515,25 +515,27 @@ class chatHandler:
 
         def checkIfCommandKeyExists(self, tempKey):
             tempVar = 0
-            splitKey = tempKey.split(' ')
-            tempDict = self.commandDictionary['CMDS']
-            tempVar = self.extendCheck(splitKey, tempDict)
+            if (' ' not in tempKey):
+                if tempKey in self.commandDictionary['CMDS']:
+                    tempVar = 1
+                else:
+                    tempVar = 0
+            else:
+                splitKey = tempKey.split(' ')
+                tempDict = self.commandDictionary['CMDS']
+                for i in range(len(splitKey)-1):
+                    if splitKey[i] in tempDict:
+                        tempDict = tempDict[splitKey[i]]
+                    else:
+                        tempVar = 0
+                if splitKey[-1] in tempDict:
+                    tempVar = 1
+                else:
+                    tempVar = 0
             if (tempVar == 1):
                 return 1
             else:
                 return 0
-
-        def extendCheck(self, tempList, tempDict):
-            if tempList:
-                tempVal = tempList.pop()
-                if tempVal in tempDict:
-                    tempResponse = self.extendCheck(tempList,tempDict[tempVal])
-                    if (tempResponse == 1):
-                        return 1
-                else:
-                    return 0
-            else:
-                return 1
 
         def checkIfResponseExists(self, tempResponse):
             tempList = []
@@ -585,6 +587,16 @@ class chatHandler:
                 return 1
             else:
                 return None
+
+        def createDictNest(self, tempList, dictLocation):
+            if tempList:
+                tempItem = tempList.pop(0)
+                dictLocation.update({tempItem:{}})
+                returnLocation = self.createDictNest(tempList,dictLocation[tempItem])
+                return 1
+            else:
+                return 1
+            
         
         ## commandLevel should be a set containing all the desired command levels
         def makeNewEntry(self,inputItems):##,commandKey,responseValue,commandLevel,
@@ -635,7 +647,14 @@ class chatHandler:
 
                     ## Add command to the 'CMDS' dict
                     if ' ' in commandKey:
-                        pass
+                        tempKey = commandKey.split(' ')
+                        tempKey2 = commandKey.split(' ')
+                        self.createDictNest(tempKey, self.commandDictionary['CMDS'])
+                        finalLocation = self.commandDictionary['CMDS']
+                        for i in range(len(tempKey2)-1):
+                            finalLocation = finalLocation[tempKey2[i]]
+                        finalLocation[tempKey2[-1]] = {"LINK":str(tempInKey),
+                                         "ACTIVE":isActive}
                     else:
                         self.commandDictionary['CMDS'][commandKey] = {"LINK":str(tempInKey),
                                                                       "ACTIVE":isActive}
@@ -678,7 +697,7 @@ class chatHandler:
             tempCommandList = commandString.split(' -')
             tempItems = []
             for i in range(len(tempCommandList)):
-                tempItems.append(tempCommandList[i].split(':'))
+                tempItems.append(tempCommandList[i].split(':', 1))
             finalList = [None]*10
             for i in range(len(tempItems)):
                 if (tempItems[i][0] == 'cmd'):
@@ -747,7 +766,8 @@ class chatHandler:
             return(finalList)
 
 
-        def deleteCommand(self, commandKey, commandLevel, callLevel):
+        def deleteCommand(self, itemList):
+            self.get
             pass
 
         ## Command Level is optional, None give all levels.
@@ -757,8 +777,13 @@ class chatHandler:
         ## Other functions. ##
         def checkChatCMD(self, chatData):
             if (chatData[3][:6] == 'addcom'):
-                self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
-                print('yay!')
+                try:
+                    self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
+                    ##self.updateCommandDict(self.
+                except:
+                    pass
+            elif (chatData[3][:6] == 'delcom'):
+                self.deleteCommand(chatData)
             pass
 
         def updateCommandDict(self, dictFileLocation):
@@ -899,13 +924,27 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:USERNAME has been banished. -level:Moderators',0,0],
+                      
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:2 USERNAME has been banished. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!boop USERNAME -response:USERNAME got booped! Be nice! -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0]]
+        delcomTest = [0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0]
         test = chatHandler()
         tempResponse = test.startup(testDirectory, testName, userDict)
         print("Startup response: ", tempResponse)
-        for i in range(10):
+        for i in range(len(eneijaTest)):
                 test.tick(eneijaTest[i])
                 test.idletick(eneijaTest[i])
-        print(json.dumps(test.commandDictionary, sort_keys=True, indent=4))
+        test.tick(delcomTest)
+        fullResponse = 1
+        if (fullResponse != 1):
+            try:
+                json.dumps(test.commandDictionary, sort_keys=True, indent=4)
+            except:
+                print('Error converting to JSON.')
+        else:
+            try:
+                print(json.dumps(test.commandDictionary, sort_keys=True, indent=4))
+            except:
+                print('Error converting to JSON.')
         print("Done")
