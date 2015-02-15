@@ -591,11 +591,8 @@ class chatHandler:
         def createDictNest(self, tempList, dictLocation):
             if tempList:
                 tempItem = tempList.pop(0)
-                print(len(dictLocation))
-                print(tempItem)
-                print(dictLocation)
                 if tempItem in dictLocation:
-                    print('test')
+                    pass
                 else:
                     dictLocation.update({tempItem:{}})
                 returnLocation = self.createDictNest(tempList,dictLocation[tempItem])
@@ -661,7 +658,6 @@ class chatHandler:
                             finalLocation = finalLocation[tempKey2[i]]
                         if not finalLocation[tempKey2[-1]]:
                             finalLocation[tempKey2[-1]] = {}
-                        print(finalLocation[tempKey2[-1]])
                         finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),"ACTIVE":isActive}})
                     else:
                         tempDict = self.commandDictionary['CMDS']
@@ -784,15 +780,33 @@ class chatHandler:
                 if ' ' in delString:
                     splitKey = delString.split(' ')
                     dictLists = []
-                    for i in range(len(splitKey)-1):
-                        dictLists.append(tempDict[splitKey[i]])
+                    tempDict2 = tempDict
+                    for i in range(len(splitKey)):
+                        dictLists.append(tempDict2[splitKey[i]])
+                        tempDict2 = tempDict2[splitKey[i]]
                     isLone = 1
+                    tempDict2 = tempDict
+                    tempKeyList = []
                     for i in range(len(dictLists)):
                         if (len(dictLists[i]) != 1):
-                            isLone = 0
-                    if (isLone == 1):
+                            tempKeyList.append(0)
+                        else:
+                            tempKeyList.append(1)
+                        tempDict2 = tempDict2[splitKey[i]]
+                    if 1 not in tempKeyList:
                         del tempDict[splitKey[0]]
                     else:
+                        tempDict2 = tempDict
+                        tempMarker = True
+                        tempCounter = 0
+                        while tempMarker:
+                            if (tempKeyList[tempCounter] == 0):
+                                del tempDict2[splitKey[tempCounter]]['COMMAND']
+                                tempMarker = False
+                            else:
+                                tempDict2 = tempDict2[splitKey[tempCounter]]
+                                tempCounter += 1
+
                         pass
                 else:
                     if delString in tempDict:
@@ -966,8 +980,8 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!boop USERNAME -response:USERNAME got booped! Be nice! -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME now! -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]]
-        delcomTest = [[0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0]]
-                      #[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME',0,0]]
+        delcomTest = [[0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]
         test = chatHandler()
         tempResponse = test.startup(testDirectory, testName, userDict)
         print("Startup response: ", tempResponse)
