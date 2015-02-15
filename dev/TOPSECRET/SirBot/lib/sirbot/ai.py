@@ -541,7 +541,7 @@ class chatHandler:
             tempList = []
             for i in range(len(tempResponse)):
                 if tempResponse[i] in self.commandDictionary['RESPONSEDICT']:
-                    tempList.append(self.commandDictionary['RESPONSEDICT'][tempResponse[i]])
+                    tempList.append(self.commandDictionary['RESPONSEDICT'][tempResponse[i]][0][0])
                 else:
                     tempList.append(None)
             return tempList
@@ -672,14 +672,19 @@ class chatHandler:
                     tempOutStrKey = []
                     for i in range(len(tempOutKey)):
                         tempOutStrKey.append(str(tempOutKey[i]))
-
+                    print(tempOutKey)
                     self.commandDictionary['LINKDICT'][str(tempInKey)] = tempOutStrKey
                     ## Add links to CONDITIONS
                     tempLimits = self.sortResponseLimits(responseLimits)
                     self.commandDictionary['CONDITIONS'][str(tempInKey)] = str(tempLimits)
                     ## Add info for RESPONSEDICT
                     for i in range(len(responseValue)):
-                        self.commandDictionary['RESPONSEDICT'][str(responseValue[i])] = str(tempOutKey[i])
+                        print(tempInKey)
+                        if str(responseValue[i]) in self.commandDictionary['RESPONSEDICT']:
+                            self.commandDictionary['RESPONSEDICT'][str(responseValue[i])][1].append(str(tempInKey))()
+                        else:
+                            self.commandDictionary['RESPONSEDICT'][str(responseValue[i])] = [[str(tempOutKey[i])],[str(tempInKey)]]
+                    ## Add info for sub groups
                     ## Add info for LINKS
                     for i in range(len(tempOutKey)):
                         tempString = str(tempOutKey[i])
@@ -801,13 +806,12 @@ class chatHandler:
                         tempCounter = 0
                         while tempMarker:
                             if (tempKeyList[tempCounter] == 0):
+                                tempLink = tempDict2[splitKey[tempCounter]]['COMMAND']['LINK']
                                 del tempDict2[splitKey[tempCounter]]['COMMAND']
                                 tempMarker = False
                             else:
                                 tempDict2 = tempDict2[splitKey[tempCounter]]
                                 tempCounter += 1
-
-                        pass
                 else:
                     if delString in tempDict:
                         tempLink = tempDict[delString]['COMMAND']['LINK']
@@ -816,6 +820,11 @@ class chatHandler:
                         else:
                             del tempDict[delString]['COMMAND']
                 ## Use tempLink here
+                tempDict = self.commandDictionary
+                del tempDict['CONDITIONS'][tempLink]
+                tempLinkList = tempDict['LINKDICT'][tempLink]
+                del tempDict['LINKDICT'][tempLink]
+
                 pass
             else:
                 return 1
@@ -959,11 +968,12 @@ if __name__ == "__main__":
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
         testData = [0,'SirRujak','timePlaceholder','',0,0]
+        testDelete = False
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [[0,'SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!piddleparty -response:\'Neija gotta pee! Go getchur refills and piddle to your heart\'s content! -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0],
@@ -988,8 +998,9 @@ if __name__ == "__main__":
         for i in range(len(eneijaTest)):
                 test.tick(eneijaTest[i])
                 test.idletick(eneijaTest[i])
-        for i in range(len(delcomTest)):
-            test.tick(delcomTest[i])
+        if testDelete:
+            for i in range(len(delcomTest)):
+                test.tick(delcomTest[i])
         fullResponse = 1
         if (fullResponse != 1):
             try:
