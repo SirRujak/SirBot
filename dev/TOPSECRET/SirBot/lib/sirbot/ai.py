@@ -842,11 +842,12 @@ class chatHandler:
                         print(tempFinalLinks)
                         print(tempDict['OUTLINKS'])
                         print(tempLink)
-                        if tempFinalLinks[item] not in tempDict['RESPONSEDICT']:
-                            tempDict['OUTLINKS'].remove(tempLink)
                         del tempDict['RESPONSEDICT'][tempFinalLinks[item]]
                         if tempLink in tempFinalLocations[item]:
                             del tempFinalLocations[item][tempLink]
+
+                        if tempFinalLinks[item] not in tempDict['RESPONSEDICT'] and tempLink in tempDict['OUTLINKS']:
+                            tempDict['OUTLINKS'].remove(tempLink)
                     else:
                         tempDict['RESPONSEDICT'][tempFinalLinks[item]][1].remove(tempLink)
                 return 0
