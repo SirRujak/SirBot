@@ -667,21 +667,20 @@ class chatHandler:
 
                     ## Add links to OUTLINKS
                     for i in range(len(tempOutKey)):
-                        self.commandDictionary['OUTLINKS'].append(str(tempOutKey[i]))
+                        if str(tempOutKey[i]) not in self.commandDictionary['OUTLINKS']:
+                            self.commandDictionary['OUTLINKS'].append(str(tempOutKey[i]))
                     ## Add links to LINKDICT
                     tempOutStrKey = []
                     for i in range(len(tempOutKey)):
                         tempOutStrKey.append(str(tempOutKey[i]))
-                    print(tempOutKey)
                     self.commandDictionary['LINKDICT'][str(tempInKey)] = tempOutStrKey
                     ## Add links to CONDITIONS
                     tempLimits = self.sortResponseLimits(responseLimits)
                     self.commandDictionary['CONDITIONS'][str(tempInKey)] = str(tempLimits)
                     ## Add info for RESPONSEDICT
                     for i in range(len(responseValue)):
-                        print(tempInKey)
                         if str(responseValue[i]) in self.commandDictionary['RESPONSEDICT']:
-                            self.commandDictionary['RESPONSEDICT'][str(responseValue[i])][1].append(str(tempInKey))()
+                            self.commandDictionary['RESPONSEDICT'][str(responseValue[i])][1].append(str(tempInKey))
                         else:
                             self.commandDictionary['RESPONSEDICT'][str(responseValue[i])] = [[str(tempOutKey[i])],[str(tempInKey)]]
                     ## Add info for sub groups
@@ -809,9 +808,12 @@ class chatHandler:
                                 tempLink = tempDict2[splitKey[tempCounter]]['COMMAND']['LINK']
                                 del tempDict2[splitKey[tempCounter]]['COMMAND']
                                 tempMarker = False
-                            else:
+                            elif tempCounter < len(tempKeyList) - 1:
                                 tempDict2 = tempDict2[splitKey[tempCounter]]
                                 tempCounter += 1
+                            else:
+                                tempLink = tempDict2[splitKey[-1]]['COMMAND']['LINK']
+                                tempMarker = False
                 else:
                     if delString in tempDict:
                         tempLink = tempDict[delString]['COMMAND']['LINK']
@@ -824,11 +826,32 @@ class chatHandler:
                 del tempDict['CONDITIONS'][tempLink]
                 tempLinkList = tempDict['LINKDICT'][tempLink]
                 del tempDict['LINKDICT'][tempLink]
-
-                pass
+                tempFinalLinks = []
+                tempFinalKeys = []
+                tempFinalLocations = []
+                for item1 in tempDict['LINKS']:
+                    for item2 in tempDict['LINKS'][item1]:
+                        for item3 in range(len(tempLinkList)):
+                            if tempLinkList[item3] in tempDict['LINKS'][item1][item2]:
+                                tempFinalLinks.append(tempDict['LINKS'][item1][item2][tempLinkList[item3]]['RESPONSE'])
+                                tempFinalLocations.append(tempDict['LINKS'][item1][item2])
+                                tempFinalKeys.append(tempDict['LINKS'][item1][item2][tempLinkList[item3]])
+                print(tempLink)
+                for item in range(len(tempFinalLinks)):
+                    if (len(tempDict['RESPONSEDICT'][tempFinalLinks[item]][1]) == 1):
+                        print(tempFinalLinks)
+                        print(tempDict['OUTLINKS'])
+                        print(tempLink)
+                        if tempFinalLinks[item] not in tempDict['RESPONSEDICT']:
+                            tempDict['OUTLINKS'].remove(tempLink)
+                        del tempDict['RESPONSEDICT'][tempFinalLinks[item]]
+                        if tempLink in tempFinalLocations[item]:
+                            del tempFinalLocations[item][tempLink]
+                    else:
+                        tempDict['RESPONSEDICT'][tempFinalLinks[item]][1].remove(tempLink)
+                return 0
             else:
                 return 1
-            pass
 
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
@@ -968,7 +991,7 @@ if __name__ == "__main__":
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
         testData = [0,'SirRujak','timePlaceholder','',0,0]
-        testDelete = False
+        testDelete = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [[0,'SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
@@ -991,6 +1014,22 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME now! -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]]
         delcomTest = [[0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!links',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!patreon',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!multi',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!panic',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!piddleparty',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!uhc',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!raided USERNAME',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!yt',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!twitter',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!timeshot',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!classy',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!spam',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!banish USERNAME',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!boop USERNAME',0,0],
+                      [0,'SirRujak','timePlaceholder','delcom -cmd:!banish2 USERNAME',0,0],
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]
         test = chatHandler()
         tempResponse = test.startup(testDirectory, testName, userDict)
