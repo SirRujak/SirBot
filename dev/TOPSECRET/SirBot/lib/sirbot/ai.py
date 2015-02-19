@@ -850,6 +850,12 @@ class chatHandler:
 
 
                     ## Start deleting multi commands
+                    if (tempCMDSBranches == 0):
+                        del self.commandDictionary['CMDS'][delStringList[0]]
+                    else:
+                        self.deleteCommandHelper(self.commandDictionary['CMDS'],tempCMDSList,delStringList,tempCMDSBranches)
+                        pass
+
                     ## Coppied from above
                     del fullDict['CONDITIONS'][tempInLink]
                     del fullDict['LINKDICT'][tempInLink]
@@ -867,6 +873,16 @@ class chatHandler:
                 return 0
             else:
                 return 1
+
+        def deleteCommandHelper(self, tempDict, tempCMDList, tempDelList, tempValue):
+            tempCMD = tempCMDList.pop(0)
+            tempDel = tempDelList.pop(0)
+            if (tempCMD == 1):
+                tempValue -= 1
+            if (tempValue == 0):
+                del tempDict[tempDel]['COMMAND']
+            else:
+                self.deleteCommandHelper(tempDict[tempDel],tempCMDList,tempDelList,tempValue)
 
         def deleteCommand(self, itemList):
             delString = itemList[3].split('-cmd:')[1]
