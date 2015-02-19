@@ -775,6 +775,59 @@ class chatHandler:
             finalList[3] = userName
             return(finalList)
 
+        def deleteCommand2(self,itemList):
+            delString = itemList[3].split('-cmd:')[1]
+            tempResponse = self.checkIfCommandKeyExists(delString)
+            if (tempResponse == 1):
+                fullDict = self.commandDictionary
+                tempDict = self.commandDictionary['CMDS']
+                if ' ' not in delString:
+                    tempInLink = tempDict[delString]['COMMAND']['LINK']
+                    tempOutLinks = fullDict['LINKDICT'][tempInLink]
+                    tempResponses = []
+                    tempResponseLocations = []
+                    tempResponseLinks = []
+                    tempResponseSingularity = []
+                    for item in range(len(tempOutLinks)):
+                        for item2 in fullDict['LINKS']:
+                            for item3 in fullDict['LINKS'][item2]:
+                                if tempOutLinks[item] in fullDict['LINKS'][item2][item3]:
+                                    tempResponses.append(fullDict['LINKS'][item2][item3][tempOutLinks[item]]['RESPONSE'])
+                    for item in range(len(tempResponses)):
+                        print(tempResponses)
+                        print(fullDict['RESPONSEDICT'][tempResponses[item]])
+                        tempResponseLinks.append(fullDict['RESPONSEDICT'][tempResponses[item]])
+                        if (len(tempResponseLinks[item][1]) == 1):
+                            tempResponseSingularity.append(True)
+                        else:
+                            tempResponseSingularity.append(False)
+
+
+
+                    if(len(tempDict[delString]) == 1):
+                        del tempDict[delString]
+                    else:
+                        del tempDict[delString]['COMMAND']
+                    del fullDict['CONDITIONS'][tempInLink]
+                    del fullDict['LINKDICT'][tempInLink]
+                    for item in range(len(tempResponseSingularity)):
+                        print(len(tempResponseLocations))
+                        print(len(tempResponseSingularity))
+                        print(len(self.commandDictionary['CMDS']))
+                        if tempResponseSingularity[item]:
+                            del fullDict['RESPONSEDICT'][tempResponses[item]]
+                            for item4 in range(len(tempOutLinks)):
+                                for item2 in fullDict['LINKS']:
+                                    for item3 in fullDict['LINKS'][item2]:
+                                        if tempOutLinks[item4] in fullDict['LINKS'][item2][item3]:
+                                            del fullDict['LINKS'][item2][item3][tempOutLinks[item4]]
+                            fullDict['OUTLINKS'].remove(tempOutLinks[item])
+                else:
+                    pass
+                return 0
+            else:
+                return 1
+            pass
 
         def deleteCommand(self, itemList):
             delString = itemList[3].split('-cmd:')[1]
@@ -867,7 +920,7 @@ class chatHandler:
                 except:
                     pass
             elif (chatData[3][:6] == 'delcom'):
-                self.deleteCommand(chatData)
+                self.deleteCommand2(chatData)
             pass
 
         def updateCommandDict(self, dictFileLocation):
@@ -993,6 +1046,7 @@ if __name__ == "__main__":
         testName = 'CoolName'
         testData = [0,'SirRujak','timePlaceholder','',0,0]
         testDelete = True
+        testCreate = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [[0,'SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
@@ -1035,9 +1089,10 @@ if __name__ == "__main__":
         test = chatHandler()
         tempResponse = test.startup(testDirectory, testName, userDict)
         print("Startup response: ", tempResponse)
-        for i in range(len(eneijaTest)):
-                test.tick(eneijaTest[i])
-                test.idletick(eneijaTest[i])
+        if testCreate:
+            for i in range(len(eneijaTest)):
+                    test.tick(eneijaTest[i])
+                    test.idletick(eneijaTest[i])
         if testDelete:
             for i in range(len(delcomTest)):
                 test.tick(delcomTest[i])
