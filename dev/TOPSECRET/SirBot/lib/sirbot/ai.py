@@ -794,8 +794,6 @@ class chatHandler:
                                 if tempOutLinks[item] in fullDict['LINKS'][item2][item3]:
                                     tempResponses.append(fullDict['LINKS'][item2][item3][tempOutLinks[item]]['RESPONSE'])
                     for item in range(len(tempResponses)):
-                        print(tempResponses)
-                        print(fullDict['RESPONSEDICT'][tempResponses[item]])
                         tempResponseLinks.append(fullDict['RESPONSEDICT'][tempResponses[item]])
                         if (len(tempResponseLinks[item][1]) == 1):
                             tempResponseSingularity.append(True)
@@ -811,9 +809,6 @@ class chatHandler:
                     del fullDict['CONDITIONS'][tempInLink]
                     del fullDict['LINKDICT'][tempInLink]
                     for item in range(len(tempResponseSingularity)):
-                        print(len(tempResponseLocations))
-                        print(len(tempResponseSingularity))
-                        print(len(self.commandDictionary['CMDS']))
                         if tempResponseSingularity[item]:
                             del fullDict['RESPONSEDICT'][tempResponses[item]]
                             for item4 in range(len(tempOutLinks)):
