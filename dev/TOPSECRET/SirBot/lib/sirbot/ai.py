@@ -785,7 +785,6 @@ class chatHandler:
                     tempInLink = tempDict[delString]['COMMAND']['LINK']
                     tempOutLinks = fullDict['LINKDICT'][tempInLink]
                     tempResponses = []
-                    tempResponseLocations = []
                     tempResponseLinks = []
                     tempResponseSingularity = []
                     for item in range(len(tempOutLinks)):
@@ -817,12 +816,57 @@ class chatHandler:
                                         if tempOutLinks[item4] in fullDict['LINKS'][item2][item3]:
                                             del fullDict['LINKS'][item2][item3][tempOutLinks[item4]]
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
+                        else:
+                            print(fullDict['RESPONSEDICT'])
+                            fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
                 else:
-                    pass
+                    delStringList = delString.split(' ')
+                    tempDict2 = tempDict
+                    tempCMDSList = []
+                    for item in range(len(delStringList)):
+                        if (len(tempDict2[delStringList[item]]) == 1):
+                            tempCMDSList.append(0)
+                        else:
+                            tempCMDSList.append(1)
+                        tempDict2 = tempDict2[delStringList[item]]
+                    tempCMDSBranches = tempCMDSList.count(1)
+                    tempInLink = tempDict2['COMMAND']['LINK']
+                    tempOutLinks = fullDict['LINKDICT'][tempInLink]
+                    tempResponses = []
+                    tempResponseLinks = []
+                    tempResponseSingularity = []
+                    for item in range(len(tempOutLinks)):
+                        for item2 in fullDict['LINKS']:
+                            for item3 in fullDict['LINKS'][item2]:
+                                if tempOutLinks[item] in fullDict['LINKS'][item2][item3]:
+                                    tempResponses.append(fullDict['LINKS'][item2][item3][tempOutLinks[item]]['RESPONSE'])
+                    for item in range(len(tempResponses)):
+                        tempResponseLinks.append(fullDict['RESPONSEDICT'][tempResponses[item]])
+                        if (len(tempResponseLinks[item][1]) == 1):
+                            tempResponseSingularity.append(True)
+                        else:
+                            tempResponseSingularity.append(False)
+
+
+
+                    ## Start deleting multi commands
+                    ## Coppied from above
+                    del fullDict['CONDITIONS'][tempInLink]
+                    del fullDict['LINKDICT'][tempInLink]
+                    for item in range(len(tempResponseSingularity)):
+                        if tempResponseSingularity[item]:
+                            del fullDict['RESPONSEDICT'][tempResponses[item]]
+                            for item4 in range(len(tempOutLinks)):
+                                for item2 in fullDict['LINKS']:
+                                    for item3 in fullDict['LINKS'][item2]:
+                                        if tempOutLinks[item4] in fullDict['LINKS'][item2][item3]:
+                                            del fullDict['LINKS'][item2][item3][tempOutLinks[item4]]
+                            fullDict['OUTLINKS'].remove(tempOutLinks[item])
+                        else:
+                            fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
                 return 0
             else:
                 return 1
-            pass
 
         def deleteCommand(self, itemList):
             delString = itemList[3].split('-cmd:')[1]
@@ -884,12 +928,8 @@ class chatHandler:
                                 tempFinalLinks.append(tempDict['LINKS'][item1][item2][tempLinkList[item3]]['RESPONSE'])
                                 tempFinalLocations.append(tempDict['LINKS'][item1][item2])
                                 tempFinalKeys.append(tempDict['LINKS'][item1][item2][tempLinkList[item3]])
-                print(tempLink)
                 for item in range(len(tempFinalLinks)):
                     if (len(tempDict['RESPONSEDICT'][tempFinalLinks[item]][1]) == 1):
-                        print(tempFinalLinks)
-                        print(tempDict['OUTLINKS'])
-                        print(tempLink)
                         del tempDict['RESPONSEDICT'][tempFinalLinks[item]]
                         if tempLink in tempFinalLocations[item]:
                             del tempFinalLocations[item][tempLink]
