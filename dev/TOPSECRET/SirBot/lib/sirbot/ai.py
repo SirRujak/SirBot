@@ -616,7 +616,7 @@ class chatHandler:
                 timeLimit = inputItems[6]
                 responseLimits = inputItems[7]
                 accessLevel = inputItems[8]
-                subGroup = inputItems[9].split('group.')
+                subGroup = inputItems[9].split(' ')
 
                 toContinue = self.checkAllValues(filledEntries)
 
@@ -658,12 +658,15 @@ class chatHandler:
                             finalLocation = finalLocation[tempKey2[i]]
                         if not finalLocation[tempKey2[-1]]:
                             finalLocation[tempKey2[-1]] = {}
-                        finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),"ACTIVE":isActive}})
+                        finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),"ACTIVE":isActive,"LASTLINE":"0","LASTTIME":"0","TOTAL":"0"}})
                     else:
                         tempDict = self.commandDictionary['CMDS']
                         tempDict[commandKey] = {}
                         tempDict[commandKey]['COMMAND']={"LINK":str(tempInKey),
-                                                         "ACTIVE":isActive}
+                                                         "ACTIVE":isActive,
+                                                         "LASTLINE":"0",
+                                                         "LASTTIME":"0",
+                                                         "TOTAL":"0"}
 
                     ## Add links to OUTLINKS
                     for i in range(len(tempOutKey)):
@@ -685,18 +688,28 @@ class chatHandler:
                             self.commandDictionary['RESPONSEDICT'][str(responseValue[i])] = [[str(tempOutKey[i])],[str(tempInKey)]]
                     ## Add info for sub groups
                     ## Add info for LINKS
+                    ## Need to fix!!!
+                    tempGroupList = []
+                    tempUserList = []
+                    for item in range(len(subGroup)):
+                        if 'group.' in subGroup[item]:
+                            tempGroupList.append(subGroup[item].split('group.')[1])
+                        else:
+                            tempUserList.append(subGroup[item])
                     for i in range(len(tempOutKey)):
                         tempString = str(tempOutKey[i])
-                        try:
-                            self.commandDictionary['LINKS'][commandLevel[0]][subGroup[1]]
-                        except:
-                            self.commandDictionary['LINKS'][commandLevel[0]][subGroup[1]] = {}
-                        self.commandDictionary['LINKS'][commandLevel[0]][subGroup[1]][tempString] = {"RESPONSE":responseValue[i],
-                                                                                                     "TYPE":str(tempTypeList[i]),
-                                                                                                     "LIMITS":{"LENGTH":str(lineLimit),
-                                                                                                               "TIME":str(timeLimit)},
-                                                                                                     'CREATOR':callLevel,
-                                                                                                     'LASTEDITOR':''}
+                        for item in range(len(tempGroupList)):
+                            try:
+                                self.commandDictionary['LINKS'][commandLevel[0]][tempGroupList[item]]
+                            except:
+                                self.commandDictionary['LINKS'][commandLevel[0]][tempGroupList[item]] = {}
+                            self.commandDictionary['LINKS'][commandLevel[0]][tempGroupList[item]][tempString] = {"RESPONSE":responseValue[i],
+                                                                                                         "TYPE":str(tempTypeList[i]),
+                                                                                                         "LIMITS":{"LENGTH":str(lineLimit),
+                                                                                                                   "TIME":str(timeLimit)},
+                                                                                                         'CREATOR':callLevel,
+                                                                                                         'LASTEDITOR':'',
+                                                                                                         'USERS':tempUserList}
                 else:
                     return 1
                     ## Change this to deal with ones that are there and you are editing them
@@ -713,7 +726,8 @@ class chatHandler:
                 if (tempItems[i][0] == 'cmd'):
                     if (tempItems[i][1] == ''):
                         finalList[0] = None
-                    finalList[0] = tempItems[i][1]
+                    else:
+                        finalList[0] = tempItems[i][1]
                 elif (tempItems[i][0] == 'response'):
                     if (tempItems[i][1] == ''):
                         finalList[1] = None
@@ -884,79 +898,36 @@ class chatHandler:
             else:
                 self.deleteCommandHelper(tempDict[tempDel],tempCMDList,tempDelList,tempValue)
 
-        def deleteCommand(self, itemList):
-            delString = itemList[3].split('-cmd:')[1]
-            tempResponse = self.checkIfCommandKeyExists(delString)
-            if (tempResponse == 1):
-                tempDict = self.commandDictionary['CMDS']
-                if ' ' in delString:
-                    splitKey = delString.split(' ')
-                    dictLists = []
-                    tempDict2 = tempDict
-                    for i in range(len(splitKey)):
-                        dictLists.append(tempDict2[splitKey[i]])
-                        tempDict2 = tempDict2[splitKey[i]]
-                    isLone = 1
-                    tempDict2 = tempDict
-                    tempKeyList = []
-                    for i in range(len(dictLists)):
-                        if (len(dictLists[i]) != 1):
-                            tempKeyList.append(0)
-                        else:
-                            tempKeyList.append(1)
-                        tempDict2 = tempDict2[splitKey[i]]
-                    if 1 not in tempKeyList:
-                        del tempDict[splitKey[0]]
-                    else:
-                        tempDict2 = tempDict
-                        tempMarker = True
-                        tempCounter = 0
-                        while tempMarker:
-                            if (tempKeyList[tempCounter] == 0):
-                                tempLink = tempDict2[splitKey[tempCounter]]['COMMAND']['LINK']
-                                del tempDict2[splitKey[tempCounter]]['COMMAND']
-                                tempMarker = False
-                            elif tempCounter < len(tempKeyList) - 1:
-                                tempDict2 = tempDict2[splitKey[tempCounter]]
-                                tempCounter += 1
-                            else:
-                                tempLink = tempDict2[splitKey[-1]]['COMMAND']['LINK']
-                                tempMarker = False
-                else:
-                    if delString in tempDict:
-                        tempLink = tempDict[delString]['COMMAND']['LINK']
-                        if (len(tempDict[delString]) == 1):
-                            del tempDict[delString]
-                        else:
-                            del tempDict[delString]['COMMAND']
-                ## Use tempLink here
-                tempDict = self.commandDictionary
-                del tempDict['CONDITIONS'][tempLink]
-                tempLinkList = tempDict['LINKDICT'][tempLink]
-                del tempDict['LINKDICT'][tempLink]
-                tempFinalLinks = []
-                tempFinalKeys = []
-                tempFinalLocations = []
-                for item1 in tempDict['LINKS']:
-                    for item2 in tempDict['LINKS'][item1]:
-                        for item3 in range(len(tempLinkList)):
-                            if tempLinkList[item3] in tempDict['LINKS'][item1][item2]:
-                                tempFinalLinks.append(tempDict['LINKS'][item1][item2][tempLinkList[item3]]['RESPONSE'])
-                                tempFinalLocations.append(tempDict['LINKS'][item1][item2])
-                                tempFinalKeys.append(tempDict['LINKS'][item1][item2][tempLinkList[item3]])
-                for item in range(len(tempFinalLinks)):
-                    if (len(tempDict['RESPONSEDICT'][tempFinalLinks[item]][1]) == 1):
-                        del tempDict['RESPONSEDICT'][tempFinalLinks[item]]
-                        if tempLink in tempFinalLocations[item]:
-                            del tempFinalLocations[item][tempLink]
+        def editCommandHelper(self, tempDict, tempCMDList, tempTarget, tempValue):
+            tempCMD = tempCMDList.pop(0)
+            if (len(tempCMDList) < 1):
+                tempDict[tempDel]['COMMAND'] = tempValue
+            else:
+                self.editCommandHelper(tempDict[tempDel],tempCMDList,tempValue)
 
-                        if tempFinalLinks[item] not in tempDict['RESPONSEDICT'] and tempLink in tempDict['OUTLINKS']:
-                            tempDict['OUTLINKS'].remove(tempLink)
-                    else:
-                        tempDict['RESPONSEDICT'][tempFinalLinks[item]][1].remove(tempLink)
+        def editCommand(self, itemList):
+            editString = itemList[3].split('-')[1]
+            tempResponse2 = self.parseForNewCommand(itemList[3],itemList[1])
+            tempResponse = self.checkIfCommandKeyExists(editString)
+            if (tempResponse == 1):
+                fullDict = self.commandDictionary
+                tempDict = self.commandDictionary['CMDS']
+                if ' ' not in delString:
+                    pass
+                else:
+                    pass
                 return 0
             else:
                 return 1
+
+        def compareForCommands(self, itemList):
+            ## Make item list consiste of [user groups], user name, chat values,
+            ## current line number, current time
+
+            pass
+
+        def compareHelper(self,itemList):
+            pass
 
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
@@ -1102,7 +1073,7 @@ if __name__ == "__main__":
         eneijaTest = [[0,'SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!piddleparty -response:\'Neija gotta pee! Go getchur refills and piddle to your heart\'s content! -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0],
