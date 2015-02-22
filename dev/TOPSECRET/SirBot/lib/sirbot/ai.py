@@ -2,6 +2,7 @@
 
 #classes containing machinery for artifically intelligent operations
 #i.e. data parsing and command execution
+from random import choice
 import json
 from time import time
 import queue
@@ -293,9 +294,16 @@ class chatHandler:
                 self.pathTwitchName = ''
                 self.tempKeyList = []
                 self.userDict = {}
+                self.currentTime = None
+                self.currentLine = None
                 pass
 
+        def getCurrentTime(self):
+            self.currentTime = time()
+
         def startup(self, basePath, channelName, userDict):
+                self.currentLine = 0
+                self.getCurrentTime()
                 self.userDict = userDict
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
                 try:
@@ -689,27 +697,27 @@ class chatHandler:
                     ## Add info for sub groups
                     ## Add info for LINKS
                     ## Need to fix!!!
-                    tempGroupList = []
-                    tempUserList = []
+                    tempGroupList = {}
+                    tempUserList = {}
                     for item in range(len(subGroup)):
                         if 'group.' in subGroup[item]:
-                            tempGroupList.append(subGroup[item].split('group.')[1])
+                            tempGroupList.update({subGroup[item].split('group.')[1]:'x'})
                         else:
-                            tempUserList.append(subGroup[item])
+                            tempUserList.update({subGroup[item]:'x'})
                     for i in range(len(tempOutKey)):
                         tempString = str(tempOutKey[i])
-                        for item in range(len(tempGroupList)):
-                            try:
-                                self.commandDictionary['LINKS'][commandLevel[0]][tempGroupList[item]]
-                            except:
-                                self.commandDictionary['LINKS'][commandLevel[0]][tempGroupList[item]] = {}
-                            self.commandDictionary['LINKS'][commandLevel[0]][tempGroupList[item]][tempString] = {"RESPONSE":responseValue[i],
-                                                                                                         "TYPE":str(tempTypeList[i]),
-                                                                                                         "LIMITS":{"LENGTH":str(lineLimit),
-                                                                                                                   "TIME":str(timeLimit)},
-                                                                                                         'CREATOR':callLevel,
-                                                                                                         'LASTEDITOR':'',
-                                                                                                         'USERS':tempUserList}
+                        try:
+                            self.commandDictionary['LINKS'][commandLevel[0]]
+                        except:
+                            self.commandDictionary['LINKS'][commandLevel[0]] = {}
+                        self.commandDictionary['LINKS'][commandLevel[0]][tempString] = {"RESPONSE":responseValue[i],
+                                                                                                     "TYPE":str(tempTypeList[i]),
+                                                                                                     "LIMITS":{"LENGTH":str(lineLimit),
+                                                                                                               "TIME":str(timeLimit)},
+                                                                                                     'CREATOR':callLevel,
+                                                                                                     'LASTEDITOR':'',
+                                                                                                     'USERS':tempUserList,
+                                                                                                     'GROUPS':tempGroupList}
                 else:
                     return 1
                     ## Change this to deal with ones that are there and you are editing them
@@ -803,9 +811,8 @@ class chatHandler:
                     tempResponseSingularity = []
                     for item in range(len(tempOutLinks)):
                         for item2 in fullDict['LINKS']:
-                            for item3 in fullDict['LINKS'][item2]:
-                                if tempOutLinks[item] in fullDict['LINKS'][item2][item3]:
-                                    tempResponses.append(fullDict['LINKS'][item2][item3][tempOutLinks[item]]['RESPONSE'])
+                            if tempOutLinks[item] in fullDict['LINKS'][item2]:
+                                tempResponses.append(fullDict['LINKS'][item2][tempOutLinks[item]]['RESPONSE'])
                     for item in range(len(tempResponses)):
                         tempResponseLinks.append(fullDict['RESPONSEDICT'][tempResponses[item]])
                         if (len(tempResponseLinks[item][1]) == 1):
@@ -826,9 +833,8 @@ class chatHandler:
                             del fullDict['RESPONSEDICT'][tempResponses[item]]
                             for item4 in range(len(tempOutLinks)):
                                 for item2 in fullDict['LINKS']:
-                                    for item3 in fullDict['LINKS'][item2]:
-                                        if tempOutLinks[item4] in fullDict['LINKS'][item2][item3]:
-                                            del fullDict['LINKS'][item2][item3][tempOutLinks[item4]]
+                                    if tempOutLinks[item4] in fullDict['LINKS'][item2]:
+                                        del fullDict['LINKS'][item2][tempOutLinks[item4]]
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
                             print(fullDict['RESPONSEDICT'])
@@ -851,9 +857,8 @@ class chatHandler:
                     tempResponseSingularity = []
                     for item in range(len(tempOutLinks)):
                         for item2 in fullDict['LINKS']:
-                            for item3 in fullDict['LINKS'][item2]:
-                                if tempOutLinks[item] in fullDict['LINKS'][item2][item3]:
-                                    tempResponses.append(fullDict['LINKS'][item2][item3][tempOutLinks[item]]['RESPONSE'])
+                            if tempOutLinks[item] in fullDict['LINKS'][item2]:
+                                tempResponses.append(fullDict['LINKS'][item2][tempOutLinks[item]]['RESPONSE'])
                     for item in range(len(tempResponses)):
                         tempResponseLinks.append(fullDict['RESPONSEDICT'][tempResponses[item]])
                         if (len(tempResponseLinks[item][1]) == 1):
@@ -878,9 +883,8 @@ class chatHandler:
                             del fullDict['RESPONSEDICT'][tempResponses[item]]
                             for item4 in range(len(tempOutLinks)):
                                 for item2 in fullDict['LINKS']:
-                                    for item3 in fullDict['LINKS'][item2]:
-                                        if tempOutLinks[item4] in fullDict['LINKS'][item2][item3]:
-                                            del fullDict['LINKS'][item2][item3][tempOutLinks[item4]]
+                                    if tempOutLinks[item4] in fullDict['LINKS'][item2]:
+                                        del fullDict['LINKS'][item2][tempOutLinks[item4]]
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
@@ -921,9 +925,58 @@ class chatHandler:
                 return 1
 
         def compareForCommands(self, itemList):
-            ## Make item list consiste of [user groups], user name, chat values,
-            ## current line number, current time
+            ## Make item list consist of [user groups], user name, user level,
+            ## chat data, current line number, current time
+            ## Need to make as part of the main class:
+            ## 1. user listing of groups and levels
+            ## 2. current line number
+            ## 3. current time DONE
+            ## 4. channel name
+            ## Needs to be passed in:
+            ## 1. user name
+            ## 2. chat data
+            tempDict = self.commandDictionary['CMDS']
+            fullDict = self.CommandDictionary
+            if ' ' in itemList[1]:
+                pass
+            else:
+                try:
+                    tempData = tempDict[itemList[1]]['COMMAND']
+                except:
+                    tempData = None
+                if tempData:
+                    tempOutLinks = fullDict['LINKDICT'][tempData['LINK']]
+                    ## alter this later to use the conditions portion
+                    ## or using chat aware selection
+                    tempFinalOutLink = choice(tempOutLinks)
+                    ######################################
+                    ## Set user level and groups here   ##
+                    tempUserLevel = None
+                    tempUserGroups = None
+                    if (tempUserLevel == 'Owner'):
+                        tempLevelCheck = ['owner','moderators','users']
+                    elif (tempUserLevel == 'Moderator'):
+                        tempLevelCheck = ['moderators','users']
+                    else:
+                        tempLevelCheck = ['users']
+                    ######################################
+                    respInfo = None
+                    for item in range(len(tempLevelCheck)):
+                        for item2 in range(len(tempUserGroups)):
+                            if not respInfo:
+                                try:
+                                    respInfo = fullDict[tempLevelCheck[item]][tempUserGroups[item2]]
+                                    break
+                                except:
+                                    pass
+                    self.getCurrentTime()
+                    if (respInfo != None):
+                        if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
+                            if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
+                                return(respInfo['RESPONSE'])
 
+                    pass
+                pass
             pass
 
         def compareHelper(self,itemList):
@@ -935,6 +988,9 @@ class chatHandler:
 
         ## Other functions. ##
         def checkChatCMD(self, chatData):
+            self.currentLine += 1
+            self.getCurrentTime()
+            chatData[2] = self.currentTime
             if (chatData[3][:6] == 'addcom'):
                 try:
                     self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
@@ -943,6 +999,8 @@ class chatHandler:
                     pass
             elif (chatData[3][:6] == 'delcom'):
                 self.deleteCommand2(chatData)
+            else:
+                self.compareForCommands(chatData[1],chatData[3])
             pass
 
         def updateCommandDict(self, dictFileLocation):
@@ -1070,7 +1128,7 @@ if __name__ == "__main__":
         testDelete = True
         testCreate = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
-        eneijaTest = [[0,'SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0,0],
+        eneijaTest = [['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0],
