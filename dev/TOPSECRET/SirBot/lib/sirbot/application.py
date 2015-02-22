@@ -14,18 +14,25 @@ from lib.sirbot.network import stream, secureStream
 
 from lib.sirbot.web import twitch
 
+try:
+    from lib.sribot.ai import ai
+except ImportError:
+    pass
+
 class application():
     def __init__(self,config,interinput = None,interoutput = None):
         #things will be selectively loaded based on choices in config
         self.allocateVars(config,interinput,interoutput)
 
     def begin(self):#this is just temporary until proper controls can be created in GUI
+        self.users = {}
         self.createModules()
         #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
             self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchDataSource.twitchconnect()
+            
 
     def createModules(self):
         self.createIRCclient()
@@ -33,6 +40,10 @@ class application():
         self.createDataStreams()
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchWeb = twitch(self.config['Twitch Channels']['default channel'])
+        try:
+            self.bot = ai(self.config.self.users)
+        except NameError:
+            pass
 
 
     def allocateVars(self,config,interinput,interoutput):
@@ -73,11 +84,16 @@ class application():
             --24=irc chat messages
             --25=interface configurations (interface to app)
             --26=interface data (app to interface)
+            --27=ai data
             31-99=overflow internal data
             """
             if(item[0]<=10):
                 if(item[0]==2):
                     self.automatedIRC.privmsg(item[1][0],item[1][1])#needs to be .privmsg with channel
+                    try:
+                        self.output.put(self.bot.tick([self.config['Twitch Channels']['default channel'],self.config['Twitch Accounts']['automated account']['name'],time.time(),item[1][1],['local']]))
+                    except AttributeError:
+                        pass
                 elif(item[0]==3):
                     self.trustedIRC.privmsg(item[1][0],item[1][1])#item[1] = (channel,message)
                 elif(item[0]==4):
@@ -91,6 +107,10 @@ class application():
                 if(item[0]==24):
                     try:
                         self.interinput.put(item)
+                    except AttributeError:
+                        pass
+                    try:
+                        self.bot.tick([item[1],item[2],item[0],item[4],item[5]])
                     except AttributeError:
                         pass
                 elif(item[0]==25):
@@ -108,6 +128,12 @@ class application():
                         self.interinput.put(item)
                         #print(item)
                     except AttributeError:
+                        pass
+                elif(item[0]==27):
+                    try:
+                        self.output.put(self.bot.tick(item[1]))
+                    except AttributeError:
+                        #log
                         pass
             else:
                 pass

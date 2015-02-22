@@ -202,6 +202,8 @@ class irc():
             #add case for when given a channel
             userlist = self.sortUsers()#<-preferrably run this
             self.outputqueue.put([26,['users',userlist]])
+            self.outputqueue.put([27,self.users])
+            
 
     def sortUsers(self):
         #sorts users. takes either list or dict
