@@ -657,17 +657,26 @@ class chatHandler:
                             self.commandDictionary["LINKS"][commandLevel[i]] = {'INFO':{'ACCESSLEVEL':accessLevel}}
 
                     ## Add command to the 'CMDS' dict
+                    tempSpecialSet = set(['ACTIVATINGUSER',
+                                         'CHANNEL',
+                                         'BOTNAME',
+                                         'REMAINDER',
+                                         'USERNAME'])
                     if ' ' in commandKey:
                         tempKey = commandKey.split(' ')
                         tempKey2 = commandKey.split(' ')
                         self.createDictNest(tempKey, self.commandDictionary['CMDS'])
                         finalLocation = self.commandDictionary['CMDS']
                         for i in range(len(tempKey2)-1):
+                            if tempKey2[i] not in tempSpecialSet:
+                                tempKey2[i] = tempKey2[i].lower()
                             finalLocation = finalLocation[tempKey2[i]]
                         if not finalLocation[tempKey2[-1]]:
                             finalLocation[tempKey2[-1]] = {}
                         finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),"ACTIVE":isActive,"LASTLINE":"0","LASTTIME":"0","TOTAL":"0"}})
                     else:
+                        if commandKey not in tempSpecialSet:
+                            commandKey = commandKey.lower()
                         tempDict = self.commandDictionary['CMDS']
                         tempDict[commandKey] = {}
                         tempDict[commandKey]['COMMAND']={"LINK":str(tempInKey),
@@ -803,9 +812,16 @@ class chatHandler:
             if (tempResponse == 1):
                 fullDict = self.commandDictionary
                 tempDict = self.commandDictionary['CMDS']
+                tempSpecialSet = set(['ACTIVATINGUSER',
+                                     'CHANNEL',
+                                     'BOTNAME',
+                                     'REMAINDER',
+                                     'USERNAME'])
                 if ' ' not in delString:
                     tempInLink = tempDict[delString]['COMMAND']['LINK']
                     tempOutLinks = fullDict['LINKDICT'][tempInLink]
+                    if delString not in tempSpecialSet:
+                        delString = delString.lower()
                     tempResponses = []
                     tempResponseLinks = []
                     tempResponseSingularity = []
@@ -844,6 +860,8 @@ class chatHandler:
                     tempDict2 = tempDict
                     tempCMDSList = []
                     for item in range(len(delStringList)):
+                        if delStringList[item] not in tempSpecialSet:
+                            delStringList[item] = delStringList[item].lower()
                         if (len(tempDict2[delStringList[item]]) == 1):
                             tempCMDSList.append(0)
                         else:
@@ -1125,7 +1143,7 @@ if __name__ == "__main__":
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
         testData = [0,'SirRujak','timePlaceholder','',0,0]
-        testDelete = True
+        testDelete = False
         testCreate = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0],
@@ -1137,7 +1155,7 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!raided USERNAME -response:Thanks for the raid USERNAME ! Be sure to check out their channel: http:www.twitch.tv/USERNAME -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!yt -response:Ze NomTubes // http://www.youtube.com/eneija -level:Moderators',0,0],
+                      [0,'SirRujak','timePlaceholder','addcom -cmd:!Yt -response:Ze NomTubes // http://www.youtube.com/eneija -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!timeshot -response:TimeShot // http://www.reddit.com/r/TimeShot/ -level:Moderators',0,0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0],
