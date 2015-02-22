@@ -131,6 +131,7 @@ class application():
                         pass
                 elif(item[0]==27):
                     try:
+                        self.users = item[1]
                         self.output.put(self.bot.tick(item[1]))
                     except AttributeError:
                         #log
