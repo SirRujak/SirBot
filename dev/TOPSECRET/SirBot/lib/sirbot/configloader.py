@@ -16,4 +16,5 @@ def configloader():
     data = configFile.read().decode()
     data = loads(data)
     configFile.close()
+    data['path'] = moduleDir
     return(data)
