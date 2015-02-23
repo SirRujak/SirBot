@@ -302,7 +302,11 @@ class ai:
         def getCurrentTime(self):
             self.currentTime = time()
 
-        def startup(self, basePath, channelName, userDict, botName):
+        ##def startup(self, basePath, channelName, userDict, botName):
+        def startup(self,configFile,userDict):
+                botName = configFile['Twitch Accounts']['automated account']['name']
+                channelName = configFile['Twitch Channels']['default channel']
+                basePath = configFile['path']
                 self.botName = botName
                 self.currentLine = 0
                 self.getCurrentTime()
