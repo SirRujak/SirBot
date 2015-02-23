@@ -279,6 +279,7 @@ class chatHandler:
         ## Needs channelName, temp, modList, spamLevel, spamFilter variables where temp is the message
         def __init__(self):
                 self.boundChannel = ''
+                self.botName = ''
                 self.commandDictionaryFile = None
                 self.userLevelDictionary = None
                 self.inputQueue = queue.Queue()
@@ -301,7 +302,8 @@ class chatHandler:
         def getCurrentTime(self):
             self.currentTime = time()
 
-        def startup(self, basePath, channelName, userDict):
+        def startup(self, basePath, channelName, userDict, botName):
+                self.botName = botName
                 self.currentLine = 0
                 self.getCurrentTime()
                 self.userDict = userDict
@@ -326,8 +328,12 @@ class chatHandler:
 
         def tick(self, data):
                 self.timerHolder.tick()
-                if (data[0] == 0):
-                    self.checkChatCMD(data)
+                tempResponse = self.checkChatCMD(data)
+                if tempResponse:
+                    if tempResponse[1]:
+                        return tempResponse
+                    else:
+                        return None
                 pass
 
         def idletick(self, data):
@@ -627,6 +633,8 @@ class chatHandler:
                 subGroup = inputItems[9].split(' ')
 
                 toContinue = self.checkAllValues(filledEntries)
+                if (commandKey == 'REMAINDER' or commandKey == 'TEMPVAL'):
+                    toContinue = 1
 
                 if not self.checkIfCommandKeyExists(commandKey) and not toContinue:
                     ## Check to see if response or command exists if not make them
@@ -661,7 +669,8 @@ class chatHandler:
                                          'CHANNEL',
                                          'BOTNAME',
                                          'REMAINDER',
-                                         'USERNAME'])
+                                         'USERNAME',
+                                         'TEMPVAL'])
                     if ' ' in commandKey:
                         tempKey = commandKey.split(' ')
                         tempKey2 = commandKey.split(' ')
@@ -710,9 +719,9 @@ class chatHandler:
                     tempUserList = {}
                     for item in range(len(subGroup)):
                         if 'group.' in subGroup[item]:
-                            tempGroupList.update({subGroup[item].split('group.')[1]:'x'})
+                            tempGroupList.update({subGroup[item].split('group.')[1]:'0'})
                         else:
-                            tempUserList.update({subGroup[item]:'x'})
+                            tempUserList.update({subGroup[item]:'0'})
                     for i in range(len(tempOutKey)):
                         tempString = str(tempOutKey[i])
                         try:
@@ -816,7 +825,8 @@ class chatHandler:
                                      'CHANNEL',
                                      'BOTNAME',
                                      'REMAINDER',
-                                     'USERNAME'])
+                                     'USERNAME',
+                                     'TEMPVAL'])
                 if ' ' not in delString:
                     tempInLink = tempDict[delString]['COMMAND']['LINK']
                     tempOutLinks = fullDict['LINKDICT'][tempInLink]
@@ -853,7 +863,6 @@ class chatHandler:
                                         del fullDict['LINKS'][item2][tempOutLinks[item4]]
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
-                            print(fullDict['RESPONSEDICT'])
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
                 else:
                     delStringList = delString.split(' ')
@@ -954,10 +963,23 @@ class chatHandler:
             ## 1. user name
             ## 2. chat data
             tempDict = self.commandDictionary['CMDS']
-            fullDict = self.CommandDictionary
+            fullDict = self.commandDictionary
+            tempUserName = []
             if ' ' in itemList[1]:
                 pass
             else:
+                ## NEED TO CONVERT USER NAMES HERE
+                if itemList[1] in self.userDict:
+                    tempUserName.append(itemList[1])
+                    itemList[1] = 'USERNAME'
+                tempSpecialSet = set(['ACTIVATINGUSER',
+                                     'CHANNEL',
+                                     'BOTNAME',
+                                     'REMAINDER',
+                                     'USERNAME',
+                                     'TEMPVAL'])
+                if itemList[1] not in tempSpecialSet:
+                    itemList[1] = itemList[1].lower()
                 try:
                     tempData = tempDict[itemList[1]]['COMMAND']
                 except:
@@ -969,8 +991,8 @@ class chatHandler:
                     tempFinalOutLink = choice(tempOutLinks)
                     ######################################
                     ## Set user level and groups here   ##
-                    tempUserLevel = None
-                    tempUserGroups = None
+                    tempUserLevel = self.userDict[itemList[0]]['LEVEL']
+                    tempUserGroups = self.userDict[itemList[0]]['GROUPS']
                     if (tempUserLevel == 'Owner'):
                         tempLevelCheck = ['owner','moderators','users']
                     elif (tempUserLevel == 'Moderator'):
@@ -980,22 +1002,40 @@ class chatHandler:
                     ######################################
                     respInfo = None
                     for item in range(len(tempLevelCheck)):
-                        for item2 in range(len(tempUserGroups)):
-                            if not respInfo:
-                                try:
-                                    respInfo = fullDict[tempLevelCheck[item]][tempUserGroups[item2]]
-                                    break
-                                except:
-                                    pass
+                        if not respInfo:
+                            try:
+                                respInfo = fullDict['LINKS'][tempLevelCheck[item]][tempFinalOutLink]
+                                break
+                            except:
+                                pass
                     self.getCurrentTime()
                     if (respInfo != None):
                         if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
                             if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
-                                return(respInfo['RESPONSE'])
+                                if respInfo['GROUPS'].keys() & self.userDict[itemList[0]]['GROUPS']:
+                                    tempResponse = respInfo['RESPONSE']
+                                    activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
+                                    channelList = ['[[channel]]','[channel]','@channel@','CHANNEL']
+                                    botList = ['[[bot]]','[bot]','@bot@','BOTNAME']
+                                    remainderList = ['[[remainder]]','[remainder]','@remainder@','REMAINDER']
+                                    usernameList = ['[[username]]','[username]','@username@','USERNAME']
+                                    for item in range(len(activatingUserList)):
+                                        if activatingUserList[item] in tempResponse:
+                                            tempResponse = tempResponse.replace(activatingUserList[item],itemList[0])
+                                    for item in range(len(channelList)):
+                                        if channelList[item] in tempResponse:
+                                            tempResponse = tempResponse.replace(activatingUserList[item],self.boundChannel)
+                                    for item in range(len(botList)):
+                                        if botList[item] in tempResponse:
+                                            tempResponse = tempResponse.replace(activatingUserList[item],self.botName)
+                                    for item in range(len(usernameList)):
+                                        if activatingUserList[item] in tempResponse:
+                                            tempResponse = tempResponse.replace(activatingUserList[item],tempUserName[0])
+                                    return([1,respInfo['RESPONSE']])
 
-                    pass
-                pass
-            pass
+                    return [0,None]
+                return [0,None]
+            return [0,None]
 
         def compareHelper(self,itemList):
             pass
@@ -1013,12 +1053,16 @@ class chatHandler:
                 try:
                     self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
                     ##self.updateCommandDict(self.
+                    return([0,None])
                 except:
                     pass
             elif (chatData[3][:6] == 'delcom'):
                 self.deleteCommand2(chatData)
+                return([0,None])
             else:
-                self.compareForCommands(chatData[1],chatData[3])
+                tempResponse = self.compareForCommands([chatData[1],chatData[3]])
+                if tempResponse[1]:
+                    return tempResponse
             pass
 
         def updateCommandDict(self, dictFileLocation):
@@ -1139,12 +1183,16 @@ class spamFilter():
 if __name__ == "__main__":
         from os.path import expanduser
         home = expanduser('~')
-        userDict = {'SirRujak':{},'Avoloc':{},'Eneija':{}}
+        userDict = {'SirRujak':{'GROUPS':{'default':'0'},'LEVEL':'Owner'},
+                    'Avoloc':{'GROUPS':{'default':'0'},'LEVEL':'User'},
+                    'Eneija':{'GROUPS':{'default':'0','talkers':'0'},'LEVEL':'Moderator'}}
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
+        botName = 'SirBot'
         testData = [0,'SirRujak','timePlaceholder','',0,0]
-        testDelete = False
+        testDelete = True
         testCreate = True
+        runCommandTest = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0],
                       [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
@@ -1184,13 +1232,18 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!boop USERNAME',0,0],
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!banish2 USERNAME',0,0],
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]
+        runComsTest = [[0,'Eneija',0,'!patreon',0]]
         test = chatHandler()
-        tempResponse = test.startup(testDirectory, testName, userDict)
+        tempResponse = test.startup(testDirectory, testName, userDict, botName)
         print("Startup response: ", tempResponse)
         if testCreate:
             for i in range(len(eneijaTest)):
                     test.tick(eneijaTest[i])
                     test.idletick(eneijaTest[i])
+        if runCommandTest:
+            for item in range(len(runComsTest)):
+                tempResponse = test.tick(runComsTest[item])
+                print(tempResponse)
         if testDelete:
             for i in range(len(delcomTest)):
                 test.tick(delcomTest[i])
@@ -1203,6 +1256,7 @@ if __name__ == "__main__":
         else:
             try:
                 print(json.dumps(test.commandDictionary, sort_keys=True, indent=4))
+                pass
             except:
                 print('Error converting to JSON.')
         print("Done")
