@@ -111,7 +111,7 @@ class application():
                     except AttributeError:
                         pass
                     try:
-                        self.bot.tick([item[1],item[2],item[0],item[4],item[5]])
+                        self.bot.tick([item[1][1],item[1][2],item[1][0],item[1][4],item[1][5]])
                     except AttributeError:
                         pass
                 elif(item[0]==25):
