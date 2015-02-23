@@ -687,6 +687,7 @@ class chatHandler:
                         if not finalLocation[tempKey2[-1]]:
                             finalLocation[tempKey2[-1]] = {}
                         finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),"ACTIVE":isActive,"LASTLINE":"0","LASTTIME":"0","TOTAL":"0"}})
+                        self.updateCommandDict(self.pathCommandName)
                     else:
                         if commandKey not in tempSpecialSet:
                             commandKey = commandKey.lower()
@@ -740,8 +741,9 @@ class chatHandler:
                                                                                                      'LASTEDITOR':'',
                                                                                                      'USERS':tempUserList,
                                                                                                      'GROUPS':tempGroupList}
+                        self.updateCommandDict(self.pathCommandName)
                 else:
-                    return 1
+                    return [0,[self.boundChannel, None]]
                     ## Change this to deal with ones that are there and you are editing them
                     ## pretty much, take what is there and then change anything that was passed
                     ## otherwise leave things the same and change the editor
@@ -868,6 +870,7 @@ class chatHandler:
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
+                    self.updateCommandDict(self.pathCommandName)
                     return [0,None]
                 else:
                     delStringList = delString.split(' ')
@@ -919,6 +922,7 @@ class chatHandler:
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
+                    self.updateCommandDict(self.pathCommandName)
                     return[0,None]
                 return [0,None]
             else:
