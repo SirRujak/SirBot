@@ -264,7 +264,7 @@ class timerHolder():
 ##command message = "COMMAND"
 ##internal message = "INTERNAL"
 ## NEW COMMAND PARSING AREA
-class chatHandler:
+class ai:
         ## DONE Needs variables for chatData, command dictionary
         ## DONE Needs functions for loading & unloading command dictionary
         ## Needs fucntions for checking the kind of command it is
@@ -1242,7 +1242,7 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!banish2 USERNAME',0,0],
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]
         runComsTest = [[0,'Eneija',0,'!patreon',0]]
-        test = chatHandler()
+        test = ai()
         tempResponse = test.startup(testDirectory, testName, userDict, botName)
         print("Startup response: ", tempResponse)
         if testCreate:
