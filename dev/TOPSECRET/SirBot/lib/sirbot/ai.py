@@ -333,11 +333,13 @@ class chatHandler:
                     if tempResponse[1]:
                         return tempResponse
                     else:
-                        return None
-                pass
+                        return [0,None]
+                else:
+                    return [0,None]
 
         def idletick(self, data):
                 self.timerHolder.idletick()
+                return [0,None]
                 pass
 
         def shutdown(self):
@@ -864,6 +866,7 @@ class chatHandler:
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
+                    return [0,None]
                 else:
                     delStringList = delString.split(' ')
                     tempDict2 = tempDict
@@ -900,7 +903,6 @@ class chatHandler:
                         del self.commandDictionary['CMDS'][delStringList[0]]
                     else:
                         self.deleteCommandHelper(self.commandDictionary['CMDS'],tempCMDSList,delStringList,tempCMDSBranches)
-                        pass
 
                     ## Coppied from above
                     del fullDict['CONDITIONS'][tempInLink]
@@ -915,9 +917,10 @@ class chatHandler:
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
-                return 0
+                    return[0,None]
+                return [0,None]
             else:
-                return 1
+                return [0,None]
 
         def deleteCommandHelper(self, tempDict, tempCMDList, tempDelList, tempValue):
             tempCMD = tempCMDList.pop(0)
@@ -1238,15 +1241,20 @@ if __name__ == "__main__":
         print("Startup response: ", tempResponse)
         if testCreate:
             for i in range(len(eneijaTest)):
-                    test.tick(eneijaTest[i])
+                    tempResponse = test.tick(eneijaTest[i])
+                    if (tempResponse[0] == 1):
+                        print(tempResponse)
                     test.idletick(eneijaTest[i])
         if runCommandTest:
             for item in range(len(runComsTest)):
                 tempResponse = test.tick(runComsTest[item])
-                print(tempResponse)
+                if (tempResponse[0] == 1):
+                    print(tempResponse)
         if testDelete:
             for i in range(len(delcomTest)):
-                test.tick(delcomTest[i])
+                tempResponse = test.tick(delcomTest[i])
+                if (tempResponse[0] == 1):
+                    print(tempResponse)
         fullResponse = 1
         if (fullResponse != 1):
             try:
