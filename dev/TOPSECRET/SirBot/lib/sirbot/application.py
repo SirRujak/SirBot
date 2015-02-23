@@ -41,7 +41,8 @@ class application():
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchWeb = twitch(self.config['Twitch Channels']['default channel'])
         try:
-            self.bot = ai(self.config,self.users)
+            self.bot = ai()
+            self.bot.startup(self.config,self.users)
         except NameError:
             pass
 
