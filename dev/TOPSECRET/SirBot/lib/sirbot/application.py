@@ -15,7 +15,7 @@ from lib.sirbot.network import stream, secureStream
 from lib.sirbot.web import twitch
 
 try:
-    from lib.sribot.ai import ai
+    from lib.sirbot.ai import ai
 except ImportError:
     pass
 
@@ -32,7 +32,7 @@ class application():
             self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchDataSource.twitchconnect()
-            
+
 
     def createModules(self):
         self.createIRCclient()
@@ -140,7 +140,7 @@ class application():
             else:
                 pass
             self.output = []
-            
+
     def intakeData(self):
         #check all data input
         if(self.config['GUI']==1):
@@ -202,7 +202,7 @@ class application():
                             except AttributeError:
                                 data[5] = ['Error']
                             self.output.append([24,data])
-                            
+
             elif(item[0]==2):
                 self.output.append([2,self.chat.outFormat(item.pop())])
             elif(item[0]==3):
@@ -235,8 +235,8 @@ class application():
 ##            except IndexError:
 ##                pass
 ##            self.idletime = time()
-        
-                
+
+
     def closeApplication(self):
         self.status = 0
         for element in self.IRCstreams:
@@ -249,13 +249,13 @@ class application():
         #apply settings to application or update config
         if(data == 0):
             self.status = 0
-    
+
     def sendPong(self):
         #consider elevating to IRC.py?
         self.automatedIRC.pong()
         if(self.config['Twitch Accounts']['trusted account']['join chat']==1):
             self.trustedIRC.pong()
-     
+
     def createIRCclient(self):
         self.chat = irc(self.config)
 
@@ -317,7 +317,7 @@ class application():
                     self.input.append([7,data])
         except AttributeError:
             pass
-                
+
     def joinATwitchChannel(self,channel):
         self.automatedIRC.joinTwitchChannel(channel)
         if(self.config['Twitch Accounts']['trusted account']['join chat']!=0):
@@ -339,5 +339,5 @@ class application():
         except AttributeError:
             pass
 
-    
+
     #channel,timestamp,sender,message
