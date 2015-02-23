@@ -324,23 +324,25 @@ class chatHandler:
                         self.openTwitchDictFile()
                 except Exception as e:
                         return([3,e])
-                return([0,None])
+                return([0,[self.boundChannel,None]])
 
         def tick(self, data):
                 self.timerHolder.tick()
                 tempResponse = self.checkChatCMD(data)
                 if tempResponse:
                     if tempResponse[1]:
-                        return tempResponse
+                        tempList = [tempResponse[0],[]]
+                        tempList[1].append(self.boundChannel)
+                        tempList[1].append(tempResponse[1])
+                        return tempList
                     else:
-                        return [0,None]
+                        return [0,[self.boundChannel,None]]
                 else:
-                    return [0,None]
+                    return [0,[self.boundChannel,None]]
 
         def idletick(self, data):
                 self.timerHolder.idletick()
-                return [0,None]
-                pass
+                return [0,[self.boundChannel,None]]
 
         def shutdown(self):
                 self.timerHolder.shutdown()
