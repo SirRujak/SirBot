@@ -6,6 +6,7 @@ from random import choice
 import json
 from time import time
 import queue
+from os import makedirs
 
 class baseTimer():
         def __init__(self, currTime, timerLen,
@@ -53,7 +54,7 @@ class timerHolder():
                 self.chatHandler = chatHandler
                 self.channel = channel
                 ## Make sure this is opened in read and write mode
-                self.timerDictFile = timerDictFile
+                self.timerDictFile = open(timerDictFile, 'r+')
                 self.alteredTimers = 0
                 self.currentTimerValues = {}
 
@@ -247,7 +248,10 @@ class timerHolder():
                                 tempDict2[item] = [tempDict[item].timerName,tempDict[item].timerLen,tempDict[item].commandData]
                 tempDict2['ACTIVE-LIST'] = tempList
                 tempJSON = json.dumps(tempDict2)
-                self.timerDictFile.write(tempJson)
+                self.timerDictFile.seek(0)
+                self.timerDictFile.write(tempJSON)
+                self.timerDictFile.truncate()
+                self.timerDictFile.close()
 
         def reQueue(self):
                 tempTimer = self.activeTimerList.pop()
@@ -291,7 +295,9 @@ class ai:
                 self.twitchCommandDictionary = {}
                 self.timerDictFile = None
                 self.pathCommandName = ''
+                self.pathDefaultCommandName = ''
                 self.pathTimerName = ''
+                self.pathDefaultTimerName = ''
                 self.pathTwitchName = ''
                 self.tempKeyList = []
                 self.userDict = {}
@@ -316,17 +322,37 @@ class ai:
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
                 self.lastSave = time()
                 try:
-                        self.openCommandDictFile()
-                except Exception as e:
-                        return([1,e])
+                        self.openCommandDictFile(self.pathCommandName)
+                except:
+                    try:
+                            self.openCommandDictFile(self.pathDefaultCommandName)
+                            makedirs(self.pathCommandFolders)
+                            self.updateCommandDict(self.pathCommandName)
+
+                    except Exception as e:
+                            return([1,e])
                 try:
-                        self.openTimerDictFile()
+                        self.openTimerDictFile(self.pathTimerName)
                         self.boundChannel = channelName
-                        self.timerHolder = timerHolder(self,channelName,self.timerDictFile)
+                        self.timerHolder = timerHolder(self,channelName,self.pathTimerName)
+                        tempCheck = self.timerDictFile.read()
                         #chatHandler, channel, timerDictFile
                         self.timerHolder.startup() ##channelName, timerDictFile
-                except Exception as e:
-                        return([2,e])
+                except Exception as e1:
+                    try:
+                        self.openTimerDictFile(self.pathDefaultTimerName)
+                        self.timerDictValues = self.timerDictFile.read()
+                        self.timerDictValues = json.loads(self.timerDictValues)
+                        self.timerDictFile.close()
+                        makedirs(self.pathTimerFolders)
+                        self.updateTimerDict(self.pathTimerName)
+                        self.openTimerDictFile(self.pathTimerName)
+                        channelName = self.boundChannel
+                        self.timerHolder = timerHolder(self,channelName,self.pathTimerName)
+                        #chatHandler, channel, timerDictFile
+                        self.timerHolder.startup() ##channelName, timerDictFile
+                    except Exception as e:
+                            return([2,e])
                 try:
                         self.openTwitchDictFile()
                 except Exception as e:
@@ -368,7 +394,11 @@ class ai:
 
         def makeDictPathName(self, basePath, channelName):
                 self.pathCommandName = basePath + '//data//sirbot//commands//' + channelName + '//commands.json'
+                self.pathDefaultCommandName = basePath + '//data//sirbot//commands//defaultCommands//commands.json'
+                self.pathCommandFolders = basePath + '//data//sirbot//commands//' + channelName
                 self.pathTimerName = basePath + '//data//sirbot//timers//' + channelName + '//timers.json'
+                self.pathDefaultTimerName = basePath + '//data//sirbot//timers//defaultTimers//timers.json'
+                self.pathTimerFolders = basePath + '//data//sirbot//timers//' + channelName
                 self.pathTwitchName = basePath + '//data//sirbot//twitchcommands//twitchcommands.json'
 
         ## Base functions that must be in the API. ##
@@ -1093,20 +1123,29 @@ class ai:
         def updateCommandDict(self, dictFileLocation):
                 tempFile = open(dictFileLocation, 'w')
                 tempString = json.dumps(self.commandDictionary)
+                tempFile.seek(0)
                 tempFile.write(tempString)
+                tempFile.truncate()
                 tempFile.close()
 
-        def openCommandDictFile(self):
-                tempFile = open(self.pathCommandName, 'r')
+        def openCommandDictFile(self,pathName):
+                tempFile = open(pathName, 'r')
                 tempResponse = self.loadCommandDict(tempFile)
+                tempFile.close()
 
         def loadCommandDict(self, dictFile):
                 tempString = dictFile.read()
                 self.commandDictionary = json.loads(tempString)
 
-        def openTimerDictFile(self):
-                tempFile = open(self.pathTimerName, 'r')
+        def openTimerDictFile(self,pathName):
+                tempFile = open(pathName, 'r+')
                 self.timerDictFile = tempFile
+
+        def updateTimerDict(self, dictFileLocation):
+                tempFile = open(dictFileLocation, 'w')
+                tempString = json.dumps(self.timerDictValues)
+                tempFile.write(tempString)
+                tempFile.close()
 
         def delCommandDict(self):
                 self.commandDictionary = {}
@@ -1118,6 +1157,7 @@ class ai:
 
         def loadTwitchDict(self, dictFile):
                 tempString = dictFile.read()
+                dictFile.close()
                 try:
                         self.twitchCommandDictionary = json.loads(tempString)
                         return 0
@@ -1290,4 +1330,5 @@ if __name__ == "__main__":
                 pass
             except:
                 print('Error converting to JSON.')
+        test.shutdown()
         print("Done")
