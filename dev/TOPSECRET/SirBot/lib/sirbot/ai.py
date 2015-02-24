@@ -362,6 +362,11 @@ class ai:
         def tick(self, data):
                 self.timerHolder.tick()
                 tempResponse = self.checkChatCMD(data)
+                if self.saveCommands:
+                    if (time() - self.lastSave > 10):
+                        self.updateCommandDict(self.pathCommandName)
+                        self.lastSave = time()
+                        self.saveCommands = False
                 if tempResponse:
                     if tempResponse[1]:
                         tempList = [tempResponse[0],[]]
