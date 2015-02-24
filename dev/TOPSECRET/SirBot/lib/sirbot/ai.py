@@ -330,7 +330,7 @@ class ai:
                             self.updateCommandDict(self.pathCommandName)
 
                     except Exception as e:
-                            return([1,e])
+                            return([32,e])
                 try:
                         self.openTimerDictFile(self.pathTimerName)
                         self.boundChannel = channelName
@@ -352,12 +352,12 @@ class ai:
                         #chatHandler, channel, timerDictFile
                         self.timerHolder.startup() ##channelName, timerDictFile
                     except Exception as e:
-                            return([2,e])
+                            return([32,e])
                 try:
                         self.openTwitchDictFile()
                 except Exception as e:
-                        return([3,e])
-                return([0,[self.boundChannel,None]])
+                        return([32,e])
+                return([31,[self.boundChannel,None]])
 
         def tick(self, data):
                 self.timerHolder.tick()
@@ -374,9 +374,9 @@ class ai:
                         tempList[1].append(tempResponse[1])
                         return tempList
                     else:
-                        return [0,[self.boundChannel,None]]
+                        return [31,[self.boundChannel,None]]
                 else:
-                    return [0,[self.boundChannel,None]]
+                    return [31,[self.boundChannel,None]]
 
         def idletick(self, data):
                 self.timerHolder.idletick()
@@ -385,7 +385,7 @@ class ai:
                         self.updateCommandDict(self.pathCommandName)
                         self.lastSave = time()
                         self.saveCommands = False
-                return [0,[self.boundChannel,None]]
+                return [31,[self.boundChannel,None]]
 
         def shutdown(self):
                 self.timerHolder.shutdown()
@@ -791,7 +791,7 @@ class ai:
                                                                                                      'GROUPS':tempGroupList}
                         self.saveCommands = True
                 else:
-                    return [0,[self.boundChannel, None]]
+                    return [31,[self.boundChannel, None]]
                     ## Change this to deal with ones that are there and you are editing them
                     ## pretty much, take what is there and then change anything that was passed
                     ## otherwise leave things the same and change the editor
@@ -919,7 +919,7 @@ class ai:
                         else:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
                     self.saveCommands = True
-                    return [0,None]
+                    return [31,None]
                 else:
                     delStringList = delString.split(' ')
                     tempDict2 = tempDict
@@ -972,9 +972,9 @@ class ai:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
                     self.saveCommands = True
                     return[0,None]
-                return [0,None]
+                return [31,None]
             else:
-                return [0,None]
+                return [31,None]
 
         def deleteCommandHelper(self, tempDict, tempCMDList, tempDelList, tempValue):
             tempCMD = tempCMDList.pop(0)
@@ -1089,13 +1089,13 @@ class ai:
                                         for item in range(len(usernameList)):
                                             if activatingUserList[item] in tempResponse:
                                                 tempResponse = tempResponse.replace(activatingUserList[item],tempUserName[0])
-                                        return([1,respInfo['RESPONSE']])
+                                        return([2,respInfo['RESPONSE']])
 
-                        return [0,None]
+                        return [31,None]
                     except:
-                        return [0,None]
-                return [0,None]
-            return [0,None]
+                        return [31,None]
+                return [31,None]
+            return [31,None]
 
         def compareHelper(self,itemList):
             pass
@@ -1113,12 +1113,12 @@ class ai:
                 try:
                     self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
                     ##self.updateCommandDict(self.
-                    return([0,None])
+                    return([31,None])
                 except:
                     pass
             elif (chatData[3][:6] == 'delcom'):
                 self.deleteCommand2(chatData)
-                return([0,None])
+                return([31,None])
             else:
                 tempResponse = self.compareForCommands([chatData[1],chatData[3]])
                 if tempResponse[1]:

@@ -87,6 +87,8 @@ class application():
             --26=interface data (app to interface)
             --27=ai data
             31-99=overflow internal data
+            --31=ai error message
+            --32=ai null message
             """
             if(item[0]<=10):
                 if(item[0]==2):
