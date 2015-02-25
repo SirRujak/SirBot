@@ -61,6 +61,7 @@ class application():
 
     def shutdown(self):
         #save all data from queues to file and close module
+        self.bot.shutdown()
         pass
 
     def tick(self):
