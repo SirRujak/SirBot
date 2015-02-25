@@ -1024,87 +1024,121 @@ class ai:
             tempDict = self.commandDictionary['CMDS']
             fullDict = self.commandDictionary
             tempUserName = []
+            ## NEED TO CONVERT USER NAMES HERE
             if ' ' in itemList[1]:
-                pass
-            else:
-                ## NEED TO CONVERT USER NAMES HERE
-                if itemList[1] in self.userDict:
-                    tempUserName.append(itemList[1])
-                    itemList[1] = 'USERNAME'
                 tempSpecialSet = set(['ACTIVATINGUSER',
-                                     'CHANNEL',
-                                     'BOTNAME',
-                                     'REMAINDER',
-                                     'USERNAME',
-                                     'TEMPVAL'])
-                if itemList[1] not in tempSpecialSet:
-                    itemList[1] = itemList[1].lower()
+                                      'CHANNEL',
+                                      'BOTNAME',
+                                      'REMAINDER',
+                                      'USERNAME',
+                                      'TEMPVAL'])
+                itemList[1] = itemList[1].split(' ')
+                for item in range(len(itemList[1])):
+                    if itemList[1][item] in self.userDict:
+                        tempUserName.append(itemList[1][item])
+                        itemList[1][item] = 'USERNAME'
+
+                    if itemList[1][item] not in tempSpecialSet:
+                        itemList[1][item] = itemList[1][item].lower()
+                tempList = itemList[1]
+                tempResponse = self.compareHelper(tempList,tempDict)
+                if(tempResponse[0] == 1):
+                    tempData = tempResponse[1]
+                else:
+                    tempData = None
+            else:
+                for item in itemList[1]:
+                    if item in self.userDict:
+                        tempUserName.append(itemList[1])
+                        itemList[1].replace(item,'USERNAME')
+                    tempSpecialSet = set(['ACTIVATINGUSER',
+                                         'CHANNEL',
+                                         'BOTNAME',
+                                         'REMAINDER',
+                                         'USERNAME',
+                                         'TEMPVAL'])
+                    if item not in tempSpecialSet:
+                        itemList[1].replace(item,item.lower())
                 try:
                     tempData = tempDict[itemList[1]]['COMMAND']
                 except:
                     tempData = None
-                if tempData:
-                    tempOutLinks = fullDict['LINKDICT'][tempData['LINK']]
-                    ## alter this later to use the conditions portion
-                    ## or using chat aware selection
-                    tempFinalOutLink = choice(tempOutLinks)
+            if tempData:
+                tempOutLinks = fullDict['LINKDICT'][tempData['LINK']]
+                ## alter this later to use the conditions portion
+                ## or using chat aware selection
+                tempFinalOutLink = choice(tempOutLinks)
+                ######################################
+                ## Set user level and groups here   ##
+                try:
+                    if (itemList[0] == self.botName or itemList[0] == self.boundChannel):
+                        tempUserLevel = 'Owner'
+                        tempUserGroups = {'owner':'0'}
+                    else:
+                        tempUserLevel = self.userDict[itemList[0]]['LEVEL']
+                        tempUserGroups = self.userDict[itemList[0]]['GROUPS']
+                    if (tempUserLevel == 'Owner'):
+                        tempLevelCheck = ['owner','moderators','users']
+                    elif (tempUserLevel == 'Moderator'):
+                        tempLevelCheck = ['moderators','users']
+                    else:
+                        tempLevelCheck = ['users']
                     ######################################
-                    ## Set user level and groups here   ##
-                    try:
-                        if (itemList[0] == self.botName or itemList[0] == self.boundChannel):
-                            tempUserLevel = 'Owner'
-                            tempUserGroups = {'owner':'0'}
-                        else:
-                            tempUserLevel = self.userDict[itemList[0]]['LEVEL']
-                            tempUserGroups = self.userDict[itemList[0]]['GROUPS']
-                        if (tempUserLevel == 'Owner'):
-                            tempLevelCheck = ['owner','moderators','users']
-                        elif (tempUserLevel == 'Moderator'):
-                            tempLevelCheck = ['moderators','users']
-                        else:
-                            tempLevelCheck = ['users']
-                        ######################################
-                        respInfo = None
-                        for item in range(len(tempLevelCheck)):
-                            if not respInfo:
-                                try:
-                                    respInfo = fullDict['LINKS'][tempLevelCheck[item]][tempFinalOutLink]
-                                    break
-                                except:
-                                    pass
-                        self.getCurrentTime()
-                        if (respInfo != None):
-                            if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
-                                if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
-                                    if respInfo['GROUPS'].keys() & tempUserGroups:
-                                        tempResponse = respInfo['RESPONSE']
-                                        activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
-                                        channelList = ['[[channel]]','[channel]','@channel@','CHANNEL']
-                                        botList = ['[[bot]]','[bot]','@bot@','BOTNAME']
-                                        remainderList = ['[[remainder]]','[remainder]','@remainder@','REMAINDER']
-                                        usernameList = ['[[username]]','[username]','@username@','USERNAME']
-                                        for item in range(len(activatingUserList)):
-                                            if activatingUserList[item] in tempResponse:
-                                                tempResponse = tempResponse.replace(activatingUserList[item],itemList[0])
-                                        for item in range(len(channelList)):
-                                            if channelList[item] in tempResponse:
-                                                tempResponse = tempResponse.replace(activatingUserList[item],self.boundChannel)
-                                        for item in range(len(botList)):
-                                            if botList[item] in tempResponse:
-                                                tempResponse = tempResponse.replace(activatingUserList[item],self.botName)
+                    respInfo = None
+                    for item in range(len(tempLevelCheck)):
+                        if not respInfo:
+                            try:
+                                respInfo = fullDict['LINKS'][tempLevelCheck[item]][tempFinalOutLink]
+                                break
+                            except:
+                                pass
+                    self.getCurrentTime()
+                    if (respInfo != None):
+                        if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
+                            if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
+                                if respInfo['GROUPS'].keys() & tempUserGroups:
+                                    tempResponse = respInfo['RESPONSE']
+                                    activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
+                                    channelList = ['[[channel]]','[channel]','@channel@','CHANNEL']
+                                    botList = ['[[bot]]','[bot]','@bot@','BOTNAME']
+                                    remainderList = ['[[remainder]]','[remainder]','@remainder@','REMAINDER']
+                                    usernameList = ['[[username]]','[username]','@username@','USERNAME']
+                                    for item in range(len(activatingUserList)):
+                                        if activatingUserList[item] in tempResponse:
+                                            tempResponse = tempResponse.replace(activatingUserList[item],itemList[0])
+                                    for item in range(len(channelList)):
+                                        if channelList[item] in tempResponse:
+                                            tempResponse = tempResponse.replace(channelList[item],self.boundChannel)
+                                    for item in range(len(botList)):
+                                        if botList[item] in tempResponse:
+                                            tempResponse = tempResponse.replace(botList[item],self.botName)
+                                    for item2 in range(len(tempUserName)):
                                         for item in range(len(usernameList)):
-                                            if activatingUserList[item] in tempResponse:
-                                                tempResponse = tempResponse.replace(activatingUserList[item],tempUserName[0])
-                                        return([2,respInfo['RESPONSE']])
+                                            if usernameList[item] in tempResponse:
+                                                if (len(tempUserName) > 1):
+                                                    tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0),1)
+                                                else:
+                                                    tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0))
+                                    return([2,tempResponse])
 
-                        return [31,None]
-                    except:
-                        return [31,None]
-                return [31,None]
+                    return [31,None]
+                except:
+                    return [31,None]
             return [31,None]
+            #return [31,None]
 
-        def compareHelper(self,itemList):
-            pass
+        def compareHelper(self,itemList,tempDict):
+            if itemList:
+                tempItem = itemList.pop(0)
+                if tempItem in tempDict:
+                    tempDict = tempDict[tempItem]
+                    tempResponse = self.compareHelper(itemList,tempDict)
+                    return(tempResponse)
+                else:
+                    return([0,None])
+            else:
+                if 'COMMAND' in tempDict:
+                    return([1,tempDict['COMMAND']])
 
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
@@ -1309,7 +1343,8 @@ if __name__ == "__main__":
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!boop USERNAME',0,0],
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!banish2 USERNAME',0,0],
                       [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]
-        runComsTest = [[0,'Eneija',0,'!patreon',0]]
+        runComsTest = [[0,'Eneija',0,'!patreon',0],
+                       [0,'SirRujak',0,'!raid Eneija now!',0]]
         test = ai()
         tempResponse = test.startup(configFile, userDict)
         print("Startup response: ", tempResponse)
