@@ -347,6 +347,7 @@ class ai:
                         makedirs(self.pathTimerFolders)
                         self.updateTimerDict(self.pathTimerName)
                         self.openTimerDictFile(self.pathTimerName)
+                        self.timerDictFile.close()
                         channelName = self.boundChannel
                         self.timerHolder = timerHolder(self,channelName,self.pathTimerName)
                         #chatHandler, channel, timerDictFile
