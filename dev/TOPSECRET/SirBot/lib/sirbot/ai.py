@@ -1315,18 +1315,18 @@ if __name__ == "__main__":
         if testCreate:
             for i in range(len(eneijaTest)):
                     tempResponse = test.tick(eneijaTest[i])
-                    if (tempResponse[0] == 1):
+                    if (tempResponse[0] == 2):
                         print(tempResponse)
                     test.idletick(eneijaTest[i])
         if runCommandTest:
             for item in range(len(runComsTest)):
                 tempResponse = test.tick(runComsTest[item])
-                if (tempResponse[0] == 1):
+                if (tempResponse[0] == 2):
                     print(tempResponse)
         if testDelete:
             for i in range(len(delcomTest)):
                 tempResponse = test.tick(delcomTest[i])
-                if (tempResponse[0] == 1):
+                if (tempResponse[0] == 2):
                     print(tempResponse)
         fullResponse = 1
         if (fullResponse != 1):
