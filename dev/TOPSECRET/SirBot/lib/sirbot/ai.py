@@ -348,7 +348,7 @@ class ai:
                         self.updateTimerDict(self.pathTimerName)
                         self.openTimerDictFile(self.pathTimerName)
                         self.timerDictFile.close()
-                        channelName = self.boundChannel
+                        self.boundChannel = channelName
                         self.timerHolder = timerHolder(self,channelName,self.pathTimerName)
                         #chatHandler, channel, timerDictFile
                         self.timerHolder.startup() ##channelName, timerDictFile
