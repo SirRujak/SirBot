@@ -1052,7 +1052,7 @@ class ai:
                     try:
                         if (itemList[0] == self.botName or itemList[0] == self.boundChannel):
                             tempUserLevel = 'Owner'
-                            tempGroups = {'owner':'0'}
+                            tempUserGroups = {'owner':'0'}
                         else:
                             tempUserLevel = self.userDict[itemList[0]]['LEVEL']
                             tempUserGroups = self.userDict[itemList[0]]['GROUPS']
