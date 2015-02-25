@@ -775,6 +775,7 @@ class ai:
                             tempGroupList.update({subGroup[item].split('group.')[1]:'0'})
                         else:
                             tempUserList.update({subGroup[item]:'0'})
+                    tempGroupList.update({'owner':'0'})
                     for i in range(len(tempOutKey)):
                         tempString = str(tempOutKey[i])
                         try:
@@ -1049,8 +1050,12 @@ class ai:
                     ######################################
                     ## Set user level and groups here   ##
                     try:
-                        tempUserLevel = self.userDict[itemList[0]]['LEVEL']
-                        tempUserGroups = self.userDict[itemList[0]]['GROUPS']
+                        if (itemList[0] == self.botName or itemList[0] == self.boundChannel):
+                            tempUserLevel = 'Owner'
+                            tempGroups = {'owner':'0'}
+                        else:
+                            tempUserLevel = self.userDict[itemList[0]]['LEVEL']
+                            tempUserGroups = self.userDict[itemList[0]]['GROUPS']
                         if (tempUserLevel == 'Owner'):
                             tempLevelCheck = ['owner','moderators','users']
                         elif (tempUserLevel == 'Moderator'):
