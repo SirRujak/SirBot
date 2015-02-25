@@ -1075,7 +1075,7 @@ class ai:
                         if (respInfo != None):
                             if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
                                 if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
-                                    if respInfo['GROUPS'].keys() & self.userDict[itemList[0]]['GROUPS']:
+                                    if respInfo['GROUPS'].keys() & tempUserGroups:
                                         tempResponse = respInfo['RESPONSE']
                                         activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
                                         channelList = ['[[channel]]','[channel]','@channel@','CHANNEL']
