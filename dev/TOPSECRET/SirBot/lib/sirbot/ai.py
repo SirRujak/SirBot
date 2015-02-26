@@ -2,7 +2,7 @@
 
 #classes containing machinery for artifically intelligent operations
 #i.e. data parsing and command execution
-from random import choice
+from random import choice, randrange
 import json
 from time import time
 import queue
@@ -1182,14 +1182,18 @@ class ai:
                     return([1,tempDict['COMMAND']])
 
         def addQuote(self,data):
-            self.quoteDict['QUOTES'].append(data[8:])
-            self.saveQuotes = True
+            if data[9:].strip(' ') not in self.quoteDict['QUOTES']:
+                self.quoteDict['QUOTES'].append(data[9:].strip(' '))
+                self.saveQuotes = True
 
         def delQuote(self,data):
             for item in range(len(self.quoteDict['QUOTES'])):
-                if data[8:] in self.quoteDict['QUOTES'][item]:
+                if data[9:].strip(' ') in self.quoteDict['QUOTES'][item]:
                     self.quoteDict['QUOTES'].pop(item)
                     self.saveQuotes = True
+
+        def getQuote(self):
+            return([2,self.quoteDict['QUOTES'][randrange(0,len(self.quoteDict['QUOTES']))]])
 
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
@@ -1210,12 +1214,15 @@ class ai:
             elif (chatData[3][:6].lower() == 'delcom'):
                 self.deleteCommand2(chatData)
                 return([31,None])
-            elif (chatData[3][:8].lower() == 'addquote'):
+            elif (chatData[3][:9].lower() == '!addquote'):
                 self.addQuote(chatData)
                 return([31,None])
-            elif (chatData[3][:8].lower() == 'delquote'):
+            elif (chatData[3][:9].lower() == '!delquote'):
                 self.delQuote(chatData)
                 return([31,None])
+            elif (chatData[3][:6].lower() == '!quote'):
+                response = self.getQuote()
+
             else:
                 tempResponse = self.compareForCommands([chatData[1],chatData[3]])
                 if tempResponse[1]:
@@ -1424,6 +1431,11 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]]
         runComsTest = [[1,[0,'Eneija',0,'!patreon',0]],
                        [1,[0,'SirRujak',0,'!raid Eneija now!',0]]]
+        makeQuoteTest = [[1,[0,'Avoloc',0,'!addquote hahaha i is newb',0]],
+                        [1,[0,'Avoloc',0,'!addquote wow',0]],
+                        [1,[0,'Avoloc',0,'!addquote many try',0]],
+                        [1,[0,'Avoloc',0,'!addquote such newb',0]]]
+        runQuoteTest = [[1,[0,'SirRujak',0,'!quote',0]]]
         test = ai()
         tempResponse = test.startup(configFile, userDict)
         print("Startup response: ", tempResponse)
