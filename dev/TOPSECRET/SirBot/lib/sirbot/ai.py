@@ -318,9 +318,19 @@ class ai:
                 self.botName = botName
                 self.currentLine = 0
                 self.getCurrentTime()
-                self.userDict = userDict
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
                 self.lastSave = time()
+                try:
+                        self.openUserDict(self.pathUserName)
+                except:
+                    try:
+                            self.openUserDict(self.pathDefaultUsers)
+                            makedirs(self.pathUsersFolders)
+                            self.updateUserDict(self.pathUserName)
+                    except Exception as e:
+                            return([32,e])
+                for item in userDict:
+                    self.userDict.update({item:userDict[item]})
                 try:
                         self.openCommandDictFile(self.pathCommandName)
                 except:
@@ -360,22 +370,28 @@ class ai:
                         return([32,e])
                 return([31,[self.boundChannel,None]])
 
-        def tick(self, data):
+        def tick(self, initData):
                 self.timerHolder.tick()
-                tempResponse = self.checkChatCMD(data)
-                if self.saveCommands:
-                    if (time() - self.lastSave > 10):
-                        self.updateCommandDict(self.pathCommandName)
-                        self.lastSave = time()
-                        self.saveCommands = False
-                if tempResponse:
-                    if tempResponse[1]:
-                        tempList = [tempResponse[0],[]]
-                        tempList[1].append(self.boundChannel)
-                        tempList[1].append(tempResponse[1])
-                        return tempList
+                if (initData[0] == 1):
+                    data = initData[1]
+                    tempResponse = self.checkChatCMD(data)
+                    if self.saveCommands:
+                        if (time() - self.lastSave > 10):
+                            self.updateCommandDict(self.pathCommandName)
+                            self.lastSave = time()
+                            self.saveCommands = False
+                    if tempResponse:
+                        if tempResponse[1]:
+                            tempList = [tempResponse[0],[]]
+                            tempList[1].append(self.boundChannel)
+                            tempList[1].append(tempResponse[1])
+                            return tempList
+                        else:
+                            return [31,[self.boundChannel,None]]
                     else:
                         return [31,[self.boundChannel,None]]
+                elif (initData[0] == 2):
+                    pass
                 else:
                     return [31,[self.boundChannel,None]]
 
@@ -401,6 +417,9 @@ class ai:
         def makeDictPathName(self, basePath, channelName):
                 self.pathCommandName = basePath + '//data//sirbot//commands//' + channelName + '//commands.json'
                 self.pathDefaultCommandName = basePath + '//data//sirbot//commands//defaultCommands//commands.json'
+                self.pathUserName = basePath + '//data//sirbot//users//' + channelName + '//users.json'
+                self.pathDefaultUsers = basePath + '//data//sirbot//users//defaultUsers//users.json'
+                self.pathUsersFolders = basePath + '//data//sirbot//users//' + channelName
                 self.pathCommandFolders = basePath + '//data//sirbot//commands//' + channelName
                 self.pathTimerName = basePath + '//data//sirbot//timers//' + channelName + '//timers.json'
                 self.pathDefaultTimerName = basePath + '//data//sirbot//timers//defaultTimers//timers.json'
@@ -1165,6 +1184,17 @@ class ai:
                     return tempResponse
             pass
 
+        def openUserDict(self,pathName):
+                tempFile = open(pathName, 'r')
+                self.userDict = json.loads(tempFile.read())
+                tempFile.close()
+
+        def updateUserDict(self, dictFileLocation):
+                tempFile = open(dictFileLocation, 'w')
+                tempString = json.dumps(self.userDict)
+                tempFile.write(tempString)
+                tempFile.close()
+
         def updateCommandDict(self, dictFileLocation):
                 tempFile = open(dictFileLocation, 'w')
                 tempString = json.dumps(self.commandDictionary)
@@ -1305,46 +1335,46 @@ if __name__ == "__main__":
         testCreate = True
         runCommandTest = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
-        eneijaTest = [['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!piddleparty -response:\'Neija gotta pee! Go getchur refills and piddle to your heart\'s content! -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!raided USERNAME -response:Thanks for the raid USERNAME ! Be sure to check out their channel: http:www.twitch.tv/USERNAME -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!Yt -response:Ze NomTubes // http://www.youtube.com/eneija -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!timeshot -response:TimeShot // http://www.reddit.com/r/TimeShot/ -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:USERNAME has been banished. -level:Moderators',0,0],
+        eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!piddleparty -response:\'Neija gotta pee! Go getchur refills and piddle to your heart\'s content! -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!raided USERNAME -response:Thanks for the raid USERNAME ! Be sure to check out their channel: http:www.twitch.tv/USERNAME -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!Yt -response:Ze NomTubes // http://www.youtube.com/eneija -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!timeshot -response:TimeShot // http://www.reddit.com/r/TimeShot/ -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:USERNAME has been banished. -level:Moderators',0,0]],
 
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!banish2 USERNAME -response:USERNAME has been banished. -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!boop USERNAME -response:USERNAME got booped! Be nice! -level:Moderators',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0],
-                      [0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME now! -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]]
-        delcomTest = [[0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!links',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!patreon',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!multi',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!panic',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!piddleparty',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!uhc',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!raided USERNAME',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!yt',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!twitter',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!timeshot',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!classy',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!spam',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!banish USERNAME',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!boop USERNAME',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!banish2 USERNAME',0,0],
-                      [0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]
-        runComsTest = [[0,'Eneija',0,'!patreon',0],
-                       [0,'SirRujak',0,'!raid Eneija now!',0]]
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!banish2 USERNAME -response:USERNAME has been banished. -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!boop USERNAME -response:USERNAME got booped! Be nice! -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd: -response: -level:Everyone',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME now! -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]]]
+        delcomTest = [[1,[0,'SirRujak','timePlaceholder','delcom -cmd:!tweet',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!links',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!patreon',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!multi',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!panic',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!piddleparty',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!uhc',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raided USERNAME',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!yt',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!twitter',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!timeshot',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!classy',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!spam',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!banish USERNAME',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!boop USERNAME',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!banish2 USERNAME',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]]
+        runComsTest = [[1,[0,'Eneija',0,'!patreon',0]],
+                       [1,[0,'SirRujak',0,'!raid Eneija now!',0]]]
         test = ai()
         tempResponse = test.startup(configFile, userDict)
         print("Startup response: ", tempResponse)

@@ -95,7 +95,7 @@ class application():
                 if(item[0]==2):
                     self.automatedIRC.privmsg(item[1][0],item[1][1])#needs to be .privmsg with channel
                     try:
-                        self.output.append(self.bot.tick([self.config['Twitch Channels']['default channel'],self.config['Twitch Accounts']['automated account']['name'],time(),item[1][1],['local']]))
+                        self.output.append(self.bot.tick([1,[self.config['Twitch Channels']['default channel'],self.config['Twitch Accounts']['automated account']['name'],time(),item[1][1],['local']]]))
                     except AttributeError:
                         pass
                 elif(item[0]==3):
@@ -114,7 +114,7 @@ class application():
                     except AttributeError:
                         pass
                     try:
-                        self.bot.tick([item[1][1],item[1][2],item[1][0],item[1][4],item[1][5]])
+                        self.bot.tick([1,[item[1][1],item[1][2],item[1][0],item[1][4],item[1][5]]])
                     except AttributeError:
                         pass
                 elif(item[0]==25):
@@ -136,7 +136,7 @@ class application():
                 elif(item[0]==27):
                     try:
                         self.users = item[1]
-                        self.output.put(self.bot.tick(item[1]))
+                        self.output.put(self.bot.tick([2,[item[1]]))
                     except AttributeError:
                         #log
                         pass
