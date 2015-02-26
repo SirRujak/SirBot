@@ -301,9 +301,12 @@ class ai:
                 self.pathTwitchName = ''
                 self.tempKeyList = []
                 self.userDict = {}
+                self.quoteDict = {}
                 self.currentTime = None
                 self.currentLine = None
                 self.saveCommands = False
+                self.saveQuotes = False
+                self.lastQuoteSave = None
                 self.lastSave = None
                 pass
 
@@ -320,6 +323,17 @@ class ai:
                 self.getCurrentTime()
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
                 self.lastSave = time()
+                self.lastQuoteSave = time()
+                try:
+                        self.openQuoteDict(self.pathQuotes)
+                except:
+                    try:
+                            self.openQuoteDict(self.pathDefaultQuotes)
+                            print('test')
+                            makedirs(self.pathQuotesFolders)
+                            self.updateQuoteDict(self.pathQuotes)
+                    except Exception as e:
+                            return([32,e])
                 try:
                         self.openUserDict(self.pathUserName)
                 except:
@@ -375,6 +389,11 @@ class ai:
                 if (initData[0] == 1):
                     data = initData[1]
                     tempResponse = self.checkChatCMD(data)
+                    if self.saveQuotes:
+                        if (time() - self.lastQuoteSave > 10):
+                            self.updateQuoteDict(self.pathQuotes)
+                            self.lastQuoteSave = time()
+                            self.saveQuotes = False
                     if self.saveCommands:
                         if (time() - self.lastSave > 10):
                             self.updateCommandDict(self.pathCommandName)
@@ -417,10 +436,13 @@ class ai:
         def makeDictPathName(self, basePath, channelName):
                 self.pathCommandName = basePath + '//data//sirbot//commands//' + channelName + '//commands.json'
                 self.pathDefaultCommandName = basePath + '//data//sirbot//commands//defaultCommands//commands.json'
+                self.pathCommandFolders = basePath + '//data//sirbot//commands//' + channelName
                 self.pathUserName = basePath + '//data//sirbot//users//' + channelName + '//users.json'
                 self.pathDefaultUsers = basePath + '//data//sirbot//users//defaultUsers//users.json'
                 self.pathUsersFolders = basePath + '//data//sirbot//users//' + channelName
-                self.pathCommandFolders = basePath + '//data//sirbot//commands//' + channelName
+                self.pathQuotes = basePath + '//data//sirbot//quotes//' + channelName + '//quotes.json'
+                self.pathDefaultQuotes = basePath + '//data//sirbot//quotes//defaultQuotes//quotes.json'
+                self.pathQuotesFolders = basePath + '//data//sirbot//quotes//' + channelName
                 self.pathTimerName = basePath + '//data//sirbot//timers//' + channelName + '//timers.json'
                 self.pathDefaultTimerName = basePath + '//data//sirbot//timers//defaultTimers//timers.json'
                 self.pathTimerFolders = basePath + '//data//sirbot//timers//' + channelName
@@ -1159,6 +1181,16 @@ class ai:
                 if 'COMMAND' in tempDict:
                     return([1,tempDict['COMMAND']])
 
+        def addQuote(self,data):
+            self.quoteDict['QUOTES'].append(data[8:])
+            self.saveQuotes = True
+
+        def delQuote(self,data):
+            for item in range(len(self.quoteDict['QUOTES'])):
+                if data[8:] in self.quoteDict['QUOTES'][item]:
+                    self.quoteDict['QUOTES'].pop(item)
+                    self.saveQuotes = True
+
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
             pass
@@ -1168,15 +1200,21 @@ class ai:
             self.currentLine += 1
             self.getCurrentTime()
             chatData[2] = self.currentTime
-            if (chatData[3][:6] == 'addcom'):
+            if (chatData[3][:6].lower() == 'addcom'):
                 try:
                     self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
                     ##self.updateCommandDict(self.
                     return([31,None])
                 except:
                     pass
-            elif (chatData[3][:6] == 'delcom'):
+            elif (chatData[3][:6].lower() == 'delcom'):
                 self.deleteCommand2(chatData)
+                return([31,None])
+            elif (chatData[3][:8].lower() == 'addquote'):
+                self.addQuote(chatData)
+                return([31,None])
+            elif (chatData[3][:8].lower() == 'delquote'):
+                self.delQuote(chatData)
                 return([31,None])
             else:
                 tempResponse = self.compareForCommands([chatData[1],chatData[3]])
@@ -1192,6 +1230,17 @@ class ai:
         def updateUserDict(self, dictFileLocation):
                 tempFile = open(dictFileLocation, 'w')
                 tempString = json.dumps(self.userDict)
+                tempFile.write(tempString)
+                tempFile.close()
+
+        def openQuoteDict(self,pathName):
+                tempFile = open(pathName, 'r')
+                self.userDict = json.loads(tempFile.read())
+                tempFile.close()
+
+        def updateQuoteDict(self, dictFileLocation):
+                tempFile = open(dictFileLocation, 'w')
+                tempString = json.dumps(self.quoteDict)
                 tempFile.write(tempString)
                 tempFile.close()
 
