@@ -329,7 +329,6 @@ class ai:
                 except:
                     try:
                             self.openQuoteDict(self.pathDefaultQuotes)
-                            print('test')
                             makedirs(self.pathQuotesFolders)
                             self.updateQuoteDict(self.pathQuotes)
                     except Exception as e:
@@ -426,6 +425,7 @@ class ai:
         def shutdown(self):
                 self.timerHolder.shutdown()
                 self.updateCommandDict(self.pathCommandName)
+                self.updateQuoteDict(self.pathQuotes)
                 pass
 
         def checkChat(self, item): ## item is a list of format [type, [list with other stuff]]
@@ -1187,13 +1187,15 @@ class ai:
                 self.saveQuotes = True
 
         def delQuote(self,data):
-            for item in range(len(self.quoteDict['QUOTES'])):
-                if data[9:].strip(' ') in self.quoteDict['QUOTES'][item]:
-                    self.quoteDict['QUOTES'].pop(item)
-                    self.saveQuotes = True
+            while data[9:].strip(' ') in self.quoteDict['QUOTES']:
+                self.quoteDict['QUOTES'].remove(data[9:].strip(' '))
+                self.saveQuotes = True
 
         def getQuote(self):
-            return([2,self.quoteDict['QUOTES'][randrange(0,len(self.quoteDict['QUOTES']))]])
+            if self.quoteDict['QUOTES']:
+                return([2,self.quoteDict['QUOTES'][randrange(0,len(self.quoteDict['QUOTES']))]])
+            else:
+                return([2,'What are quotes? ~SirRujak'])
 
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
@@ -1215,14 +1217,14 @@ class ai:
                 self.deleteCommand2(chatData)
                 return([31,None])
             elif (chatData[3][:9].lower() == '!addquote'):
-                self.addQuote(chatData)
+                self.addQuote(chatData[3])
                 return([31,None])
             elif (chatData[3][:9].lower() == '!delquote'):
-                self.delQuote(chatData)
+                self.delQuote(chatData[3])
                 return([31,None])
             elif (chatData[3][:6].lower() == '!quote'):
                 response = self.getQuote()
-
+                return(response)
             else:
                 tempResponse = self.compareForCommands([chatData[1],chatData[3]])
                 if tempResponse[1]:
@@ -1242,7 +1244,7 @@ class ai:
 
         def openQuoteDict(self,pathName):
                 tempFile = open(pathName, 'r')
-                self.userDict = json.loads(tempFile.read())
+                self.quoteDict = json.loads(tempFile.read())
                 tempFile.close()
 
         def updateQuoteDict(self, dictFileLocation):
@@ -1390,6 +1392,7 @@ if __name__ == "__main__":
         testDelete = True
         testCreate = True
         runCommandTest = True
+        runQuoteTest = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
@@ -1436,6 +1439,10 @@ if __name__ == "__main__":
                         [1,[0,'Avoloc',0,'!addquote many try',0]],
                         [1,[0,'Avoloc',0,'!addquote such newb',0]]]
         runQuoteTest = [[1,[0,'SirRujak',0,'!quote',0]]]
+        delQuoteTest = [[1,[0,'Avoloc',0,'!delquote hahaha i is newb',0]],
+                        [1,[0,'Avoloc',0,'!delquote wow',0]],
+                        [1,[0,'Avoloc',0,'!delquote many try',0]],
+                        [1,[0,'Avoloc',0,'!delquote such newb',0]]]
         test = ai()
         tempResponse = test.startup(configFile, userDict)
         print("Startup response: ", tempResponse)
@@ -1453,6 +1460,20 @@ if __name__ == "__main__":
         if testDelete:
             for i in range(len(delcomTest)):
                 tempResponse = test.tick(delcomTest[i])
+                if (tempResponse[0] == 2):
+                    print(tempResponse)
+        if runQuoteTest:
+            for i in range(len(makeQuoteTest)):
+                tempResponse = test.tick(makeQuoteTest[i])
+                if (tempResponse[0] == 2):
+                    print(tempResponse)
+            for i in range(10):
+                tempResponse = test.tick(runQuoteTest[0])
+                if (tempResponse[0] == 2):
+                    print(tempResponse)
+            print(test.quoteDict)
+            for i in range(len(delQuoteTest)):
+                tempResponse = test.tick(delQuoteTest[i])
                 if (tempResponse[0] == 2):
                     print(tempResponse)
         fullResponse = 1
