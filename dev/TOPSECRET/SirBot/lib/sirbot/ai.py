@@ -399,7 +399,7 @@ class ai:
                             self.saveQuotes = False
                     if self.saveUsers:
                         if (time() - self.lastUserSave > 10):
-                            self.updateQuoteDict(self.pathUserName)
+                            self.updateUserDict(self.pathUserName)
                             self.lastUserSave = time()
                             self.saveUsers = False
                     if self.saveCommands:
@@ -451,11 +451,11 @@ class ai:
                     pass
                 elif (initData[0] == 3):
                     for item in range(len(initData[1][0][0])):
-                        self.tick([2,[1,[item,'Moderator']],[{}]])
+                        self.checkForUser(initData[1][0][0][item])
                         self.saveUsers = True
-                        return [31,[self.boundChannel,None]]
                 else:
                     return [31,[self.boundChannel,None]]
+                return [31,[self.boundChannel,None]]
 
         def idletick(self, data):
                 self.timerHolder.idletick()
@@ -475,10 +475,11 @@ class ai:
 
         def checkForUser(self,item):
             if item not in self.userDict:
-                print(item)
                 self.userDict.update({item:{'LEVEL':'Moderator',
                                                          'INFO':{"GROUPS":{}}}})
                 self.userDict[item]['INFO'].update({'GROUPS':{'default':'0'}})
+            else:
+                self.userDict[item]['LEVEL'] = 'Moderator'
 
         def checkChat(self, item): ## item is a list of format [type, [list with other stuff]]
                 if item:
@@ -1285,12 +1286,12 @@ class ai:
 
         def openUserDict(self,pathName):
                 tempFile = open(pathName, 'r')
-                self.userDict = json.loads(tempFile.read())
+                self.userDict = json.loads(tempFile.read())['ACTIVE-LIST']
                 tempFile.close()
 
         def updateUserDict(self, dictFileLocation):
                 tempFile = open(dictFileLocation, 'w')
-                tempString = json.dumps(self.userDict)
+                tempString = json.dumps({'ACTIVE-LIST':self.userDict})
                 tempFile.write(tempString)
                 tempFile.close()
 
