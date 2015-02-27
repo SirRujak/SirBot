@@ -1278,6 +1278,8 @@ class ai:
             elif (chatData[3][:6].lower() == '!quote'):
                 response = self.getQuote()
                 return(response)
+            elif (chatData[3][:4].lower() == '/mod' or chatData[3][:4].lower() == '.mod'):
+                return([2,'/mods'])
             else:
                 tempResponse = self.compareForCommands([chatData[1],chatData[3]])
                 if tempResponse[1]:
