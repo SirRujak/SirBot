@@ -463,7 +463,8 @@ class ai:
 
         def checkForUser(self,item):
             if item not in self.userDict:
-                self.userDict.update({initData[1][1][0]:{'LEVEL':item,
+                print(item)
+                self.userDict.update({item:{'LEVEL':'Moderator',
                                                          'INFO':{"GROUPS":{}}}})
                 self.userDict[item]['INFO'].update({'GROUPS':{'default':'0'}})
 
