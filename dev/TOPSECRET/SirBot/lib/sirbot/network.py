@@ -125,7 +125,7 @@ class stream():
     def clearTwitchChat(self):
         #elevate to irc or ai
         self.send('.clear')
-            
+
 
 class secureStream(stream):
     def __init__(self):
@@ -170,13 +170,13 @@ class secureStream(stream):
             self.twitchconnect()
             self.connection.settimeout(0)
 
-            
+
         junk = None
 
     def close(self):
         self.connection.close()
 
-        
+
 if __name__ == "__main__":
     user = ''
     channel = ''
@@ -203,7 +203,3 @@ if __name__ == "__main__":
     sleep(5)
     x.receive()
     x.close()
-    
-
-        
-        
