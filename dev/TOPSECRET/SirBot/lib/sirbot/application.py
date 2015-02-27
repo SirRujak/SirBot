@@ -225,6 +225,8 @@ class application():
                 self.output.append(item)
             elif(item[0]==7):
                 self.output.append(item)
+            elif(item[0]==12):
+                self.output.append(item)
             elif(item[0]==25):
                 self.applySettings(item[1])
                 self.output.append(item)

@@ -306,8 +306,10 @@ class ai:
                 self.currentLine = None
                 self.saveCommands = False
                 self.saveQuotes = False
+                self.saveUsers = False
                 self.lastQuoteSave = None
                 self.lastSave = None
+                self.lastUserSave = None
                 pass
 
         def getCurrentTime(self):
@@ -324,6 +326,7 @@ class ai:
                 self.makeDictPathName(basePath, channelName) ##channelName, basePath
                 self.lastSave = time()
                 self.lastQuoteSave = time()
+                self.lastUserSave = time()
                 try:
                         self.openQuoteDict(self.pathQuotes)
                 except:
@@ -394,6 +397,11 @@ class ai:
                             self.updateQuoteDict(self.pathQuotes)
                             self.lastQuoteSave = time()
                             self.saveQuotes = False
+                    if self.saveUsers:
+                        if (time() - self.lastUserSave > 10):
+                            self.updateQuoteDict(self.pathUserName)
+                            self.lastUserSave = time()
+                            self.saveUsers = False
                     if self.saveCommands:
                         if (time() - self.lastSave > 10):
                             self.updateCommandDict(self.pathCommandName)
@@ -418,7 +426,7 @@ class ai:
                         ## This will be for people in the chat
                         if initData[1][1][0] in self.userDict:
                             if (self.userDict[initData[1][1][0]]['LEVEL'] != 'Moderator'):
-                                self.userDict[initData[1][1][0]] = initData[1][1][1]
+                                self.userDict[initData[1][1][0]]['LEVEL'] = initData[1][1][1]
                         else:
                             self.userDict.update({initData[1][1][0]:{'LEVEL':initData[1][1][1],
                                                                      'INFO':{"GROUPS":{}}}})
@@ -427,6 +435,7 @@ class ai:
                                 self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update(initData[2][0]['GROUPS'])
                             elif not self.userDict[initData[1][1][0]]['INFO']['GROUPS']:
                                 self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update({'default':'0'})
+                        self.saveUsers = True
                         return [31,[self.boundChannel,None]]
                         pass
                     elif (initData[1][0] == 2):
@@ -441,8 +450,10 @@ class ai:
                         return [31,[self.boundChannel,None]]
                     pass
                 elif (initData[0] == 3):
-                    for item in range(len(initData[1][1][0])):
+                    for item in range(len(initData[1][0][0])):
                         self.tick([2,[1,[item,'Moderator']],[{}]])
+                        self.saveUsers = True
+                        return [31,[self.boundChannel,None]]
                 else:
                     return [31,[self.boundChannel,None]]
 
@@ -459,6 +470,7 @@ class ai:
                 self.timerHolder.shutdown()
                 self.updateCommandDict(self.pathCommandName)
                 self.updateQuoteDict(self.pathQuotes)
+                self.updateUserDict(self.pathUserName)
                 pass
 
         def checkForUser(self,item):
