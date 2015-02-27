@@ -1258,6 +1258,7 @@ class ai:
         def checkChatCMD(self, chatData):
             self.currentLine += 1
             self.getCurrentTime()
+            modChangeList = ['/mod','.mod','/unmod','.unmod']
             chatData[2] = self.currentTime
             if (chatData[3][:6].lower() == 'addcom'):
                 try:
@@ -1278,7 +1279,7 @@ class ai:
             elif (chatData[3][:6].lower() == '!quote'):
                 response = self.getQuote()
                 return(response)
-            elif (chatData[3][:4].lower() == '/mod' or chatData[3][:4].lower() == '.mod'):
+            elif chatData[3][:4].lower() in modChangeList:
                 return([2,'/mods'])
             else:
                 tempResponse = self.compareForCommands([chatData[1],chatData[3]])
