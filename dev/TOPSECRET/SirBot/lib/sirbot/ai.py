@@ -409,6 +409,35 @@ class ai:
                     else:
                         return [31,[self.boundChannel,None]]
                 elif (initData[0] == 2):
+                    ## initData should be of the form:
+                    ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
+                    ## Entries to userDict will be of the following form:
+                    ## {USERNAME:{"LEVEL":LEVEL,"INFO":{"GROUPS":GROUPS}}}
+                    if (initData[1][0] == 1):
+                        ## This will be for people in the chat
+                        if initData[1][1][0] in self.userDict:
+                            if (self.userDict[initData[1][1][0]]['LEVEL'] != 'Moderator'):
+                                self.userDict[initData[1][1][0]] = initData[1][1][1]
+                        else:
+                            self.userDict.update({initData[1][1][0]:{'LEVEL':initData[1][1][1],
+                                                                     'INFO':{"GROUPS":{}}}})
+                        if initData[2]:
+                            if initData[2][0]:
+                                self.userDict[initData[1][1][0]]['INFO'].update(initData[2][0])
+                            else:
+                                self.userDict[initData[1][1][0]]['INFO'].update({'GROUPS':{'default':'0'}})
+                        return [31,[self.boundChannel,None]]
+                        pass
+                    elif (initData[1][0] == 2):
+                        ## This will be for followers
+                        return [31,[self.boundChannel,None]]
+                        pass
+                    elif (initData[1][0] == 3):
+                        ## This will be for following
+                        return [31,[self.boundChannel,None]]
+                        pass
+                    else:
+                        return [31,[self.boundChannel,None]]
                     pass
                 else:
                     return [31,[self.boundChannel,None]]
@@ -1117,7 +1146,7 @@ class ai:
                         tempUserGroups = {'owner':'0'}
                     else:
                         tempUserLevel = self.userDict[itemList[0]]['LEVEL']
-                        tempUserGroups = self.userDict[itemList[0]]['GROUPS']
+                        tempUserGroups = self.userDict[itemList[0]]['INFO']['GROUPS']
                     if (tempUserLevel == 'Owner'):
                         tempLevelCheck = ['owner','moderators','users']
                     elif (tempUserLevel == 'Moderator'):
@@ -1381,9 +1410,14 @@ class spamFilter():
 if __name__ == "__main__":
         from os.path import expanduser
         home = expanduser('~')
-        userDict = {'SirRujak':{'GROUPS':{'default':'0'},'LEVEL':'Owner'},
-                    'Avoloc':{'GROUPS':{'default':'0'},'LEVEL':'User'},
-                    'Eneija':{'GROUPS':{'default':'0','talkers':'0'},'LEVEL':'Moderator'}}
+        ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
+        userTest = [[2,[1,['SirRujak','Moderator']],[{'GROUPS':{'default':'0'}}]],
+                    [2,[1,['Eneija','Moderator']],[{'GROUPS':{'default':'0','talkers':'0'}}]],
+                    [2,[1,['Avoloc','User']],[{}]]]
+        #userDict = {'SirRujak':{'INFO':{'GROUPS':{'default':'0'}},'LEVEL':'Owner'},
+                    #'Avoloc':{'INFO':{'GROUPS':{'default':'0'}},'LEVEL':'User'},
+                    #'Eneija':{'INFO':{'GROUPS':{'default':'0','talkers':'0'}},'LEVEL':'Moderator'}}
+        userDict = {}
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
         botName = 'SirRujak'
@@ -1393,12 +1427,13 @@ if __name__ == "__main__":
         testCreate = True
         runCommandTest = True
         runQuoteTest = True
+        runInfiniComs = True
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0]],
-                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Users',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!piddleparty -response:\'Neija gotta pee! Go getchur refills and piddle to your heart\'s content! -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!raided USERNAME -response:Thanks for the raid USERNAME ! Be sure to check out their channel: http:www.twitch.tv/USERNAME -level:Moderators',0,0]],
@@ -1433,7 +1468,9 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!banish2 USERNAME',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]]
         runComsTest = [[1,[0,'Eneija',0,'!patreon',0]],
-                       [1,[0,'SirRujak',0,'!raid Eneija now!',0]]]
+                       [1,[0,'SirRujak',0,'!raid Eneija now!',0]],
+                       [1,[0,'Avoloc',0,'!panic',0]]]
+        infiniComsTest = [1,[0,'SirRujak',0,'!raid Eneija now!',0]]
         makeQuoteTest = [[1,[0,'Avoloc',0,'!addquote hahaha i is newb',0]],
                         [1,[0,'Avoloc',0,'!addquote wow',0]],
                         [1,[0,'Avoloc',0,'!addquote many try',0]],
@@ -1446,6 +1483,10 @@ if __name__ == "__main__":
         test = ai()
         tempResponse = test.startup(configFile, userDict)
         print("Startup response: ", tempResponse)
+        for i in range(len(userTest)):
+            tempResponse = test.tick(userTest[i])
+            if (tempResponse[0] == 2):
+                print(tempResponse)
         if testCreate:
             for i in range(len(eneijaTest)):
                     tempResponse = test.tick(eneijaTest[i])
@@ -1457,6 +1498,9 @@ if __name__ == "__main__":
                 tempResponse = test.tick(runComsTest[item])
                 if (tempResponse[0] == 2):
                     print(tempResponse)
+        if runInfiniComs:
+            for item in range(100):
+                tempResponse = test.tick(infiniComsTest)
         if testDelete:
             for i in range(len(delcomTest)):
                 tempResponse = test.tick(delcomTest[i])
