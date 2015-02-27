@@ -142,7 +142,7 @@ class application():
                 elif(item[0]==27):
                     try:
                         self.users = item[1]
-                        self.output.append(self.bot.tick([2,[item[1]]))
+                        self.output.append(self.bot.tick([2,[item[1]]]))
                     except AttributeError:
                         #log
                         pass
