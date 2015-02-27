@@ -81,6 +81,7 @@ class application():
             --3=trusted irc account stream chat
             --7=web.py twitch.tv requests
             11-20=internal data
+            --11=ai.py join notification
             --17=web.py twitch follower notices
             21-30=interface data
             --24=irc chat messages
@@ -106,6 +107,11 @@ class application():
                     self.twitchWeb.inputqueue.put(item)
             elif(item[0]<=20):
                 #internal data - mostly ai.py
+                if(item[0]==11):
+                    try:
+                        self.output.append(self.bot.tick(item[1]))
+                    except AttributeError:
+                        pass
                 pass
             elif(item[0]<=30):
                 if(item[0]==24):
@@ -136,7 +142,7 @@ class application():
                 elif(item[0]==27):
                     try:
                         self.users = item[1]
-                        self.output.put(self.bot.tick([2,[item[1]]))
+                        self.output.append(self.bot.tick([2,[item[1]]))
                     except AttributeError:
                         #log
                         pass

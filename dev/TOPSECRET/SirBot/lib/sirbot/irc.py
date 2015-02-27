@@ -26,7 +26,7 @@ class irc():
         if(now - self.delta > 22):
             self.delta = now
             self.twitchUsersUpdate()
-            
+
 
     def timeStamp(self):
         times = asctime(localtime(time()))
@@ -103,6 +103,9 @@ class irc():
             msg = message[0].split('!',1)[0][1:]
             message = msg + ' has joined.'
             extratag = ['Join','Info']
+            ## REMOVE ME
+            self.outputqueue.put([11,[2,[1,[msg,'User']],[{}]]])
+            ##
             self.twitchJoin(msg,chann)
         elif(message[1] == 'PART'):
             msgID = 'Server'
@@ -164,7 +167,7 @@ class irc():
         inputData.append(delimiter)
         inputData.append(message)
         inputData.append(extratag)
-        
+
         return(inputData)
 
     def inFormatPING(self,message,times):
@@ -203,7 +206,7 @@ class irc():
             userlist = self.sortUsers()#<-preferrably run this
             self.outputqueue.put([26,['users',userlist]])
             self.outputqueue.put([27,self.users])
-            
+
 
     def sortUsers(self):
         #sorts users. takes either list or dict
@@ -271,7 +274,7 @@ class irc():
                     channellist.extend(achannellist)
                 channellist = self.orderUsers(channellist)
         return(channellist)
-           
+
 
     def orderUsers(self,data):
         #takes a list/set of users and returns an equivalent, ordered list
@@ -308,15 +311,15 @@ class irc():
                 self.users[channel][user] = {}
                 self.users[channel][user]['MODS'] = 1
         self.twitchUsersUpdate()
-            
-            
+
+
 
     def handleSubscribers(self,user):
         pass
 
     def handleStaff(self,user):
         pass
-    
+
     def outFormat(self,message):
         #temporarily - by that i mean longterm temporarily
         return((self.channels[0],message))
