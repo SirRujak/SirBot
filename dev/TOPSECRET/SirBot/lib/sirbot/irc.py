@@ -87,10 +87,12 @@ class irc():
                     message = message[1:]
                 elif(msg == 'HISTORYEND'):
                     message = message[1:]
-##                elif(msg == 'The'):
-##                    #this doesn't contain the channel, will need to take some time on this.
-##                    if(message[:34] == ':The moderators of this room are: '):
-##                        pass
+                ## FIX ME
+                elif(msg == 'The'):
+                    #this doesn't contain the channel, will need to take some time on this.
+                    if(message[:34] == ':The moderators of this room are: '):
+                        message = message[34:].split(', ')
+                        self.outputqueue.put([12,[3,[[message]],[]]])
                 else:
                     msgID = ''
                     delimiter = ''

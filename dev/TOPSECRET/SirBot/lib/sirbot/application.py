@@ -112,6 +112,11 @@ class application():
                         self.output.append(self.bot.tick(item[1]))
                     except AttributeError:
                         pass
+                if(item[0]==12):
+                    try:
+                        self.output.append(self.bot.tick(item[1]))
+                    except AttributeError:
+                        pass
                 pass
             elif(item[0]<=30):
                 if(item[0]==24):

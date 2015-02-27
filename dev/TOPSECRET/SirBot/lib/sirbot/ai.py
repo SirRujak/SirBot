@@ -424,9 +424,9 @@ class ai:
                                                                      'INFO':{"GROUPS":{}}}})
                         if initData[2]:
                             if initData[2][0]:
-                                self.userDict[initData[1][1][0]]['INFO'].update(initData[2][0])
-                            else:
-                                self.userDict[initData[1][1][0]]['INFO'].update({'GROUPS':{'default':'0'}})
+                                self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update(initData[2][0]['GROUPS'])
+                            elif not self.userDict[initData[1][1][0]]['INFO']['GROUPS']:
+                                self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update({'default':'0'})
                         return [31,[self.boundChannel,None]]
                         pass
                     elif (initData[1][0] == 2):
@@ -440,6 +440,9 @@ class ai:
                     else:
                         return [31,[self.boundChannel,None]]
                     pass
+                elif (initData[0] == 3):
+                    for item in range(len(initData[1][1][0])):
+                        self.tick([2,[1,[item,'Moderator']],[{}]])
                 else:
                     return [31,[self.boundChannel,None]]
 
