@@ -1189,10 +1189,6 @@ class ai:
                 except:
                     tempData = None
             if tempData:
-                tempOutLinks = fullDict['LINKDICT'][tempData['LINK']]
-                ## alter this later to use the conditions portion
-                ## or using chat aware selection
-                tempFinalOutLink = choice(tempOutLinks)
                 ######################################
                 ## Set user level and groups here   ##
                 try:
@@ -1208,6 +1204,17 @@ class ai:
                         tempLevelCheck = ['moderators','users']
                     else:
                         tempLevelCheck = ['users']
+                    ######################################
+                    tempOutLevelLinks = []
+                    for item in range(len(tempLevelCheck)):
+                        if tempLevelCheck[item] in fullDict['LINKDICT']:
+                            if tempData['LINK'] in fullDict['LINKDICT'][tempLevelCheck[item]]:
+                                tempFinalOutLink = choice(fullDict['LINKDICT'][tempLevelCheck[item]][tempData['LINK']])
+                                break
+                    #tempOutLinks = fullDict['LINKDICT'][tempData['LINK']]
+                    ## alter this later to use the conditions portion
+                    ## or using chat aware selection
+                    #tempFinalOutLink = choice(tempOutLinks)
                     ######################################
                     respInfo = None
                     for item in range(len(tempLevelCheck)):
@@ -1483,7 +1490,7 @@ if __name__ == "__main__":
         testData = [0,'SirRujak','timePlaceholder','',0,0]
         testDelete = False
         testCreate = True
-        runCommandTest = False
+        runCommandTest = True
         runQuoteTest = True
         runInfiniComs = False
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
