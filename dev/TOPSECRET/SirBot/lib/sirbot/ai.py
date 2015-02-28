@@ -683,12 +683,22 @@ class ai:
         def checkIfCommandKeyExists(self, tempKey):
             tempVar = 0
             if (' ' not in tempKey):
+                tempKey = tempKey.lower()
                 if tempKey in self.commandDictionary['CMDS']:
                     tempVar = 1
                 else:
                     tempVar = 0
             else:
                 splitKey = tempKey.split(' ')
+                tempSpecialSet = set(['ACTIVATINGUSER',
+                                     'CHANNEL',
+                                     'BOTNAME',
+                                     'REMAINDER',
+                                     'USERNAME',
+                                     'TEMPVAL'])
+                for item in range(len(splitKey)):
+                    if splitKey[item] not in tempSpecialSet:
+                        splitKey[item] = splitKey[item].lower()
                 tempDict = self.commandDictionary['CMDS']
                 for i in range(len(splitKey)-1):
                     if splitKey[i] in tempDict:
@@ -704,11 +714,14 @@ class ai:
             else:
                 return 0
 
-        def checkIfResponseExists(self, tempResponse):
+        def checkIfResponseExists(self, tempResponse, commandLevel):
             tempList = []
             for i in range(len(tempResponse)):
-                if tempResponse[i] in self.commandDictionary['RESPONSEDICT']:
-                    tempList.append(self.commandDictionary['RESPONSEDICT'][tempResponse[i]][0][0])
+                if commandLevel in self.commandDictionary['RESPONSEDICT']:
+                    if tempResponse[i] in self.commandDictionary['RESPONSEDICT'][commandLevel]:
+                        tempList.append(self.commandDictionary['RESPONSEDICT'][commandLevel][tempResponse[i]][0][0])
+                    else:
+                        tempList.append(None)
                 else:
                     tempList.append(None)
             return tempList
@@ -792,7 +805,7 @@ class ai:
                 if not self.checkIfCommandKeyExists(commandKey) and not toContinue:
                     ## Check to see if response or command exists if not make them
                     ## and their links.
-                    tempOutKey = self.checkIfResponseExists(responseValue)
+                    tempOutKey = self.checkIfResponseExists(responseValue,commandLevel[0])
                     tempInKey = self.getOpenInKey()
                     self.tempKeyList = []
                     tempTypeList = []
@@ -862,10 +875,18 @@ class ai:
                     self.commandDictionary['CONDITIONS'][str(tempInKey)] = str(tempLimits)
                     ## Add info for RESPONSEDICT
                     for i in range(len(responseValue)):
-                        if str(responseValue[i]) in self.commandDictionary['RESPONSEDICT']:
-                            self.commandDictionary['RESPONSEDICT'][str(responseValue[i])][1].append(str(tempInKey))
+                        if commandLevel[0] in self.commandDictionary['RESPONSEDICT']:
+                            if str(responseValue[i]) in self.commandDictionary['RESPONSEDICT'][commandLevel[0]]:
+                                self.commandDictionary['RESPONSEDICT'][commandLevel[0]][str(responseValue[i])][1].append(str(tempInKey))
+                            else:
+                                self.commandDictionary['RESPONSEDICT'][commandLevel[0]][str(responseValue[i])] = [[str(tempOutKey[i])],[str(tempInKey)]]
                         else:
-                            self.commandDictionary['RESPONSEDICT'][str(responseValue[i])] = [[str(tempOutKey[i])],[str(tempInKey)]]
+                            self.commandDictionary['RESPONSEDICT'].update({commandLevel[0]:{}})
+                            if str(responseValue[i]) in self.commandDictionary['RESPONSEDICT'][commandLevel[0]]:
+                                self.commandDictionary['RESPONSEDICT'][commandLevel[0]][str(responseValue[i])][1].append(str(tempInKey))
+                            else:
+                                self.commandDictionary['RESPONSEDICT'][commandLevel[0]][str(responseValue[i])] = [[str(tempOutKey[i])],[str(tempInKey)]]
+
                     ## Add info for sub groups
                     ## Add info for LINKS
                     ## Need to fix!!!
@@ -893,6 +914,7 @@ class ai:
                                                                                                      'GROUPS':tempGroupList}
                         self.saveCommands = True
                 else:
+                    ## Oh dear, here we go again. Attempt 2 to fix things:
                     return [31,[self.boundChannel, None]]
                     ## Change this to deal with ones that are there and you are editing them
                     ## pretty much, take what is there and then change anything that was passed
@@ -1456,11 +1478,11 @@ if __name__ == "__main__":
         botName = 'SirRujak'
         configFile = {'Twitch Accounts':{'automated account':{'name':botName}},'Twitch Channels':{'default channel':botName},'path':testDirectory}
         testData = [0,'SirRujak','timePlaceholder','',0,0]
-        testDelete = True
+        testDelete = False
         testCreate = True
-        runCommandTest = True
+        runCommandTest = False
         runQuoteTest = True
-        runInfiniComs = True
+        runInfiniComs = False
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
         eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
