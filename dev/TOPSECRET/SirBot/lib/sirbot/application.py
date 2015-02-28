@@ -296,7 +296,12 @@ class application():
                     tkn = input("Now enter your newly generated token: ")
                 self.config['Twitch Accounts']['automated account']['name'] == usernm
                 self.config['Twitch Accounts']['automated account']['token'] == tkn
-                self.automatedIRC.twitchConnectv(usernm,tkn,retries)
+                self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
+                                                      ['automated account']
+                                                      ['name'],
+                                                      self.config['Twitch Accounts']
+                                                      ['automated account']
+                                                      ['token'],retries)
                 self.IRCstreams = [self.automatedIRC]
             else:
                 self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']

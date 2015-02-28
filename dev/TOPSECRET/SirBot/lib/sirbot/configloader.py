@@ -73,6 +73,9 @@ def configloader():
         config['MISC']['twitch connect retries']=1
         config['MISC']['twitchclient']=0
         #set dummmy path
-        config['path']=moduleDir
+        config['Path']=0
 
-    return(config)
+        data = config
+        
+    data['path'] = moduleDir
+    return(data)
