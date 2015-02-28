@@ -916,12 +916,107 @@ class ai:
                                                                                                      'USERS':tempUserList,
                                                                                                      'GROUPS':tempGroupList}
                         self.saveCommands = True
-                else:
+                elif not toContinue:
                     ## Oh dear, here we go again. Attempt 2 to fix things:
+                    tempInLink = self.getInLink(commandKey)['LINK']
+                    tempOutKey = self.checkIfResponseExists(responseValue,commandLevel[0])
+
+                    self.tempKeyList = []
+                    tempTypeList = []
+                    for i in range(len(tempOutKey)):
+                        if (tempOutKey[i] == None):
+                            tempOutKey[i] = self.getOpenOutKey()
+                    for i in range(len(responseValue)):
+
+                        if '\&' in responseValue[i]:
+                            tempTypeList.append(1)
+                        else:
+                            tempTypeList.append(0)
+                    fullDict = self.commandDictionary
+                    tempOutStr = []
+                    for item in range(len(tempOutKey)):
+                        tempOutStr.append(str(tempOutKey[item]))
+                    if commandLevel[0] in fullDict['LINKDICT']:
+                        if tempInLink not in fullDict['LINKDICT'][commandLevel[0]]:
+                            fullDict['LINKDICT'][commandLevel[0]].update({str(tempInLink):tempOutStr})
+                            ## Add links to OUTLINKS
+                            for i in range(len(tempOutKey)):
+                                if str(tempOutKey[i]) not in self.commandDictionary['OUTLINKS']:
+                                    self.commandDictionary['OUTLINKS'].append(str(tempOutKey[i]))
+                            ## Add info to RESPONSEDICT
+                            if commandLevel[0] not in fullDict['RESPONSEDICT']:
+                                fullDict['RESPONSEDICT'].update({commandLevel[0]:{}})
+                            for item in range(len(tempOutKey)):
+                                if responseValue[item] in fullDict['RESPONSEDICT'][commandLevel[0]]:
+                                    fullDict['RESPONSEDICT'][commandLevel[0]][responseValue[item]][1].extend(tempOutKey[item])
+                                else:
+                                    fullDict['RESPONSEDICT'][commandLevel[0]].update({responseValue[item]:[[tempOutKey[item]],[tempInLink]]})
+                            ## Add info for LINKS
+                            ## Need to fix!!!
+                            tempGroupList = {}
+                            tempUserList = {}
+                            for item in range(len(subGroup)):
+                                if 'group.' in subGroup[item]:
+                                    tempGroupList.update({subGroup[item].split('group.')[1]:'0'})
+                                else:
+                                    tempUserList.update({subGroup[item]:'0'})
+                            tempGroupList.update({'owner':'0'})
+                            for i in range(len(tempOutKey)):
+                                tempString = str(tempOutKey[i])
+                                try:
+                                    self.commandDictionary['LINKS'][commandLevel[0]]
+                                except:
+                                    self.commandDictionary['LINKS'][commandLevel[0]] = {}
+                                self.commandDictionary['LINKS'][commandLevel[0]][tempString] = {"RESPONSE":responseValue[i],
+                                                                                                             "TYPE":str(tempTypeList[i]),
+                                                                                                             "LIMITS":{"LENGTH":str(lineLimit),
+                                                                                                                       "TIME":str(timeLimit)},
+                                                                                                             'CREATOR':callLevel,
+                                                                                                             'LASTEDITOR':'',
+                                                                                                             'USERS':tempUserList,
+                                                                                                             'GROUPS':tempGroupList}
+                                self.saveCommands = True
+                        else:
+                            return [31,[self.boundChannel, None]]
                     return [31,[self.boundChannel, None]]
                     ## Change this to deal with ones that are there and you are editing them
                     ## pretty much, take what is there and then change anything that was passed
                     ## otherwise leave things the same and change the editor
+
+        def getInLink(self, tempKey):
+            tempVar = 0
+            if (' ' not in tempKey):
+                tempKey = tempKey.lower()
+                if tempKey in self.commandDictionary['CMDS']:
+                    tempVar = self.commandDictionary['CMDS'][tempKey]['COMMAND']
+                else:
+                    tempVar = 0
+            else:
+                splitKey = tempKey.split(' ')
+                tempSpecialSet = set(['ACTIVATINGUSER',
+                                     'CHANNEL',
+                                     'BOTNAME',
+                                     'REMAINDER',
+                                     'USERNAME',
+                                     'TEMPVAL'])
+                for item in range(len(splitKey)):
+                    if splitKey[item] not in tempSpecialSet:
+                        splitKey[item] = splitKey[item].lower()
+                tempDict = self.commandDictionary['CMDS']
+                for i in range(len(splitKey)-1):
+                    if splitKey[i] in tempDict:
+                        tempDict = tempDict[splitKey[i]]
+                    else:
+                        tempVar = 0
+                if splitKey[-1] in tempDict:
+                    tempVar = tempDict[splitKey[-1]]['COMMAND']
+                else:
+                    tempVar = 0
+            if (tempVar != 0):
+                return tempVar
+            else:
+                return 0
+
 
         def parseForNewCommand(self, commandString, userName):
             tempCommandList = commandString.split(' -')
@@ -1220,7 +1315,7 @@ class ai:
                     for item in range(len(tempLevelCheck)):
                         if not respInfo:
                             try:
-                                respInfo = fullDict['LINKS'][tempLevelCheck[item]][tempFinalOutLink]
+                                respInfo = fullDict['LINKS'][tempLevelCheck[item]][str(tempFinalOutLink)]
                                 break
                             except:
                                 pass
@@ -1505,7 +1600,7 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!Yt -response:Ze NomTubes // http://www.youtube.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
-                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Users',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Just Tweets // http://www.twitter.com/eneija -level:Users',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!timeshot -response:TimeShot // http://www.reddit.com/r/TimeShot/ -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0]],
@@ -1535,6 +1630,7 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]]
         runComsTest = [[1,[0,'Eneija',0,'!patreon',0]],
                        [1,[0,'SirRujak',0,'!raid Eneija now!',0]],
+                       [1,[0,'Avoloc',0,'!twitter',0]],
                        [1,[0,'Avoloc',0,'!panic',0]]]
         infiniComsTest = [1,[0,'SirRujak',0,'!raid Eneija now!',0]]
         makeQuoteTest = [[1,[0,'Avoloc',0,'!addquote hahaha i is newb',0]],
