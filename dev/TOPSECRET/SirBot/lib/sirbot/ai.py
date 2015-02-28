@@ -667,7 +667,6 @@ class ai:
                     tempVal += 1
                 else:
                     valFound = True
-                    print(tempVal)
                     return tempVal
 
         def getOpenOutKey(self):
