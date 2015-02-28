@@ -291,9 +291,11 @@ class application():
                 if(len(tkn)<=1):
                     import webbrowser
                     webbrowser.open('http://twitchapps.com/tmi/')
+                    print("Opening browser...")
+                    sleep(10)#for consistency
                     tkn = input("Now enter your newly generated token: ")
-                self.config['Twitch Account']['automated account']['name'] == usernm
-                self.config['Twitch Account']['automated account']['token'] == tkn
+                self.config['Twitch Accounts']['automated account']['name'] == usernm
+                self.config['Twitch Accounts']['automated account']['token'] == tkn
                 self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
                                                       ['automated account']
                                                       ['name'],
