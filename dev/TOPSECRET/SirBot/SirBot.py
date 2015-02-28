@@ -57,7 +57,7 @@ if __name__ == '__main__':
         while(ON):
             ON = ON * app.tick()
             ON = ON * inter.tick()
-            sleep(idle)
+##            sleep(idle)
 
         app.shutdown()
         inter.shutdown()
