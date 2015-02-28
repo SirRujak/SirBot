@@ -359,8 +359,9 @@ class application():
 
     def joinATwitchChannel(self,channel):
         self.automatedIRC.joinTwitchChannel(channel)
-        if(self.config['Twitch Accounts']['trusted account']['join chat']!=0):
-            self.trustedIRC.joinTwitchChannel(channel)
+        if(self.config['Twitch Accounts']['trusted account']['name'] != 0 and self.config['Twitch Accounts']['trusted account']['token'] != 0):
+            if(self.config['Twitch Accounts']['trusted account']['join chat']!=0):
+                self.trustedIRC.joinTwitchChannel(channel)
 
     def checkModules(self):
         try:
