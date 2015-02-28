@@ -27,14 +27,16 @@ class application():
 
     def begin(self):#this is just temporary until proper controls can be created in GUI
         self.users = {}
-        self.createModules()
+        
         #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
+            self.createModules()
             self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
         else:
             #TEMPORARY
-            usernm = input('Enter name of channel you want to join: ')
-            self.config['Twitch Channels']['default channel']=usernm
+            chnl = input('Enter name of channel you want to join: ')
+            self.config['Twitch Channels']['default channel']=chnl
+            self.createModules()
             self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchDataSource.twitchconnect()
