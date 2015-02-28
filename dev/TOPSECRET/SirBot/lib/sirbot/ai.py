@@ -663,7 +663,7 @@ class ai:
             valFound = False
             tempVal = 1
             while not valFound:
-                if (str(tempVal) in self.commandDictionary['LINKDICT'][commandLevel]):
+                if (str(tempVal) in self.commandDictionary['CONDITIONS']):
                     tempVal += 1
                 else:
                     valFound = True
