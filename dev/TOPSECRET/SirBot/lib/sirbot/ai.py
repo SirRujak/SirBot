@@ -389,7 +389,7 @@ class ai:
         def tick(self, initData):
                 self.timerHolder.tick()
                 if (initData[0] == 1):
-                    self.checkForUser(initData[1][1])
+                    self.checkForUser2(initData[1][1])
                     data = initData[1]
                     tempResponse = self.checkChatCMD(data)
                     if self.saveQuotes:
@@ -480,6 +480,12 @@ class ai:
                 self.userDict[item]['INFO'].update({'GROUPS':{'default':'0'}})
             else:
                 self.userDict[item]['LEVEL'] = 'Moderator'
+
+        def checkForUser2(self,item):
+            if item not in self.userDict:
+                self.userDict.update({item:{'LEVEL':'User',
+                                                         'INFO':{"GROUPS":{}}}})
+                self.userDict[item]['INFO'].update({'GROUPS':{'default':'0'}})
 
         def checkChat(self, item): ## item is a list of format [type, [list with other stuff]]
                 if item:
