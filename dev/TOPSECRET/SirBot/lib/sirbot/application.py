@@ -285,7 +285,15 @@ class application():
         retries = self.config['MISC']['twitch connect retries']
         if(selection.lower() == 'twitch'):
             self.automatedIRC = stream()
-            if(self.config['Twitch Accounts']['automated account']['name'] == 0 or self.config['Twitch Accounts']['automated account']['token'] == 0):
+            if(self.config['Twitch Account']['automated account']['name'] == 0 or self.config['Twitch Accounts']['automated account']['token'] == 0):
+                self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
+                                                      ['automated account']
+                                                      ['name'],
+                                                      self.config['Twitch Accounts']
+                                                      ['automated account']
+                                                      ['token'],retries)
+                self.IRCstreams = [self.automatedIRC]
+            else:
                 usernm = input("Enter bot account name: ")
                 tkn = input("Enter OAUTH token(or 0 if you don't know it): ")
                 if(len(tkn)<=1):
@@ -301,15 +309,6 @@ class application():
                                                       ['automated account']
                                                       ['token'],retries)
                 self.IRCstreams = [self.automatedIRC]
-            else:
-                self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
-                                                      ['automated account']
-                                                      ['name'],
-                                                      self.config['Twitch Accounts']
-                                                      ['automated account']
-                                                      ['token'],retries)
-                self.IRCstreams = [self.automatedIRC]
-                
             if(self.config['Twitch Accounts']['trusted account']['token'] != 0):
                 self.trustedIRC = stream()
                 self.trustedIRC.twitchConnectv(self.config['Twitch Accounts']
