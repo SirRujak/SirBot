@@ -659,14 +659,15 @@ class ai:
                 pass
 
         ## commandList contains commandKey, responseValue, commandLevel, callLevel, isActive, responseKey in that order
-        def getOpenInKey(self):
+        def getOpenInKey(self,commandLevel):
             valFound = False
             tempVal = 1
             while not valFound:
-                if (str(tempVal) in self.commandDictionary['LINKDICT']):
+                if (str(tempVal) in self.commandDictionary['LINKDICT'][commandLevel]):
                     tempVal += 1
                 else:
                     valFound = True
+                    print(tempVal)
                     return tempVal
 
         def getOpenOutKey(self):
@@ -805,8 +806,11 @@ class ai:
                 if not self.checkIfCommandKeyExists(commandKey) and not toContinue:
                     ## Check to see if response or command exists if not make them
                     ## and their links.
+
+                    if commandLevel[0] not in self.commandDictionary['LINKDICT']:
+                        self.commandDictionary['LINKDICT'][commandLevel[0]] = {}
                     tempOutKey = self.checkIfResponseExists(responseValue,commandLevel[0])
-                    tempInKey = self.getOpenInKey()
+                    tempInKey = self.getOpenInKey(commandLevel[0])
                     self.tempKeyList = []
                     tempTypeList = []
                     for i in range(len(tempOutKey)):
@@ -869,7 +873,7 @@ class ai:
                     tempOutStrKey = []
                     for i in range(len(tempOutKey)):
                         tempOutStrKey.append(str(tempOutKey[i]))
-                    self.commandDictionary['LINKDICT'][str(tempInKey)] = tempOutStrKey
+                    self.commandDictionary['LINKDICT'][commandLevel[0]].update({str(tempInKey):tempOutStrKey})
                     ## Add links to CONDITIONS
                     tempLimits = self.sortResponseLimits(responseLimits)
                     self.commandDictionary['CONDITIONS'][str(tempInKey)] = str(tempLimits)
@@ -1495,6 +1499,7 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!raid USERNAME -response:Thanks for coming to the stream! Come raid USERNAME with me! http://www.twitch.tv/USERNAME -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!Yt -response:Ze NomTubes // http://www.youtube.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Users',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!timeshot -response:TimeShot // http://www.reddit.com/r/TimeShot/ -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0]],
