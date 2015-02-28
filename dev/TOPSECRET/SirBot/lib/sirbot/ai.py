@@ -310,6 +310,7 @@ class ai:
                 self.lastQuoteSave = None
                 self.lastSave = None
                 self.lastUserSave = None
+                self.lastQuote = None
                 pass
 
         def getCurrentTime(self):
@@ -327,6 +328,7 @@ class ai:
                 self.lastSave = time()
                 self.lastQuoteSave = time()
                 self.lastUserSave = time()
+                self.lastQuote = time() -5
                 try:
                         self.openQuoteDict(self.pathQuotes)
                 except:
@@ -800,6 +802,11 @@ class ai:
 
                 toContinue = self.checkAllValues(filledEntries)
                 if (commandKey == 'REMAINDER' or commandKey == 'TEMPVAL'):
+                    toContinue = 1
+
+                if (callLevel == self.botName or callLevel == self.boundChannel):
+                    pass
+                else:
                     toContinue = 1
 
                 if not self.checkIfCommandKeyExists(commandKey) and not toContinue:
@@ -1367,9 +1374,9 @@ class ai:
                 if 'COMMAND' in tempDict:
                     return([1,tempDict['COMMAND']])
 
-        def addQuote(self,data):
+        def addQuote(self,data,userName):
             if data[9:].strip(' ') not in self.quoteDict['QUOTES']:
-                self.quoteDict['QUOTES'].append(data[9:].strip(' '))
+                self.quoteDict['QUOTES'].append([data[9:].strip(' '),userName])
                 self.saveQuotes = True
 
         def delQuote(self,data):
@@ -1379,7 +1386,7 @@ class ai:
 
         def getQuote(self):
             if self.quoteDict['QUOTES']:
-                return([2,self.quoteDict['QUOTES'][randrange(0,len(self.quoteDict['QUOTES']))]])
+                return([2,self.quoteDict['QUOTES'][randrange(0,len(self.quoteDict['QUOTES']))][0]])
             else:
                 return([2,'What are quotes? ~SirRujak'])
 
@@ -1404,14 +1411,19 @@ class ai:
                 self.deleteCommand2(chatData)
                 return([31,None])
             elif (chatData[3][:9].lower() == '!addquote'):
-                self.addQuote(chatData[3])
+                print(chatData)
+                if chatData[1] in self.userDict:
+                    if self.userDict[chatData[1]]['LEVEL'] == 'Moderator':
+                        self.addQuote(chatData[3],chatData[1])
                 return([31,None])
             elif (chatData[3][:9].lower() == '!delquote'):
                 self.delQuote(chatData[3])
                 return([31,None])
             elif (chatData[3][:6].lower() == '!quote'):
-                response = self.getQuote()
-                return(response)
+                if (time() - self.lastQuote > 5):
+                    response = self.getQuote()
+                    self.lastQuote = time()
+                    return(response)
             elif chatData[3][:4].lower() in modChangeList:
                 return([2,'/mods'])
             else:
@@ -1592,7 +1604,7 @@ if __name__ == "__main__":
         eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0]],
-                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0]],
+                      [1,[0,'Avoloc','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!panic -response:Don\'t panic guys! The stream will be fixed soon!\%CALM DOWN OR I WILL EAT YOU ALL. -level:Users',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!piddleparty -response:\'Neija gotta pee! Go getchur refills and piddle to your heart\'s content! -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!uhc -response:Eneija is in the middle of an epic battle, so she might not be as responsive as usual. She still loves you though! -level:Moderators',0,0]],
@@ -1633,8 +1645,8 @@ if __name__ == "__main__":
                        [1,[0,'Avoloc',0,'!twitter',0]],
                        [1,[0,'Avoloc',0,'!panic',0]]]
         infiniComsTest = [1,[0,'SirRujak',0,'!raid Eneija now!',0]]
-        makeQuoteTest = [[1,[0,'Avoloc',0,'!addquote hahaha i is newb',0]],
-                        [1,[0,'Avoloc',0,'!addquote wow',0]],
+        makeQuoteTest = [[1,[0,'SirRujak',0,'!addquote hahaha i is newb',0]],
+                        [1,[0,'Eneija',0,'!addquote wow',0]],
                         [1,[0,'Avoloc',0,'!addquote many try',0]],
                         [1,[0,'Avoloc',0,'!addquote such newb',0]]]
         runQuoteTest = [[1,[0,'SirRujak',0,'!quote',0]]]
