@@ -23,18 +23,12 @@ class application():
     def __init__(self,config,interinput = None,interoutput = None):
         #things will be selectively loaded based on choices in config
         self.allocateVars(config,interinput,interoutput)
-        self.STATE = 'START'
 
     def begin(self):#this is just temporary until proper controls can be created in GUI
         self.users = {}
         self.createModules()
         #self.automatedIRC.chooseTwitchClient(2)
         if(self.config['Twitch Channels']['default channel'] != 0):
-            self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
-        else:
-            #TEMPORARY
-            usernm = input('Enter name of channel you want to join: ')
-            self.config['Twitch Channels']['default channel']=usernm
             self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchDataSource.twitchconnect()
@@ -285,30 +279,13 @@ class application():
         retries = self.config['MISC']['twitch connect retries']
         if(selection.lower() == 'twitch'):
             self.automatedIRC = stream()
-            if(self.config['Twitch Account']['automated account']['name'] == 0 or self.config['Twitch Accounts']['automated account']['token'] == 0):
-                self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
-                                                      ['automated account']
-                                                      ['name'],
-                                                      self.config['Twitch Accounts']
-                                                      ['automated account']
-                                                      ['token'],retries)
-                self.IRCstreams = [self.automatedIRC]
-            else:
-                usernm = input("Enter bot account name: ")
-                tkn = input("Enter OAUTH token(or 0 if you don't know it): ")
-                if(len(tkn)<=1):
-                    import webbrowser
-                    webbrowser.open('http://twitchapps.com/tmi/')
-                    tkn = input("Now enter your newly generated token: ")
-                self.config['Twitch Account']['automated account']['name'] == usernm
-                self.config['Twitch Account']['automated account']['token'] == tkn
-                self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
-                                                      ['automated account']
-                                                      ['name'],
-                                                      self.config['Twitch Accounts']
-                                                      ['automated account']
-                                                      ['token'],retries)
-                self.IRCstreams = [self.automatedIRC]
+            self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
+                                                  ['automated account']
+                                                  ['name'],
+                                                  self.config['Twitch Accounts']
+                                                  ['automated account']
+                                                  ['token'],retries)
+            self.IRCstreams = [self.automatedIRC]
             if(self.config['Twitch Accounts']['trusted account']['token'] != 0):
                 self.trustedIRC = stream()
                 self.trustedIRC.twitchConnectv(self.config['Twitch Accounts']
