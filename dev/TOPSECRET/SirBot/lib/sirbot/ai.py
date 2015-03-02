@@ -794,8 +794,8 @@ class ai:
                 commandLevel = inputItems[2]
                 callLevel = inputItems[3]
                 isActive = inputItems[4]
-                lineLimit = inputItems[5]
-                timeLimit = inputItems[6]
+                lineLimit = inputItems[6]
+                timeLimit = inputItems[5]
                 responseLimits = inputItems[7]
                 accessLevel = inputItems[8]
                 subGroup = inputItems[9].split(' ')
@@ -1331,6 +1331,9 @@ class ai:
                         if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
                             if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
                                 if respInfo['GROUPS'].keys() & tempUserGroups:
+                                    ## Alter last line and last time here ##
+                                    compareHelper2(tempList,tempDict)
+                                    ##                                    ##
                                     tempResponse = respInfo['RESPONSE']
                                     activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
                                     channelList = ['[[channel]]','[channel]','@channel@','CHANNEL']
@@ -1373,6 +1376,20 @@ class ai:
             else:
                 if 'COMMAND' in tempDict:
                     return([1,tempDict['COMMAND']])
+
+        def compareHelper2(self,itemList,tempDict):
+            if itemList:
+                tempItem = itemList.pop(0)
+                if tempItem in tempDict:
+                    tempDict = tempDict[tempItem]
+                    tempResponse = self.compareHelper(itemList,tempDict)
+                    return(tempResponse)
+                else:
+                    pass
+            else:
+                if 'COMMAND' in tempDict:
+                    tempDict['COMMAND']['LASTLINE'] = self.currentLine
+                    tempDict['COMMAND']['LASTTIME'] = time()
 
         def addQuote(self,data,userName):
             if data[9:].strip(' ') not in self.quoteDict['QUOTES']:
@@ -1601,7 +1618,7 @@ if __name__ == "__main__":
         runQuoteTest = True
         runInfiniComs = False
         'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
-        eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators',0]],
+        eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators -linelim:3 -timelim:4',0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0]],
                       [1,[0,'Avoloc','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0]],
