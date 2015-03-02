@@ -1268,6 +1268,7 @@ class ai:
                     if itemList[1][item] not in tempSpecialSet:
                         itemList[1][item] = itemList[1][item].lower()
                 tempList = itemList[1]
+                tempList2 = itemList[1]
                 tempResponse = self.compareHelper(tempList,tempDict)
                 if(tempResponse[0] == 1):
                     tempData = tempResponse[1]
@@ -1287,6 +1288,7 @@ class ai:
                     if item not in tempSpecialSet:
                         itemList[1].replace(item,item.lower())
                 try:
+                    tempList2 = [itemList[1]]
                     tempData = tempDict[itemList[1]]['COMMAND']
                 except:
                     tempData = None
@@ -1332,7 +1334,7 @@ class ai:
                             if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
                                 if respInfo['GROUPS'].keys() & tempUserGroups:
                                     ## Alter last line and last time here ##
-                                    compareHelper2(tempList,tempDict)
+                                    self.compareHelper2(tempList2,tempDict)
                                     ##                                    ##
                                     tempResponse = respInfo['RESPONSE']
                                     activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
@@ -1381,9 +1383,8 @@ class ai:
             if itemList:
                 tempItem = itemList.pop(0)
                 if tempItem in tempDict:
-                    tempDict = tempDict[tempItem]
-                    tempResponse = self.compareHelper(itemList,tempDict)
-                    return(tempResponse)
+                    tempDict2 = tempDict[tempItem]
+                    tempResponse = self.compareHelper2(itemList,tempDict2)
                 else:
                     pass
             else:
@@ -1393,17 +1394,19 @@ class ai:
 
         def addQuote(self,data,userName):
             if data[9:].strip(' ') not in self.quoteDict['QUOTES']:
-                self.quoteDict['QUOTES'].append([data[9:].strip(' '),userName])
+                self.quoteDict['QUOTES'].update({data[9:].strip(' '):userName})
+                self.quoteDict['QUOTELIST'].append(data[9:].strip(' '))
                 self.saveQuotes = True
 
         def delQuote(self,data):
             while data[9:].strip(' ') in self.quoteDict['QUOTES']:
-                self.quoteDict['QUOTES'].remove(data[9:].strip(' '))
+                del self.quoteDict['QUOTES'][data[9:].strip(' ')]
+                self.quoteDict['QUOTELIST'].remove(data[9:].strip(' '))
                 self.saveQuotes = True
 
         def getQuote(self):
             if self.quoteDict['QUOTES']:
-                return([2,self.quoteDict['QUOTES'][randrange(0,len(self.quoteDict['QUOTES']))][0]])
+                return([2,choice(self.quoteDict['QUOTELIST'])])
             else:
                 return([2,'What are quotes? ~SirRujak'])
 
