@@ -1461,11 +1461,10 @@ class ai:
                     if (isGlobal == 0):
                         tempDict['COMMAND']['LIMITS'][userLevel]['LASTLINE'] = self.currentLine
                         tempDict['COMMAND']['LIMITS'][userLevel]['LASTTIME'] = time()
-                        tempDict['COMMAND']['LIMITS'][userLevel]["TOTAL"] = str(int(tempDict['COMMAND']['LIMITS'][userlevel]['TOTAL']) +1)
                     else:
                         tempDict['COMMAND']['LIMITS']['Global']['LASTLINE'] = self.currentLine
                         tempDict['COMMAND']['LIMITS']['Global']['LASTTIME'] = time()
-                        tempDict['COMMAND']['LIMITS']['Global']["TOTAL"] = str(int(tempDict['COMMAND']['LIMITS']['Global']['TOTAL']) +1)
+                    tempDict['COMMAND']['LIMITS'][userLevel]["TOTAL"] = str(int(tempDict['COMMAND']['LIMITS'][userLevel]['TOTAL']) +1)
                     tempDict['COMMAND']['TOTAL'] = str(int(tempDict['COMMAND']['TOTAL']) + 1)
 
         def addQuote(self,data,userName):
