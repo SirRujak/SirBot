@@ -761,6 +761,8 @@ class ai:
                         inputItems[i] = '0'
                     elif (i == 9):
                         inputItems[i] = 'group.default'
+                    elif (i == 10):
+                        inputItems[i] = '1'
             inputItems[2] = [inputItems[2][0].lower()]
             return inputItems
 
@@ -787,8 +789,7 @@ class ai:
         def makeNewEntry(self,inputItems):##,commandKey,responseValue,commandLevel,
                          ##callLevel,isActive,lineLimit,timeLimit,responseLimits):
             filledEntries = self.checkForEmptySlots(inputItems)
-            if (len(filledEntries) == 10):
-
+            if (len(filledEntries) == 11):
                 commandKey = inputItems[0]
                 responseValue = inputItems[1]
                 commandLevel = inputItems[2]
@@ -799,6 +800,7 @@ class ai:
                 responseLimits = inputItems[7]
                 accessLevel = inputItems[8]
                 subGroup = inputItems[9].split(' ')
+                globalLim = inputItems[10]
 
                 toContinue = self.checkAllValues(filledEntries)
                 if (commandKey == 'REMAINDER' or commandKey == 'TEMPVAL'):
@@ -858,18 +860,43 @@ class ai:
                             finalLocation = finalLocation[tempKey2[i]]
                         if not finalLocation[tempKey2[-1]]:
                             finalLocation[tempKey2[-1]] = {}
-                        finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),"ACTIVE":isActive,"LASTLINE":"0","LASTTIME":"0","TOTAL":"0"}})
+                        finalLocation[tempKey2[-1]].update({"COMMAND":{"LINK":str(tempInKey),
+                                                                       "ACTIVE":isActive,
+                                                                       "TOTAL":"0",
+                                                                       "LIMITS":{"IsGlobal":globalLim,
+                                                                                 "Global":{"LASTLINE":"0",
+                                                                                           "LASTTIME":"0",
+                                                                                           "TOTAL":"0"},
+                                                                                 "owner":{"LASTLINE":"0",
+                                                                                          "LASTTIME":"0",
+                                                                                          "TOTAL":"0"},
+                                                                                 "moderators":{"LASTLINE":"0",
+                                                                                               "LASTTIME":"0",
+                                                                                               "TOTAL":"0"},
+                                                                                 "users":{"LASTLINE":"0",
+                                                                                          "LASTTIME":"0",
+                                                                                          "TOTAL":"0"}}}})
                         self.saveCommands = True
                     else:
                         if commandKey not in tempSpecialSet:
                             commandKey = commandKey.lower()
                         tempDict = self.commandDictionary['CMDS']
-                        tempDict[commandKey] = {}
-                        tempDict[commandKey]['COMMAND']={"LINK":str(tempInKey),
+                        tempDict.update({commandKey:{'COMMAND':{"LINK":str(tempInKey),
                                                          "ACTIVE":isActive,
-                                                         "LASTLINE":"0",
-                                                         "LASTTIME":"0",
-                                                         "TOTAL":"0"}
+                                                         "TOTAL":"0",
+                                                         "LIMITS":{"IsGlobal":globalLim,
+                                                                   "Global":{"LASTLINE":"0",
+                                                                             "LASTTIME":"0",
+                                                                             "TOTAL":"0"},
+                                                                   "owner":{"LASTLINE":"0",
+                                                                            "LASTTIME":"0",
+                                                                            "TOTAL":"0"},
+                                                                   "moderators":{"LASTLINE":"0",
+                                                                                 "LASTTIME":"0",
+                                                                                 "TOTAL":"0"},
+                                                                   "users":{"LASTLINE":"0",
+                                                                            "LASTTIME":"0",
+                                                                            "TOTAL":"0"}}}}})
 
                     ## Add links to OUTLINKS
                     for i in range(len(tempOutKey)):
@@ -1030,7 +1057,7 @@ class ai:
             tempItems = []
             for i in range(len(tempCommandList)):
                 tempItems.append(tempCommandList[i].split(':', 1))
-            finalList = [None]*10
+            finalList = [None]*11
             for i in range(len(tempItems)):
                 if (tempItems[i][0] == 'cmd'):
                     if (tempItems[i][1] == ''):
@@ -1095,6 +1122,13 @@ class ai:
                         finalList[9] = None
                     else:
                         finalList[9] = tempItems[i][1]
+                elif (tempItems[i][0] == 'globallim'):
+                    if (tempItems[i][1] == ''):
+                        finalList[10] = None
+                    elif (tempItems[i][1].lower() == 'true'):
+                        finalList[10] = 1
+                    elif (tempItems[i][1].lower() == 'false'):
+                        finalList[10] = 0
             finalList[3] = userName
             return(finalList)
 
@@ -1334,10 +1368,12 @@ class ai:
                         tempLevelCheck = ['users']
                     ######################################
                     tempOutLevelLinks = []
+                    finalLevelChosen = ''
                     for item in range(len(tempLevelCheck)):
                         if tempLevelCheck[item] in fullDict['LINKDICT']:
                             if tempData['LINK'] in fullDict['LINKDICT'][tempLevelCheck[item]]:
                                 tempFinalOutLink = choice(fullDict['LINKDICT'][tempLevelCheck[item]][tempData['LINK']])
+                                finalLevelChosen = tempLevelCheck[item]
                                 break
                     #tempOutLinks = fullDict['LINKDICT'][tempData['LINK']]
                     ## alter this later to use the conditions portion
@@ -1353,36 +1389,45 @@ class ai:
                             except:
                                 pass
                     self.getCurrentTime()
+                    runRemainder = 0
                     if (respInfo != None):
-                        if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
-                            if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
-                                if respInfo['GROUPS'].keys() & tempUserGroups:
-                                    ## Alter last line and last time here ##
-                                    self.compareHelper2(tempList2,tempDict)
-                                    ##                                    ##
-                                    tempResponse = respInfo['RESPONSE']
-                                    activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
-                                    channelList = ['[[channel]]','[channel]','@channel@','CHANNEL']
-                                    botList = ['[[bot]]','[bot]','@bot@','BOTNAME']
-                                    remainderList = ['[[remainder]]','[remainder]','@remainder@','REMAINDER']
-                                    usernameList = ['[[username]]','[username]','@username@','USERNAME']
-                                    for item in range(len(activatingUserList)):
-                                        if activatingUserList[item] in tempResponse:
-                                            tempResponse = tempResponse.replace(activatingUserList[item],itemList[0])
-                                    for item in range(len(channelList)):
-                                        if channelList[item] in tempResponse:
-                                            tempResponse = tempResponse.replace(channelList[item],self.boundChannel)
-                                    for item in range(len(botList)):
-                                        if botList[item] in tempResponse:
-                                            tempResponse = tempResponse.replace(botList[item],self.botName)
-                                    for item2 in range(len(tempUserName)):
-                                        for item in range(len(usernameList)):
-                                            if usernameList[item] in tempResponse:
-                                                if (len(tempUserName) > 1):
-                                                    tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0),1)
-                                                else:
-                                                    tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0))
-                                    return([2,tempResponse])
+                        if (tempData['LIMITS']['IsGlobal'] == 0):
+                            if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LIMITS'][finalLevelChosen]['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
+                                if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LIMITS'][finalLevelChosen]['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
+                                    if respInfo['GROUPS'].keys() & tempUserGroups:
+                                        runRemainder = 1
+                        else:
+                            if (respInfo['LIMITS']['TIME'] == '-1' or self.currentTime > float(tempData['LIMITS']['Global']['LASTTIME']) + float(respInfo['LIMITS']['TIME'])):
+                                if (respInfo['LIMITS']['LENGTH'] == '-1' or self.currentLine > int(tempData['LIMITS']['Global']['LASTLINE']) + int(respInfo['LIMITS']['LENGTH'])):
+                                    if respInfo['GROUPS'].keys() & tempUserGroups:
+                                        runRemainder = 1
+                        if (runRemainder == 1):
+                            ## Alter last line and last time here ##
+                            self.compareHelper2(tempList2,tempDict,tempData['LIMITS']['IsGlobal'],finalLevelChosen)
+                            ##                                    ##
+                            tempResponse = respInfo['RESPONSE']
+                            activatingUserList = ['ACTIVATINGUSER','[[user]]','[user]','@user@']
+                            channelList = ['[[channel]]','[channel]','@channel@','CHANNEL']
+                            botList = ['[[bot]]','[bot]','@bot@','BOTNAME']
+                            remainderList = ['[[remainder]]','[remainder]','@remainder@','REMAINDER']
+                            usernameList = ['[[username]]','[username]','@username@','USERNAME']
+                            for item in range(len(activatingUserList)):
+                                if activatingUserList[item] in tempResponse:
+                                    tempResponse = tempResponse.replace(activatingUserList[item],itemList[0])
+                            for item in range(len(channelList)):
+                                if channelList[item] in tempResponse:
+                                    tempResponse = tempResponse.replace(channelList[item],self.boundChannel)
+                            for item in range(len(botList)):
+                                if botList[item] in tempResponse:
+                                    tempResponse = tempResponse.replace(botList[item],self.botName)
+                            for item2 in range(len(tempUserName)):
+                                for item in range(len(usernameList)):
+                                    if usernameList[item] in tempResponse:
+                                        if (len(tempUserName) > 1):
+                                            tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0),1)
+                                        else:
+                                            tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0))
+                            return([2,tempResponse])
 
                     return [31,None]
                 except:
@@ -1403,18 +1448,25 @@ class ai:
                 if 'COMMAND' in tempDict:
                     return([1,tempDict['COMMAND']])
 
-        def compareHelper2(self,itemList,tempDict):
+        def compareHelper2(self,itemList,tempDict, isGlobal, userLevel):
             if itemList:
                 tempItem = itemList.pop(0)
                 if tempItem in tempDict:
                     tempDict2 = tempDict[tempItem]
-                    tempResponse = self.compareHelper2(itemList,tempDict2)
+                    tempResponse = self.compareHelper2(itemList,tempDict2,isGlobal,userLevel)
                 else:
                     pass
             else:
                 if 'COMMAND' in tempDict:
-                    tempDict['COMMAND']['LASTLINE'] = self.currentLine
-                    tempDict['COMMAND']['LASTTIME'] = time()
+                    if (isGlobal == 0):
+                        tempDict['COMMAND']['LIMITS'][userLevel]['LASTLINE'] = self.currentLine
+                        tempDict['COMMAND']['LIMITS'][userLevel]['LASTTIME'] = time()
+                        tempDict['COMMAND']['LIMITS'][userLevel]["TOTAL"] = str(int(tempDict['COMMAND']['LIMITS'][userlevel]['TOTAL']) +1)
+                    else:
+                        tempDict['COMMAND']['LIMITS']['Global']['LASTLINE'] = self.currentLine
+                        tempDict['COMMAND']['LIMITS']['Global']['LASTTIME'] = time()
+                        tempDict['COMMAND']['LIMITS']['Global']["TOTAL"] = str(int(tempDict['COMMAND']['LIMITS']['Global']['TOTAL']) +1)
+                    tempDict['COMMAND']['TOTAL'] = str(int(tempDict['COMMAND']['TOTAL']) + 1)
 
         def addQuote(self,data,userName):
             if data[9:].strip(' ') not in self.quoteDict['QUOTES']:
@@ -1639,13 +1691,13 @@ if __name__ == "__main__":
         botName = 'SirRujak'
         configFile = {'Twitch Accounts':{'automated account':{'name':botName}},'Twitch Channels':{'default channel':botName},'path':testDirectory}
         testData = [0,'SirRujak','timePlaceholder','',0,0]
-        testDelete = True
+        testDelete = False
         testCreate = True
         runCommandTest = True
         runQuoteTest = True
         runInfiniComs = False
-        'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers'
-        eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators -linelim:3 -timelim:4',0]],
+        'addcom -cmd:hi -response:hello\%hi\%hi\&hello -level:Everyone -active:1 -linelim:-1 -timelim:-1 -conditions:>0&<2,>5&<10 -access:1 -users:group.talkers -globallim:true'
+        eneijaTest = [[1,['channelName','SirRujak','timePlaceholder','addcom -cmd:!tweet -response:Click to tweet out the stream! http://ctt.ec/DB4RM -level:Moderators -linelim:3 -timelim:4 -globallim:false',0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!links -response:All the things! // NomTubes // http://www.youtube.com/eneija // Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!patreon -response:Support in exchange for tasty rewards? Yes prease! http://www.patreon.com/eneija -level:Moderators',0,0]],
                       [1,[0,'Avoloc','timePlaceholder','addcom -cmd:!multi -response:*insert multitwitch link* -level:Moderators -users:group.talkers SirRujak',0,0]],
@@ -1686,6 +1738,7 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]]
         runComsTest = [[1,[0,'Eneija',0,'!patreon',0]],
                        [1,[0,'SirRujak',0,'!raid Eneija now!',0]],
+                       [1,[0,'SirRujak',0,'!tweet',0]],
                        [1,[0,'Avoloc',0,'!twitter',0]],
                        [1,[0,'Avoloc',0,'!panic',0]]]
         infiniComsTest = [1,[0,'SirRujak',0,'!raid Eneija now!',0]]
