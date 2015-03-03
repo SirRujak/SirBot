@@ -1112,7 +1112,12 @@ class ai:
                                      'TEMPVAL'])
                 if ' ' not in delString:
                     tempInLink = tempDict[delString]['COMMAND']['LINK']
-                    tempOutLinks = fullDict['LINKDICT'][tempInLink]
+                    tempOutLinkList = []
+                    for item in fullDict['LINKDICT']:
+                        if tempInLink in fullDict['LINKDICT'][item]:
+                            tempOutLinkList.extend(fullDict['LINKDICT'][item][tempInLink])
+                    #tempOutLinks = fullDict['LINKDICT'][tempInLink]
+                    tempOutLinks = tempOutLinkList
                     if delString not in tempSpecialSet:
                         delString = delString.lower()
                     tempResponses = []
@@ -1123,7 +1128,9 @@ class ai:
                             if tempOutLinks[item] in fullDict['LINKS'][item2]:
                                 tempResponses.append(fullDict['LINKS'][item2][tempOutLinks[item]]['RESPONSE'])
                     for item in range(len(tempResponses)):
-                        tempResponseLinks.append(fullDict['RESPONSEDICT'][tempResponses[item]])
+                        for item2 in fullDict['RESPONSEDICT']:
+                            if tempResponses[item] in fullDict['RESPONSEDICT'][item2]:
+                                tempResponseLinks.append(fullDict['RESPONSEDICT'][item2][tempResponses[item]])
                         if (len(tempResponseLinks[item][1]) == 1):
                             tempResponseSingularity.append(True)
                         else:
@@ -1136,10 +1143,14 @@ class ai:
                     else:
                         del tempDict[delString]['COMMAND']
                     del fullDict['CONDITIONS'][tempInLink]
-                    del fullDict['LINKDICT'][tempInLink]
+                    for item in fullDict['LINKDICT']:
+                        if tempInLink in fullDict['LINKDICT'][item]:
+                            del fullDict['LINKDICT'][item][tempInLink]
                     for item in range(len(tempResponseSingularity)):
                         if tempResponseSingularity[item]:
-                            del fullDict['RESPONSEDICT'][tempResponses[item]]
+                            for item2 in fullDict['RESPONSEDICT']:
+                                if tempResponses[item] in fullDict['RESPONSEDICT'][item2]:
+                                    del fullDict['RESPONSEDICT'][item2][tempResponses[item]]
                             for item4 in range(len(tempOutLinks)):
                                 for item2 in fullDict['LINKS']:
                                     if tempOutLinks[item4] in fullDict['LINKS'][item2]:
@@ -1163,7 +1174,12 @@ class ai:
                         tempDict2 = tempDict2[delStringList[item]]
                     tempCMDSBranches = tempCMDSList.count(1)
                     tempInLink = tempDict2['COMMAND']['LINK']
-                    tempOutLinks = fullDict['LINKDICT'][tempInLink]
+                    #tempOutLinks = fullDict['LINKDICT'][tempInLink]
+                    tempOutLinkList = []
+                    for item in fullDict['LINKDICT']:
+                        if tempInLink in fullDict['LINKDICT'][item]:
+                            tempOutLinkList.extend(fullDict['LINKDICT'][item][tempInLink])
+                    tempOutLinks = tempOutLinkList
                     tempResponses = []
                     tempResponseLinks = []
                     tempResponseSingularity = []
@@ -1172,7 +1188,9 @@ class ai:
                             if tempOutLinks[item] in fullDict['LINKS'][item2]:
                                 tempResponses.append(fullDict['LINKS'][item2][tempOutLinks[item]]['RESPONSE'])
                     for item in range(len(tempResponses)):
-                        tempResponseLinks.append(fullDict['RESPONSEDICT'][tempResponses[item]])
+                        for item2 in fullDict['RESPONSEDICT']:
+                            if tempResponses[item] in fullDict['RESPONSEDICT'][item2]:
+                                tempResponseLinks.append(fullDict['RESPONSEDICT'][item2][tempResponses[item]])
                         if (len(tempResponseLinks[item][1]) == 1):
                             tempResponseSingularity.append(True)
                         else:
@@ -1188,17 +1206,23 @@ class ai:
 
                     ## Coppied from above
                     del fullDict['CONDITIONS'][tempInLink]
-                    del fullDict['LINKDICT'][tempInLink]
+                    for item in fullDict['LINKDICT']:
+                        if tempInLink in fullDict['LINKDICT'][item]:
+                            del fullDict['LINKDICT'][item][tempInLink]
                     for item in range(len(tempResponseSingularity)):
                         if tempResponseSingularity[item]:
-                            del fullDict['RESPONSEDICT'][tempResponses[item]]
+                            for item2 in fullDict['RESPONSEDICT']:
+                                if tempResponses[item] in fullDict['RESPONSEDICT'][item2]:
+                                    del fullDict['RESPONSEDICT'][item2][tempResponses[item]]
                             for item4 in range(len(tempOutLinks)):
                                 for item2 in fullDict['LINKS']:
                                     if tempOutLinks[item4] in fullDict['LINKS'][item2]:
                                         del fullDict['LINKS'][item2][tempOutLinks[item4]]
                             fullDict['OUTLINKS'].remove(tempOutLinks[item])
                         else:
-                            fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
+                            for item2 in fullDict['RESPONSEDICT']:
+                                if tempResponses[item] in fullDict['RESPONSEDICT'][item2]:
+                                    fullDict['RESPONSEDICT'][item2][tempResponses[item]][1].remove(tempInLink)
                     self.saveCommands = True
                     return[0,None]
                 return [31,None]
@@ -1615,7 +1639,7 @@ if __name__ == "__main__":
         botName = 'SirRujak'
         configFile = {'Twitch Accounts':{'automated account':{'name':botName}},'Twitch Channels':{'default channel':botName},'path':testDirectory}
         testData = [0,'SirRujak','timePlaceholder','',0,0]
-        testDelete = False
+        testDelete = True
         testCreate = True
         runCommandTest = True
         runQuoteTest = True
