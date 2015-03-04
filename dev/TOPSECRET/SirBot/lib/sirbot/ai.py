@@ -414,11 +414,11 @@ class ai:
                             tempList = [tempResponse[0],[]]
                             tempList[1].append(self.boundChannel)
                             tempList[1].append(tempResponse[1])
-                            return tempList
+                            return [tempList]
                         else:
-                            return [31,[self.boundChannel,None]]
+                            return [[31,[self.boundChannel,None]]]
                     else:
-                        return [31,[self.boundChannel,None]]
+                        return [[31,[self.boundChannel,None]]]
                 elif (initData[0] == 2):
                     ## initData should be of the form:
                     ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
@@ -438,18 +438,18 @@ class ai:
                             elif not self.userDict[initData[1][1][0]]['INFO']['GROUPS']:
                                 self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update({'default':'0'})
                         self.saveUsers = True
-                        return [31,[self.boundChannel,None]]
+                        return [[31,[self.boundChannel,None]]]
                         pass
                     elif (initData[1][0] == 2):
                         ## This will be for followers
-                        return [31,[self.boundChannel,None]]
+                        return [[31,[self.boundChannel,None]]]
                         pass
                     elif (initData[1][0] == 3):
                         ## This will be for following
-                        return [31,[self.boundChannel,None]]
+                        return [[31,[self.boundChannel,None]]]
                         pass
                     else:
-                        return [31,[self.boundChannel,None]]
+                        return [[31,[self.boundChannel,None]]]
                     pass
                 elif (initData[0] == 3):
                     for item in range(len(initData[1][0][0])):
