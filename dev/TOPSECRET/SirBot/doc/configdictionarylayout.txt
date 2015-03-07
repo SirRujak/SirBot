@@ -17,7 +17,7 @@ Interface
 --start open=True/False
 --default tab='string'
 -send as=automated/trusted
--target channel=Default/'string'
+-target channel=Default(0)/'string'
 -chat
 --timestamps=True/False
 --user colors = True/False
@@ -54,3 +54,6 @@ Twitch Automated Moderator
 Misc
 -twitch connect retries=%d
 -twitchclient=0/1/2/3/...
+
+Path=%path%
+
