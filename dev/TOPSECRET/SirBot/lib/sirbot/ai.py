@@ -1372,6 +1372,7 @@ class ai:
             ## Needs to be passed in:
             ## 1. user name
             ## 2. chat data
+            tempItemList = itemList[1]
             tempDict = self.commandDictionary['CMDS']
             fullDict = self.commandDictionary
             tempUserName = []
@@ -1396,6 +1397,16 @@ class ai:
                 tempResponse = self.compareHelper(tempList,tempDict, [])
                 if(tempResponse[0] == 1):
                     tempData = tempResponse[1]
+                elif(tempResponse[0] == 2):
+                    tempData = tempResponse[1][0]
+                    tempRemainder = tempResponse[1][1]
+                    remainderString = ''
+                    print(tempRemainder)
+                    for item in range(len(tempRemainder)):
+                        if (item == len(tempRemainder) - 1):
+                            remainderString += tempRemainder[item]
+                        else:
+                            remainderString += tempRemainder[item] + ' '
                 else:
                     tempData = None
             else:
@@ -1483,6 +1494,9 @@ class ai:
                             for item in range(len(channelList)):
                                 if channelList[item] in tempResponse:
                                     tempResponse = tempResponse.replace(channelList[item],self.boundChannel)
+                            for item in range(len(remainderList)):
+                                if remainderList[item] in tempResponse:
+                                    tempResponse = tempResponse.replace(remainderList[item],remainderString)
                             for item in range(len(botList)):
                                 if botList[item] in tempResponse:
                                     tempResponse = tempResponse.replace(botList[item],self.botName)
@@ -1504,12 +1518,18 @@ class ai:
         def compareHelper(self,itemList,tempDict,remainderList):
             if itemList:
                 tempItem = itemList.pop(0)
+                if "REMAINDER" in tempDict:
+                    itemList.extend([tempItem])
+                    remainderList = [tempDict['REMAINDER']['COMMAND'],itemList]
                 if tempItem in tempDict:
                     tempDict = tempDict[tempItem]
                     tempResponse = self.compareHelper(itemList,tempDict,remainderList)
                     return(tempResponse)
                 else:
-                    return([0,None])
+                    if remainderList:
+                        return [2,remainderList]
+                    else:
+                        return([0,None])
             else:
                 if 'COMMAND' in tempDict:
                     return([1,tempDict['COMMAND']])
@@ -1787,7 +1807,7 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Tasty Tweets // http://www.twitter.com/eneija -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!twitter -response:Just Tweets // http://www.twitter.com/eneija -level:Users',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!timeshot -response:TimeShot // http://www.reddit.com/r/TimeShot/ -level:Moderators',0,0]],
-                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!classy -response:Let\'s keep it classy n\' sassy, friends. -level:Moderators',0,0]],
+                      [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!classy REMAINDER -response:Let\'s keep it classy n\' sassy, REMAINDER -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!spam -response:Please don\'t spam. It makes me hungrier. -level:Moderators',0,0]],
                       [1,[0,'SirRujak','timePlaceholder','addcom -cmd:!banish USERNAME -response:USERNAME has been banished. -level:Moderators',0,0]],
 
@@ -1815,6 +1835,7 @@ if __name__ == "__main__":
                       [1,[0,'SirRujak','timePlaceholder','delcom -cmd:!raid USERNAME now!',0,0]]]
         runComsTest = [[1,[0,'Eneija',0,'!patreon',0]],
                        [1,[0,'SirRujak',0,'!raid Eneija now!',0]],
+                       [1,[0,'SirRujak',0,'!classy people!',0]],
                        [1,[0,'SirRujak',0,'!tweet',0]],
                        [1,[0,'Avoloc',0,'!twitter',0]],
                        [1,[0,'Avoloc',0,'!panic',0]]]
@@ -1884,7 +1905,7 @@ if __name__ == "__main__":
                 tempResponse = test.tick(delQuoteTest[i])
                 if (tempResponse[0] == 2):
                     print(tempResponse)
-        fullResponse = 0
+        fullResponse = 1
         if (fullResponse != 1):
             try:
                 json.dumps(test.commandDictionary, sort_keys=True, indent=4)
