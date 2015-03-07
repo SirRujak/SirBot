@@ -527,12 +527,9 @@ class ai:
 
         def deleteTimer(self,userName,timerName):
             userIsOwner = self.checkIfUserOwner(userName)
-            print('test')
             if (userIsOwner == 1):
                 try:
-                    print('test5')
                     self.timerHolder.deleteTimer(timerName)
-                    print('test6')
                 except Exception as e:
                     print('TimerError',e)
 
@@ -1396,7 +1393,7 @@ class ai:
                         itemList[1][item] = itemList[1][item].lower()
                 tempList = itemList[1]
                 tempList2 = itemList[1]
-                tempResponse = self.compareHelper(tempList,tempDict)
+                tempResponse = self.compareHelper(tempList,tempDict, [])
                 if(tempResponse[0] == 1):
                     tempData = tempResponse[1]
                 else:
@@ -1504,12 +1501,12 @@ class ai:
             return [31,None]
             #return [31,None]
 
-        def compareHelper(self,itemList,tempDict):
+        def compareHelper(self,itemList,tempDict,remainderList):
             if itemList:
                 tempItem = itemList.pop(0)
                 if tempItem in tempDict:
                     tempDict = tempDict[tempItem]
-                    tempResponse = self.compareHelper(itemList,tempDict)
+                    tempResponse = self.compareHelper(itemList,tempDict,remainderList)
                     return(tempResponse)
                 else:
                     return([0,None])
@@ -1597,9 +1594,7 @@ class ai:
                 except:
                     pass
             elif (chatData[3][:8].lower() == 'deltimer'):
-                print('test3')
                 try:
-                    print('test4')
                     self.deleteTimer(chatData[1],chatData[3][8:].strip())
                 except Exception as e:
                     print('Delete Timer Exception', e)
@@ -1869,7 +1864,6 @@ if __name__ == "__main__":
         print('timer test',tempResponse)
         if testTimer:
             for item in range(len(delTimerTest)):
-                print('test2')
                 tempResponse = test.tick(delTimerTest[item])
         if testDelete:
             for i in range(len(delcomTest)):
