@@ -13,7 +13,7 @@ def shutdown(config,interinput=None,interoutput=None):
     if(config['Interface']['remember position'] == 0):
         config['Interface']['map'] = '620x540+50+50'
         
-    configPath = config['Path']+'\\config\\sirbot\\config'    
+    configPath = config['path']+'\\config\\sirbot\\config'    
     configFile = open(configPath,"wb+")
     configData = dumps(config)
     configFile.write(configData)

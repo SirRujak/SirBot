@@ -69,11 +69,11 @@ def configloader():
         config['Twitch Automated Moderator']['watch for followers']=0
         config['Twitch Automated Moderator']['watch for subscribers']=0
         #set miscelleneous defaults
-        config['Misc']={}
-        config['Misc']['twitch connect retries']=1
-        config['Misc']['twitchclient']=0
+        config['MISC']={}
+        config['MISC']['twitch connect retries']=1
+        config['MISC']['twitchclient']=0
         #set dummmy path
-        config['Path']=0
+        config['path']=moduleDir
 
         data = config
         
