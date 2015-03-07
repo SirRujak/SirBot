@@ -74,6 +74,7 @@ def configloader():
         config['MISC']['twitchclient']=0
         #set dummmy path
         config['path']=moduleDir
+        config['first run'] = 1
 
         data = config
         

@@ -35,46 +35,47 @@ from time import sleep
 if __name__ == '__main__':
 
     #initialize primary modules and queues
-    if(config['GUI'] == 1):
-        interinput = Queue()
-        interoutput = Queue()
-        assets = assetloader()
-        inter = interface(config,assets,interinput,interoutput,root)
-        app = application(config,interinput,interoutput)
-    else:
-        app = application(config)
+##    if(config['GUI'] == 1):
+##        interinput = Queue()
+##        interoutput = Queue()
+    assets = assetloader()
+    app = application(config,assets,root)#,interinput,interoutput)
+##        inter = interface(config,assets,interinput,interoutput,root)
+##    else:
+##        app = application(config)
 
     #destroy splash
     if(SPLASH == True):
-        sleep(1)
+##        sleep(1)
         splash.destroySplash()
     
     #runtime loop - single thread
-    idle = 0.01
-    if(config['GUI'] == 1):
-        inter.display()
-        app.begin()#temporary
-        while(ON):
-            ON = ON * app.tick()
-            ON = ON * inter.tick()
+##    idle = 0.01
+##    if(config['GUI'] == 1):
+    app.startup()
+##        inter.display()
+##        app.begin()#temporary
+    while(ON):
+        ON = ON * app.tick()
+##            ON = ON * inter.tick()
 ##            sleep(idle)
 
-        app.shutdown()
-        inter.shutdown()
+    app.shutdown()
+##        inter.shutdown()
         
-    else:
-        app.begin()#temporary
-        while(ON):
-            ON = ON * app.tick()
-##            sleep(idle)
-
-        app.shutdown()
+##    else:
+##        app.begin()#temporary
+##        while(ON):
+##            ON = ON * app.tick()
+####            sleep(idle)
+##
+##        app.shutdown()
 
     #send current configuration options to be saved for next startup
-    if(config['GUI'] == 1):
-        shutdown(config,interinput,interoutput)
-    else:
-        shutdown(config)
+##    if(config['GUI'] == 1):
+##        shutdown(config,interinput,interoutput)
+##    else:
+    shutdown(config)
 
 ##except:
 ##    pass

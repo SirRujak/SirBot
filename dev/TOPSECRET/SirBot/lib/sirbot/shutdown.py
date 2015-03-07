@@ -12,6 +12,9 @@ def shutdown(config,interinput=None,interoutput=None):
     #if none: write clean.start file in config directory
     if(config['Interface']['remember position'] == 0):
         config['Interface']['map'] = '620x540+50+50'
+
+    if(config['first run'] == 1):
+        config['first run'] = 0
         
     configPath = config['path']+'\\config\\sirbot\\config'    
     configFile = open(configPath,"wb+")

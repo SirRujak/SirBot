@@ -8,7 +8,9 @@ from lib.sirbot.irc import irc
 
 from time import sleep, time
 
-from queue import Empty
+##from queue import Empty
+
+from lib.sirbot.interfaceDEV import interface
 
 from lib.sirbot.network import stream, secureStream
 
@@ -20,43 +22,61 @@ except ImportError:
     pass
 
 class application():
-    def __init__(self,config,interinput = None,interoutput = None):
+    def __init__(self,config,assets,root)#,interinput = None,interoutput = None):
         #things will be selectively loaded based on choices in config
-        self.allocateVars(config,interinput,interoutput)
+        self.allocateVars(config)#,interinput,interoutput)
+##        self.interface = interface(config,assets,root,session)
+        self.createModules(config,assets,root,session)
 
     def begin(self):#this is just temporary until proper controls can be created in GUI
-        self.users = {}
-        self.createModules()
+##        self.createModules()
         #self.automatedIRC.chooseTwitchClient(2)
-        if(self.config['Twitch Channels']['default channel'] != 0):
-            self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
-        if(self.config['Twitch Automated Moderator']['watch for followers']):
-            self.twitchDataSource.twitchconnect()
+        pass
+
+    def startup(self):
+        #run module start items
+        for module in self.modules:
+            module.startup(self.config,self.session)
+
+        if(self.connectIRCstreamsTwitch()):
+            if(self.config['Twitch Channels']['default channel'] != 0):
+                self.joinATwitchChannel(self.config['Twitch Channels']['default channel'])
+            if(self.config['Twitch Automated Moderator']['watch for followers']):
+                self.twitchDataSource.twitchconnect()
 
 
-    def createModules(self):
-        self.createIRCclient()
+    def createModules(self,config,assets,root,session):
+        self.interface = interface(config,assets,root,session)
+        self.modules.append(self.interface)
         self.createIRCstreams('twitch')
+        self.createIRCclient()
         self.createDataStreams()
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchWeb = twitch(self.config['Twitch Channels']['default channel'])
+        else:
+            self.twitchWeb = dummy()
+        self.modules.append(self.twitchWeb)
         try:
             self.bot = ai()
-            self.bot.startup(self.config,self.users)
+##            self.bot.startup(self.config,self.users)
         except NameError:
-            pass
+            self.bot = dummy()
+        self.modules.append(self.bot)
 
 
     def allocateVars(self,config,interinput,interoutput):
+        self.modules = []
+        self.session = {}
         self.idletime = 0
         self.config = config
-        self.interinput = interinput
-        self.interoutput = interoutput
+##        self.interinput = interinput
+##        self.interoutput = interoutput
         self.status = 1 #1 to continue running, 0 to terminate
         self.input = []
         self.output = []
         self.streams = []
         self.chatcache = []
+        self.session['users'] = {}
         #self.chatcache.append(self.config['Interface']['motd'])
 
     def shutdown(self):
@@ -276,44 +296,72 @@ class application():
 
     def createIRCclient(self):
         self.chat = irc(self.config)
+        self.modules.append(self.chat)
 
     def createIRCstreams(self,selection):
         retries = self.config['MISC']['twitch connect retries']
         if(selection.lower() == 'twitch'):
             self.automatedIRC = stream()
+##            self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
+##                                                  ['automated account']
+##                                                  ['name'],
+##                                                  self.config['Twitch Accounts']
+##                                                  ['automated account']
+##                                                  ['token'],retries)
+##            self.IRCstreams = [self.automatedIRC]
+            self.modules.append(self.automatedIRC)
+##            if(self.config['Twitch Accounts']['trusted account']['token'] != 0):
+            self.trustedIRC = stream()
+##                self.trustedIRC.twitchConnectv(self.config['Twitch Accounts']
+##                                                    ['trusted account']
+##                                                    ['name'],
+##                                                    self.config['Twitch Accounts']
+##                                                    ['automated account']
+##                                                    ['token'],retries)
+##                self.IRCstreams.append(self.trustedIRC)
+                self.modules.append(self.trustedIRC)
+##        self.streams.extend(self.IRCstreams)
+
+    def connectIRCstreamsTwitch(self):
+        if(self.config['Twitch Accounts']['automated account']['name'] != 0 and self.config['Twitch Accounts']['automated account']['token'] != 0):
             self.automatedIRC.twitchConnectv(self.config['Twitch Accounts']
-                                                  ['automated account']
-                                                  ['name'],
-                                                  self.config['Twitch Accounts']
-                                                  ['automated account']
-                                                  ['token'],retries)
-            self.IRCstreams = [self.automatedIRC]
-            if(self.config['Twitch Accounts']['trusted account']['token'] != 0):
-                self.trustedIRC = stream()
+                                                    ['automated account']
+                                                    ['name'],
+                                                    self.config['Twitch Accounts']
+                                                    ['automated account']
+                                                    ['token'],retries)
+            if(self.config['Twitch Accounts']['trusted account']['name'] != 0 and self.config['Twitch Accounts']['trusted account']['token'] != 0):
                 self.trustedIRC.twitchConnectv(self.config['Twitch Accounts']
                                                     ['trusted account']
                                                     ['name'],
                                                     self.config['Twitch Accounts']
                                                     ['automated account']
                                                     ['token'],retries)
-                self.IRCstreams.append(self.trustedIRC)
-        self.streams.extend(self.IRCstreams)
+            return(True)
+        else:
+            self.inputqueue.put([1,[2,1]])
+            return(False)
 
     def createDataStreams(self):
         if(self.config['Twitch Automated Moderator']['watch for followers']):
             self.twitchDataSource = secureStream()
-            self.DataSources = [self.twitchDataSource]
+        else:
+            self.twitchDataSource = dummy()    
+        self.modules.append(self.twitchDataSource)
+##            self.DataSources = [self.twitchDataSource]
+        
     def checkInterface(self):
+        pass
         #get from interface input queue
         #could grab more items here at some point
-        try:
-            temp = self.interoutput.get_nowait()
-            self.input.append(temp)
-            #print(temp)
-        except Empty:
-            pass
-        except AttributeError:
-            pass
+##        try:
+##            temp = self.interoutput.get_nowait()
+##            self.input.append(temp)
+##            #print(temp)
+##        except Empty:
+##            pass
+##        except AttributeError:
+##            pass
 
     def checkNetwork(self):
         #get incoming data from all network connections
@@ -356,6 +404,29 @@ class application():
             pass
         except AttributeError:
             pass
+class dummy():
+    def startup(self,config=None,session=None):
+        return(None)
 
+    def tick(self,data=None):
+        return(None)
+
+    def idletick(self,data=None):
+        return(None)
+
+    def shutdown(self,data=None):
+        return(None)
+    
 
     #channel,timestamp,sender,message
+#0 interface
+#1 automated irc stream
+#2 trusted irc stream
+#3 irc client
+#4 twitch api stream
+#5 twitch api manager
+#6 ai
+#7 config alterations
+#8 dispatcher
+#9-19 <reserved>
+#20+ for plugins

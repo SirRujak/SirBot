@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 try:
-    import queue
+    from queue import queue,Empty
     import time
     import tkinter as tk
 
@@ -14,8 +14,8 @@ except ImportError:
 
 class interface():
 
-    def __init__(self,config,assets,interinput,interoutput,root=None):
-        self.launch(root,config,assets,interinput,interoutput)
+    def __init__(self,config,assets,root=None,session=None):#,interinput,interoutput,root=None):
+        self.launch(root,config,assets,session)#,interinput,interoutput)
         self.alt=1#temporary
 
     def display(self):
@@ -26,16 +26,16 @@ class interface():
         self.MainWindow.update_idletasks()
         self.start()#temporary
 
-    def start(self):
+    def startup(self):
         self.displayToTerminal(self.config['Interface']['motd'],'MOTD')
         self.terminalHistory.yview(tk.END)
         
-    def tick(self):
+    def tick(self,temp):
         self.alt=self.alt*(-1)#temporary
         if(self.alt==1):#temporary
             self.MainWindow.update_idletasks()
         try:
-            temp = self.inputqueue.get_nowait()
+##            temp = self.inputqueue.get_nowait()
             if(temp[0] == 24):
                 if(self.raw):
                     self.writeInputRAW(temp[1])
@@ -45,15 +45,21 @@ class interface():
                 self.updateConfig(temp[1])
             elif(temp[0] == 26):
                 self.updateIRCData(temp[1])
-        except queue.Empty:
+            elif(temp[0] == 2):
+                self.promptAccountInfo(temp[1])
+        except Empty:
             pass
         self.MainWindow.update()
-        return(self.status)
+        try:
+            item = self.outputqueue.get_nowait()
+        except Empty:
+            item = None
+        return(item)
 
-    def launch(self,root,config,assets,interinput,interoutput):
+    def launch(self,root,config,assets,session):#,interinput,interoutput):
         self.createMainWindow(root)
         self.imports(assets)       
-        self.allocateVars(config,interinput,interoutput)
+        self.allocateVars(config,session)#,interinput,interoutput)
         self.createChildren()
         self.style()
         
@@ -212,8 +218,9 @@ class interface():
             #log
             pass
         
-    def allocateVars(self,config,interinput,interoutput):
+    def allocateVars(self,config,session):#,interinput,interoutput):
         self.config = config
+        self.session = session
         self.status = 1
         self.top = self.MainWindow.winfo_toplevel()
         self.h = self.MainWindow.winfo_screenheight()
@@ -226,8 +233,8 @@ class interface():
         self.botVersion = '0.0.0'
 
         #queues
-        self.inputqueue = interinput
-        self.outputqueue = interoutput
+##        self.inputqueue = queue()
+        self.outputqueue = queue()
         self.messagelen = []
         self.msgfragments = []
         self.userlisterror = []
