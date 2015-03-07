@@ -26,6 +26,7 @@ def configloader():
         config['Interface']={}
         config['Interface']['motd']='Hello world!'
         config['Interface']['map']='620x540+50+50'
+        config['Interface']['remember position']=0
         config['Interface']['iconified']=0
         config['Interface']['user list']={}
         config['Interface']['user list']['start open']=0
