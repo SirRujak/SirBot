@@ -66,17 +66,13 @@ class timerHolder():
                 ## items being deleted
                 ## is it time to work on the new one?
                 ## NEED TO FIX, RETURN TIMER INFORMATION OTHERWISE NULL RETURN
-                print('test8',self.inactiveTimerDict)
                 if self.timersForDeletion:
                         for item in self.timersForDeletion:
-                                print('test')
                                 self.deleteTimer(item)
-                print('test2',self.activeTimerListDeactKey)
                 if (self.activeTimerList):
-                    print('test3',self.activeTimerList)
-                    if self.activeTimerList[0] in self.activeTimerListDeactKey:
+                    if self.activeTimerList[0].timerName in self.activeTimerListDeactKey:
+                            self.activeTimerListDeactKey.remove(self.activeTimerList[0].timerName)
                             tempTimer = self.activeTimerList.pop()
-                            print('test4',self.inactiveTimerDict)
                             self.inactiveTimerDict[tempTimer.timerName] = tempTimer
                     else:
                             tempResponse = self.checkIfTimerChanged()
@@ -85,7 +81,6 @@ class timerHolder():
                                             pass
                             else:
                                     self.activeTimerList.pop()
-                                    print('test5',self.timersForDeletion)
                 return([31,[self.chatHandler.boundChannel,None]])
 
         def checkIfTimerChanged(self):
@@ -143,10 +138,8 @@ class timerHolder():
                         if timerName not in self.inactiveTimerDict:
                                 pass
                         else:
-                                print('test9')
                                 tempItem = self.inactiveTimerDict[timerName]
                                 del self.inactiveTimerDict[timerName]
-                                print('test10',self.inactiveTimerDict,timerName)
                                 self.timerEnQueue(tempItem)
 
         def checkTimers(self):
@@ -229,14 +222,12 @@ class timerHolder():
         def deleteTimer(self, timerName):
                 if (timerName in self.timerNames):
                         if (timerName in self.inactiveTimerDict):
-                                print('test7')
                                 del self.inactiveTimerDict[timerName]
                                 self.timerNames.remove(timerName)
                                 del self.currentTimerValues[timerName]
                                 self.saveTimerDict()
                         else:
                                 self.timersForDeletion.add(timerName)
-                                print('test6',self.timersForDeletion)
                                 self.activeTimerListDeactKey.add(timerName)
 
         ## Not currently in use
@@ -259,7 +250,8 @@ class timerHolder():
                         self.activateTimer(item)
 
         def saveTimerDict(self):
-                tempDict = self.inactiveTimerDict
+                tempDict = {}
+                tempDict.update(self.inactiveTimerDict)
                 tempList = []
                 for item in self.activeTimerList:
                     if item.timerName not in self.timersForDeletion:
@@ -1896,12 +1888,10 @@ if __name__ == "__main__":
                 tempResponse = test.tick(timerTest[item])
                 print(tempResponse)
         for item in range(2):
-            sleep(1.001)
-            print(time())
+            sleep(0.101)
             for item in range(2):
                 tempResponse = test.tick(runQuoteTest[0])
                 print('timer test',tempResponse)
-        print('test')
         if testTimer:
             for item in range(len(delTimerTest)):
                 tempResponse = test.tick(delTimerTest[item])
@@ -1924,7 +1914,7 @@ if __name__ == "__main__":
                 tempResponse = test.tick(delQuoteTest[i])
                 if (tempResponse[0] == 2):
                     print(tempResponse)
-        fullResponse = 1
+        fullResponse = 0
         if (fullResponse != 1):
             try:
                 json.dumps(test.commandDictionary, sort_keys=True, indent=4)
