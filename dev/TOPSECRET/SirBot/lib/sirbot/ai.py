@@ -408,65 +408,66 @@ class ai:
 
         def tick(self, initData):
                 self.timerHolder.tick()
-                tempOutPut = []
-                if (initData[0] == 1):
-                    self.checkForUser2(initData[1][1])
-                    data = initData[1]
-                    tempResponse = self.checkChatCMD(data)
-                    if self.saveQuotes:
-                        if (time() - self.lastQuoteSave > 10):
-                            self.updateQuoteDict(self.pathQuotes)
-                            self.lastQuoteSave = time()
-                            self.saveQuotes = False
-                    if self.saveUsers:
-                        if (time() - self.lastUserSave > 10):
-                            self.updateUserDict(self.pathUserName)
-                            self.lastUserSave = time()
-                            self.saveUsers = False
-                    if self.saveCommands:
-                        if (time() - self.lastSave > 10):
-                            self.updateCommandDict(self.pathCommandName)
-                            self.lastSave = time()
-                            self.saveCommands = False
-                    if tempResponse:
-                        if tempResponse[1]:
-                            tempList = [tempResponse[0],[]]
-                            tempList[1].append(self.boundChannel)
-                            tempList[1].append(tempResponse[1])
-                            tempOutPut.append(tempList)
-                        else:
+                if initData:
+                    tempOutPut = []
+                    if (initData[0] == 1):
+                        self.checkForUser2(initData[1][1])
+                        data = initData[1]
+                        tempResponse = self.checkChatCMD(data)
+                        if self.saveQuotes:
+                            if (time() - self.lastQuoteSave > 10):
+                                self.updateQuoteDict(self.pathQuotes)
+                                self.lastQuoteSave = time()
+                                self.saveQuotes = False
+                        if self.saveUsers:
+                            if (time() - self.lastUserSave > 10):
+                                self.updateUserDict(self.pathUserName)
+                                self.lastUserSave = time()
+                                self.saveUsers = False
+                        if self.saveCommands:
+                            if (time() - self.lastSave > 10):
+                                self.updateCommandDict(self.pathCommandName)
+                                self.lastSave = time()
+                                self.saveCommands = False
+                        if tempResponse:
+                            if tempResponse[1]:
+                                tempList = [tempResponse[0],[]]
+                                tempList[1].append(self.boundChannel)
+                                tempList[1].append(tempResponse[1])
+                                tempOutPut.append(tempList)
+                            else:
+                                tempOutPut.append([31,[self.boundChannel,None]])
+                    elif (initData[0] == 2):
+                        ## initData should be of the form:
+                        ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
+                        ## Entries to userDict will be of the following form:
+                        ## {USERNAME:{"LEVEL":LEVEL,"INFO":{"GROUPS":GROUPS}}}
+                        if (initData[1][0] == 1):
+                            ## This will be for people in the chat
+                            if initData[1][1][0] in self.userDict:
+                                if (self.userDict[initData[1][1][0]]['LEVEL'] != 'Moderator'):
+                                    self.userDict[initData[1][1][0]]['LEVEL'] = initData[1][1][1]
+                            else:
+                                self.userDict.update({initData[1][1][0]:{'LEVEL':initData[1][1][1],
+                                                                         'INFO':{"GROUPS":{}}}})
+                            if initData[2]:
+                                if initData[2][0]:
+                                    self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update(initData[2][0]['GROUPS'])
+                                elif not self.userDict[initData[1][1][0]]['INFO']['GROUPS']:
+                                    self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update({'default':'0'})
+                            self.saveUsers = True
                             tempOutPut.append([31,[self.boundChannel,None]])
-                elif (initData[0] == 2):
-                    ## initData should be of the form:
-                    ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
-                    ## Entries to userDict will be of the following form:
-                    ## {USERNAME:{"LEVEL":LEVEL,"INFO":{"GROUPS":GROUPS}}}
-                    if (initData[1][0] == 1):
-                        ## This will be for people in the chat
-                        if initData[1][1][0] in self.userDict:
-                            if (self.userDict[initData[1][1][0]]['LEVEL'] != 'Moderator'):
-                                self.userDict[initData[1][1][0]]['LEVEL'] = initData[1][1][1]
-                        else:
-                            self.userDict.update({initData[1][1][0]:{'LEVEL':initData[1][1][1],
-                                                                     'INFO':{"GROUPS":{}}}})
-                        if initData[2]:
-                            if initData[2][0]:
-                                self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update(initData[2][0]['GROUPS'])
-                            elif not self.userDict[initData[1][1][0]]['INFO']['GROUPS']:
-                                self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update({'default':'0'})
-                        self.saveUsers = True
-                        tempOutPut.append([31,[self.boundChannel,None]])
-                        pass
-                    elif (initData[1][0] == 2):
-                        ## This will be for followers
-                        tempOutPut.append([31,[self.boundChannel,None]])
-                    elif (initData[1][0] == 3):
-                        ## This will be for following
-                        tempOutPut.append([31,[self.boundChannel,None]])
-                elif (initData[0] == 3):
-                    for item in range(len(initData[1][0][0])):
-                        self.checkForUser(initData[1][0][0][item])
-                        self.saveUsers = True
+                            pass
+                        elif (initData[1][0] == 2):
+                            ## This will be for followers
+                            tempOutPut.append([31,[self.boundChannel,None]])
+                        elif (initData[1][0] == 3):
+                            ## This will be for following
+                            tempOutPut.append([31,[self.boundChannel,None]])
+                    elif (initData[0] == 3):
+                        for item in range(len(initData[1][0][0])):
+                            self.checkForUser(initData[1][0][0][item])
+                            self.saveUsers = True
                 if (self.outputQueue.qsize() > 0):
                     tempItem = self.outputQueue.get()
                     tempOutPut.append(tempItem)

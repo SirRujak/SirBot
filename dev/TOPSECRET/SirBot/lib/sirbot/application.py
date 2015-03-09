@@ -178,6 +178,10 @@ class application():
             self.chat.tick()
         except AttributeError:
             pass
+        try:
+            self.ai.tick(None)
+        except:
+            pass
 
         for item in self.input:
             if(item[0]==10):
