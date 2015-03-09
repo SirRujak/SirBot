@@ -98,7 +98,7 @@ class application():
                     try:
                         tempResponse = self.bot.tick([1,[self.config['Twitch Channels']['default channel'],self.config['Twitch Accounts']['automated account']['name'],time(),item[1][1],['local']]])
                         for item in range(len(tempResponse)) and tempResponse:
-                            self.output.append(tempResponse[item])
+                            self.output.extend(tempResponse[item])
                     except AttributeError:
                         pass
                 elif(item[0]==3):
@@ -111,12 +111,12 @@ class application():
                 #internal data - mostly ai.py
                 if(item[0]==11):
                     try:
-                        self.output.append(self.bot.tick(item[1]))
+                        self.output.extend(self.bot.tick(item[1]))
                     except AttributeError:
                         pass
                 if(item[0]==12):
                     try:
-                        self.output.append(self.bot.tick(item[1]))
+                        self.output.extend(self.bot.tick(item[1]))
                     except AttributeError:
                         pass
                 pass
@@ -127,7 +127,7 @@ class application():
                     except AttributeError:
                         pass
                     try:
-                        self.output.append(self.bot.tick([1,[item[1][1],item[1][2],item[1][0],item[1][4],item[1][5]]]))
+                        self.output.extend(self.bot.tick([1,[item[1][1],item[1][2],item[1][0],item[1][4],item[1][5]]]))
                     except AttributeError:
                         pass
                 elif(item[0]==25):
@@ -149,7 +149,7 @@ class application():
                 elif(item[0]==27):
                     try:
                         self.users = item[1]
-                        self.output.append(self.bot.tick([2,[item[1]]]))
+                        self.output.extend(self.bot.tick([2,[item[1]]]))
                     except AttributeError:
                         #log
                         pass
