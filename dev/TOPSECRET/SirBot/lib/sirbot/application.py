@@ -97,8 +97,7 @@ class application():
                     self.automatedIRC.privmsg(item[1][0],item[1][1])#needs to be .privmsg with channel
                     try:
                         tempResponse = self.bot.tick([1,[self.config['Twitch Channels']['default channel'],self.config['Twitch Accounts']['automated account']['name'],time(),item[1][1],['local']]])
-                        for item in range(len(tempResponse)) and tempResponse:
-                            self.output.extend(tempResponse[item])
+                        self.output.extend(tempResponse[item])
                     except AttributeError:
                         pass
                 elif(item[0]==3):
