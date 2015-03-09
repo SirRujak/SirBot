@@ -70,25 +70,29 @@ class timerHolder():
                         for item in self.timersForDeletion:
                                 self.deleteTimer(item)
                 if (self.activeTimerList):
-                    if self.activeTimerList[0] in self.activeTimerListDeactKey:
+                    if self.activeTimerList[0].timerName in self.activeTimerListDeactKey:
+                            self.activeTimerListDeactKey.remove(self.activeTimerList[0].timerName)
                             tempTimer = self.activeTimerList.pop()
                             self.inactiveTimerDict[tempTimer.timerName] = tempTimer
                     else:
                             tempResponse = self.checkIfTimerChanged()
                             if (tempResponse == 0):
                                     if (self.activeTimerList[0].checkIfTimePassed() == 1):
-                                            self.reQueue()
+                                            pass
                             else:
                                     self.activeTimerList.pop()
                 return([31,[self.chatHandler.boundChannel,None]])
 
         def checkIfTimerChanged(self):
                 tempTimer = self.activeTimerList[0]
-                tempValues = self.currentTimerValues[tempTimer.timerName]
-                if (tempTimer.timerLen == tempValues[0] and tempTimer.commandData == tempValues[1]):
-                        return 0
+                if tempTimer.timerName in self.currentTimerValues:
+                    tempValues = self.currentTimerValues[tempTimer.timerName]
+                    if (tempTimer.timerLen == tempValues[0] and tempTimer.commandData == tempValues[1]):
+                            return 0
+                    else:
+                            return 1
                 else:
-                        return 1
+                    return 1
 
         def idletick(self):
                 if self.inQueue.empty():
@@ -121,7 +125,7 @@ class timerHolder():
                 self.loadTimerDict()
 
         def alterTimer(self,infoList):
-                del self.timerNames[activeTimerList[0]]
+                self.timerNames.remove(activeTimerList[0])
                 self.createAndActivateTimer(infoList)
 
         def getCurrentTime():
@@ -129,7 +133,7 @@ class timerHolder():
 
         def activateTimer(self, timerName):
                 if timerName in self.activeTimerListDeactKey:
-                        del self.activeTimerListDeactKey[timerName]
+                        self.activeTimerListDeactKey.remove(timerName)
                 else:
                         if timerName not in self.inactiveTimerDict:
                                 pass
@@ -154,16 +158,23 @@ class timerHolder():
                 tempTimeRemainingOnItem = queueItem.nextTime
                 tempFoundSpot = 0
                 tempCounter = 0
+                tempCheck = 0
                 tempActiveList = self.activeTimerList
                 while (tempFoundSpot != 1):
                         if (len(tempActiveList) == 0):
                                 tempFoundSpot = 1
                         else:
+                            if(tempCounter < len(tempActiveList)):
                                 if (tempTimeRemainingOnItem <= tempActiveList[tempCounter].nextTime):
                                         tempFoundSpot = 1
                                 else:
                                         tempCounter += 1
-                self.activeTimerList.insert(tempCounter, queueItem)
+                            else:
+                                self.activeTimerList.append(queueItem)
+                                tempFoundSpot = 1
+                                tempCheck = 1
+                if (tempCheck == 0):
+                    self.activeTimerList.insert(tempCounter, queueItem)
 
         def deactivateTimer(self, timerName):
                 self.activeTimerListDeactKey.add(timerName)
@@ -201,17 +212,18 @@ class timerHolder():
                         self.timerNames.add(timerInfoList[0])
                         self.currentTimerValues[timerInfoList[0]] = [tempLen,timerInfoList[2]]
                         self.saveTimerDict()
+                        #return(timerInfoList[3])
                         return 0
 
         def timeToSeconds(self,combinedTime):
-                tempSeconds = int(combinedTime[0]) * 3600 + int(combinedTime[1]) * 60 + int(combinedTime[2])
+                tempSeconds = float(combinedTime[0]) * 3600 + float(combinedTime[1]) * 60 + float(combinedTime[2])
                 return tempSeconds
 
         def deleteTimer(self, timerName):
                 if (timerName in self.timerNames):
                         if (timerName in self.inactiveTimerDict):
                                 del self.inactiveTimerDict[timerName]
-                                del self.timerNames[timerName]
+                                self.timerNames.remove(timerName)
                                 del self.currentTimerValues[timerName]
                                 self.saveTimerDict()
                         else:
@@ -238,7 +250,8 @@ class timerHolder():
                         self.activateTimer(item)
 
         def saveTimerDict(self):
-                tempDict = self.inactiveTimerDict
+                tempDict = {}
+                tempDict.update(self.inactiveTimerDict)
                 tempList = []
                 for item in self.activeTimerList:
                     if item.timerName not in self.timersForDeletion:
@@ -259,7 +272,7 @@ class timerHolder():
                 self.timerDictFile.truncate()
 
         def reQueue(self):
-                tempTimer = self.activeTimerList.pop()
+                tempTimer = self.activeTimerList.pop(0)
                 self.timerEnQueue(tempTimer)
 
 
@@ -423,8 +436,6 @@ class ai:
                             tempOutPut.append(tempList)
                         else:
                             tempOutPut.append([31,[self.boundChannel,None]])
-                    else:
-                        tempOutPut.append([31,[self.boundChannel,None]])
                 elif (initData[0] == 2):
                     ## initData should be of the form:
                     ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
@@ -449,24 +460,18 @@ class ai:
                     elif (initData[1][0] == 2):
                         ## This will be for followers
                         tempOutPut.append([31,[self.boundChannel,None]])
-                        pass
                     elif (initData[1][0] == 3):
                         ## This will be for following
                         tempOutPut.append([31,[self.boundChannel,None]])
-                        pass
-                    else:
-                        tempOutPut.append([31,[self.boundChannel,None]])
-                    pass
                 elif (initData[0] == 3):
                     for item in range(len(initData[1][0][0])):
                         self.checkForUser(initData[1][0][0][item])
                         self.saveUsers = True
-                else:
-                    tempOutPut.append([31,[self.boundChannel,None]])
                 if (self.outputQueue.qsize() > 0):
                     tempItem = self.outputQueue.get()
-                    print(tempItem)
                     tempOutPut.append(tempItem)
+                if not tempOutPut:
+                    tempOutPut.append([31,[self.boundChannel,None]])
                 return(tempOutPut)
 
         def idletick(self, data):
@@ -1841,8 +1846,10 @@ if __name__ == "__main__":
                        [1,[0,'Avoloc',0,'!panic',0]]]
         infiniComsTest = [1,[0,'SirRujak',0,'!raid Eneija now!',0]]
         ## 'addtimer -cmd:Watch our stream here URL -hours:2 -minutes:2 -seconds:2 -name: -active:true'
-        timerTest = [[1,[0,'SirRujak',0,'addtimer -cmd:I can test!! -hours:0 -minutes:0 -seconds:1 -name:test -active:true',0]]]
-        delTimerTest = [[1,[0,'SirRujak',0,'deltimer test',0]]]
+        timerTest = [[1,[0,'SirRujak',0,'addtimer -cmd:I can test!! -hours:0 -minutes:0 -seconds:.1 -name:test -active:true',0]],
+                     [1,[0,'SirRujak',0,'addtimer -cmd:I can test2!! -hours:0 -minutes:0 -seconds:.2 -name:test2 -active:true',0]]]
+        delTimerTest = [[1,[0,'SirRujak',0,'deltimer test',0]],
+                        [1,[0,'SirRujak',0,'deltimer test2',0]]]
         makeQuoteTest = [[1,[0,'SirRujak',0,'!addquote hahaha i is newb',0]],
                         [1,[0,'Eneija',0,'!addquote wow',0]],
                         [1,[0,'Avoloc',0,'!addquote many try',0]],
@@ -1880,9 +1887,11 @@ if __name__ == "__main__":
             for item in range(len(timerTest)):
                 tempResponse = test.tick(timerTest[item])
                 print(tempResponse)
-        sleep(2)
-        tempResponse = test.tick(runQuoteTest[0])
-        print('timer test',tempResponse)
+        for item in range(2):
+            sleep(0.101)
+            for item in range(2):
+                tempResponse = test.tick(runQuoteTest[0])
+                print('timer test',tempResponse)
         if testTimer:
             for item in range(len(delTimerTest)):
                 tempResponse = test.tick(delTimerTest[item])
@@ -1905,7 +1914,7 @@ if __name__ == "__main__":
                 tempResponse = test.tick(delQuoteTest[i])
                 if (tempResponse[0] == 2):
                     print(tempResponse)
-        fullResponse = 1
+        fullResponse = 0
         if (fullResponse != 1):
             try:
                 json.dumps(test.commandDictionary, sort_keys=True, indent=4)
