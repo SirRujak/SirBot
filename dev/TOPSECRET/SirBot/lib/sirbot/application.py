@@ -78,19 +78,45 @@ class application():
         self.chatcache = []
         self.session['users'] = {}
         #self.chatcache.append(self.config['Interface']['motd'])
+        self.limit = 3
+        self.delay = 0.001
 
     def shutdown(self):
         #save all data from queues to file and close module
-        self.bot.shutdown()
-        pass
+        for module in self.modules:
+            module.shutdown()
 
     def tick(self):
+        
+        for i in range(self.limit):
+            try:
+                item = self.workingqueue.get_nowait()
+            except:
+                break
+            else:
+                newitem = self.modules[item[0],item[1]]
+                if(newitem):
+                    self.workingqueue.put(newitem)
+
+            
         #update tick to perform operations each iteration
+        for module in self.modules:
+            newitem = module.tick()
+            if(newitem):
+                self.workingqueue.put(newitem)
+
+#############################################################
+# V    V     V     V # NEEDS TO GO # V    V    V    V    V  #
         self.intakeData()
         self.processData()
         self.outputData()
-        sleep(0.001)
+        sleep(self.delay)
         return(self.status)
+#   ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^  ^  #
+#############################################################
+
+################################################################
+#       V        V # NEEDS TO GO # V        V        V         #
 
     def outputData(self):
         #sends processed data on it's way
@@ -274,7 +300,11 @@ class application():
 ##                pass
 ##            self.idletime = time()
 
+#          ^               ^          ^            ^            ^   #
+#####################################################################
 
+####################################################################
+        # v   v    v    v #THIS MIGHT NEED TO GO# v  v   v    v  v#
     def closeApplication(self):
         self.status = 0
         for element in self.IRCstreams:
@@ -282,17 +312,23 @@ class application():
 
         for element in self.DataStreams:
             element.close()
+#       ^                   ^            ^                 ^      #
+###################################################################
 
     def applySettings(self,data):
         #apply settings to application or update config
         if(data == 0):
             self.status = 0
-
+            
+####################################################################
+            # v v v v v v #THIS NEEDS TO MOVE# v v v v #
     def sendPong(self):
         #consider elevating to IRC.py?
         self.automatedIRC.pong()
         if(self.config['Twitch Accounts']['trusted account']['join chat']==1):
             self.trustedIRC.pong()
+    # ^  ^   ^    ^    ^     ^      ^      ^    ^    ^   ^   ^  ^#
+###################################################################
 
     def createIRCclient(self):
         self.chat = irc(self.config)
@@ -349,20 +385,21 @@ class application():
             self.twitchDataSource = dummy()    
         self.modules.append(self.twitchDataSource)
 ##            self.DataSources = [self.twitchDataSource]
-        
+####################################################################
+          #TO DISAPPEAR#                                    #
     def checkInterface(self):
-        pass
+        pass                                                #
         #get from interface input queue
-        #could grab more items here at some point
+        #could grab more items here at some point           #
 ##        try:
-##            temp = self.interoutput.get_nowait()
+##            temp = self.interoutput.get_nowait()          #
 ##            self.input.append(temp)
-##            #print(temp)
+##            #print(temp)                                  #
 ##        except Empty:
-##            pass
+##            pass                                          #
 ##        except AttributeError:
-##            pass
-
+##            pass                                          #
+####################################################################
     def checkNetwork(self):
         #get incoming data from all network connections
         #could grab more items here at some point
@@ -388,22 +425,25 @@ class application():
         self.automatedIRC.joinTwitchChannel(channel)
         if(self.config['Twitch Accounts']['trusted account']['join chat']!=0):
             self.trustedIRC.joinTwitchChannel(channel)
-
-    def checkModules(self):
-        try:
-            temp = self.chat.outputqueue.get_nowait()
-            self.input.append(temp)
-            #print(temp)
-        except Empty:
-            pass
-
-        try:
-            temp = self.twitchWeb.outputqueue.get_nowait()
-            self.input.append(temp)
-        except Empty:
-            pass
-        except AttributeError:
-            pass
+###################################################################################
+            #TO DISAPPEAR#                                                  #
+    def checkModules(self):                                                 #
+        try:                                                                #
+            temp = self.chat.outputqueue.get_nowait()                       #
+            self.input.append(temp)                                         #
+            #print(temp)                                                    #
+        except Empty:                                                       #
+            pass                                                            #
+                                                                            #
+        try:                                                                #
+            temp = self.twitchWeb.outputqueue.get_nowait()                  #
+            self.input.append(temp)                                         #
+        except Empty:                                                       #
+            pass                                                            #
+        except AttributeError:                                              #
+            pass                                                            #
+###################################################################################
+        
 class dummy():
     def startup(self,config=None,session=None):
         return(None)
