@@ -335,9 +335,12 @@ class ai:
             self.currentTime = time()
 
         ##def startup(self, basePath, channelName, userDict, botName):
-        def startup(self,configFile,userDict):
+        ##def startup(self,configFile,userDict):
+        def startup(self,loopBack):
+                configFile = loopBack.config
                 botName = configFile['Twitch Accounts']['automated account']['name']
                 channelName = configFile['Twitch Channels']['default channel']
+                userDict = loopBack.session['channels'][channelName]
                 basePath = configFile['path']
                 self.botName = botName
                 self.currentLine = 0
@@ -1776,6 +1779,20 @@ class spamFilter():
                 json.dumps(self.filterHolder, spamFile)
                 spamFile.close()
 
+class unitTest:
+    def startup(self,data):
+        self.session = {'channels':{'sirrujak':{'groups':{'owner':{'sirrujak':'0'}}}}}
+        self.config = data
+        self.module = ai()
+        tempResponse = self.module.startup(self)
+        print(tempResponse)
+        return(tempResponse)
+    def tick(self,data):
+        return(self.module.tick(data))
+    def idletick(self,data):
+        return(self.module.idletick(data))
+    def shutdown(self):
+        return(self.module.shutdown())
 
 if __name__ == "__main__":
         from os.path import expanduser
@@ -1790,7 +1807,7 @@ if __name__ == "__main__":
         userDict = {}
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
-        botName = 'SirRujak'
+        botName = 'sirrujak'
         configFile = {'Twitch Accounts':{'automated account':{'name':botName}},'Twitch Channels':{'default channel':botName},'path':testDirectory}
         testData = [0,'SirRujak','timePlaceholder','',0,0]
         testDelete = False
@@ -1860,8 +1877,10 @@ if __name__ == "__main__":
                         [1,[0,'Avoloc',0,'!delquote wow',0]],
                         [1,[0,'Avoloc',0,'!delquote many try',0]],
                         [1,[0,'Avoloc',0,'!delquote such newb',0]]]
-        test = ai()
-        tempResponse = test.startup(configFile, userDict)
+        ##test = ai()
+        test = unitTest()
+        tempResponse = test.startup(configFile)
+        ##tempResponse = test.startup(configFile, userDict)
         print("Startup response: ", tempResponse)
         for i in range(len(userTest)):
             tempResponse = test.tick(userTest[i])
@@ -1910,7 +1929,7 @@ if __name__ == "__main__":
                 tempResponse = test.tick(runQuoteTest[0])
                 if (tempResponse[0] == 2):
                     print(tempResponse)
-            print(test.quoteDict)
+            print(test.module.quoteDict)
             for i in range(len(delQuoteTest)):
                 tempResponse = test.tick(delQuoteTest[i])
                 if (tempResponse[0] == 2):
@@ -1918,12 +1937,12 @@ if __name__ == "__main__":
         fullResponse = 0
         if (fullResponse != 1):
             try:
-                json.dumps(test.commandDictionary, sort_keys=True, indent=4)
+                json.dumps(test.module.commandDictionary, sort_keys=True, indent=4)
             except:
                 print('Error converting to JSON.')
         else:
             try:
-                print(json.dumps(test.commandDictionary, sort_keys=True, indent=4))
+                print(json.dumps(test.module.commandDictionary, sort_keys=True, indent=4))
                 pass
             except:
                 print('Error converting to JSON.')
