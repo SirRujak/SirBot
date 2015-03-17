@@ -81,7 +81,7 @@ class timerHolder():
                                             pass
                             else:
                                     self.activeTimerList.pop()
-                return([31,[self.chatHandler.boundChannel,None]])
+                return([None])
 
         def checkIfTimerChanged(self):
                 tempTimer = self.activeTimerList[0]
@@ -115,7 +115,7 @@ class timerHolder():
                         elif (tempMessage[0] == 2):
                                 ## tempMessage = [type, name, [HH, MM, SS], command]
                                 self.alterTimer(tempMessage[2:])
-                return([31,[self.chatHandler.boundChannel,None]])
+                return([None])
 
         def shutdown(self):
                 self.saveTimerDict()
@@ -338,7 +338,7 @@ class ai:
         ##def startup(self,configFile,userDict):
         def startup(self,loopBack):
                 configFile = loopBack.config
-                botName = configFile['Twitch Accounts']['automated account']['name']
+                botName = configFile['Twitch Accounts']['automated account']['name'].lower()
                 channelName = configFile['Twitch Channels']['default channel']
                 userDict = loopBack.session['channels'][channelName]
                 basePath = configFile['path']
@@ -358,7 +358,7 @@ class ai:
                             makedirs(self.pathQuotesFolders)
                             self.updateQuoteDict(self.pathQuotes)
                     except Exception as e:
-                            return([32,e])
+                            return([10,self.moduleName,1,e])
                 try:
                         self.openUserDict(self.pathUserName)
                 except:
@@ -367,7 +367,7 @@ class ai:
                             makedirs(self.pathUsersFolders)
                             self.updateUserDict(self.pathUserName)
                     except Exception as e:
-                            return([32,e])
+                            return([10,self.moduleName,1,e])
                 for item in userDict:
                     self.userDict.update({item:userDict[item]})
                 try:
@@ -379,7 +379,7 @@ class ai:
                             self.updateCommandDict(self.pathCommandName)
 
                     except Exception as e:
-                            return([32,e])
+                            return([10,self.moduleName,1,e])
                 try:
                         self.openTimerDictFile(self.pathTimerName)
                         self.boundChannel = channelName
@@ -402,12 +402,12 @@ class ai:
                         #chatHandler, channel, timerDictFile
                         self.timerHolder.startup() ##channelName, timerDictFile
                     except Exception as e:
-                            return([32,e])
+                            return([10,self.moduleName,1,e])
                 try:
                         self.openTwitchDictFile()
                 except Exception as e:
-                        return([32,e])
-                return([31,[self.boundChannel,None]])
+                        return([10,self.moduleName,1,e])
+                return([None])
 
         def tick(self, initData):
                 self.timerHolder.tick()
@@ -433,13 +433,12 @@ class ai:
                                 self.lastSave = time()
                                 self.saveCommands = False
                         if tempResponse:
-                            if tempResponse[1]:
-                                tempList = [tempResponse[0],[]]
-                                tempList[1].append(self.boundChannel)
-                                tempList[1].append(tempResponse[1])
-                                tempOutPut.append(tempList)
-                            else:
-                                tempOutPut.append([31,[self.boundChannel,None]])
+                            if (len(tempResponse) > 1):
+                                if tempResponse[1]:
+                                    tempList = [tempResponse[0],[]]
+                                    tempList[1].append(self.boundChannel)
+                                    tempList[1].append(tempResponse[1])
+                                    tempOutPut.append(tempList)
                     elif (initData[0] == 2):
                         ## initData should be of the form:
                         ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
@@ -459,14 +458,13 @@ class ai:
                                 elif not self.userDict[initData[1][1][0]]['INFO']['GROUPS']:
                                     self.userDict[initData[1][1][0]]['INFO']['GROUPS'].update({'default':'0'})
                             self.saveUsers = True
-                            tempOutPut.append([31,[self.boundChannel,None]])
                             pass
                         elif (initData[1][0] == 2):
                             ## This will be for followers
-                            tempOutPut.append([31,[self.boundChannel,None]])
+                            pass
                         elif (initData[1][0] == 3):
                             ## This will be for following
-                            tempOutPut.append([31,[self.boundChannel,None]])
+                            pass
                     elif (initData[0] == 3):
                         for item in range(len(initData[1][0][0])):
                             self.checkForUser(initData[1][0][0][item])
@@ -475,7 +473,7 @@ class ai:
                     tempItem = self.outputQueue.get()
                     tempOutPut.append(tempItem)
                 if not tempOutPut:
-                    tempOutPut.append([31,[self.boundChannel,None]])
+                    tempOutPut.append(None)
                 return(tempOutPut)
 
         def idletick(self, data):
@@ -486,7 +484,7 @@ class ai:
                     self.updateCommandDict(self.pathCommandName)
                     self.lastSave = time()
                     self.saveCommands = False
-            tempOutPut.append([31,[self.boundChannel,None]])
+            tempOutPut.append(None)
             return(tempOutPut)
 
         def shutdown(self):
@@ -563,7 +561,7 @@ class ai:
                         self.timerHolder.createAndActivateTimer(formattedData)
 
         def checkIfUserOwner(self,userName):
-            if (userName == self.botName or userName == self.boundChannel):
+            if (userName.lower() == self.botName.lower() or userName.lower() == self.boundChannel.lower()):
                 return 1
             else:
                 return 0
@@ -881,7 +879,7 @@ class ai:
                 if (commandKey == 'REMAINDER' or commandKey == 'TEMPVAL'):
                     toContinue = 1
 
-                if (callLevel == self.botName or callLevel == self.boundChannel):
+                if (callLevel.lower() == self.botName.lower() or callLevel.lower() == self.boundChannel.lower()):
                     pass
                 else:
                     toContinue = 1
@@ -1086,8 +1084,8 @@ class ai:
                                                                                                              'GROUPS':tempGroupList}
                                 self.saveCommands = True
                         else:
-                            return [31,[self.boundChannel, None]]
-                    return [31,[self.boundChannel, None]]
+                            return [None]
+                    return [None]
                     ## Change this to deal with ones that are there and you are editing them
                     ## pretty much, take what is there and then change anything that was passed
                     ## otherwise leave things the same and change the editor
@@ -1268,7 +1266,7 @@ class ai:
                         else:
                             fullDict['RESPONSEDICT'][tempResponses[item]][1].remove(tempInLink)
                     self.saveCommands = True
-                    return [31,None]
+                    return [None]
                 else:
                     delStringList = delString.split(' ')
                     tempDict2 = tempDict
@@ -1334,9 +1332,9 @@ class ai:
                                     fullDict['RESPONSEDICT'][item2][tempResponses[item]][1].remove(tempInLink)
                     self.saveCommands = True
                     return[0,None]
-                return [31,None]
+                return [None]
             else:
-                return [31,None]
+                return [None]
 
         def deleteCommandHelper(self, tempDict, tempCMDList, tempDelList, tempValue):
             tempCMD = tempCMDList.pop(0)
@@ -1410,7 +1408,6 @@ class ai:
                     tempData = tempResponse[1][0]
                     tempRemainder = tempResponse[1][1]
                     remainderString = ''
-                    print(tempRemainder)
                     for item in range(len(tempRemainder)):
                         if (item == len(tempRemainder) - 1):
                             remainderString += tempRemainder[item]
@@ -1440,7 +1437,7 @@ class ai:
                 ######################################
                 ## Set user level and groups here   ##
                 try:
-                    if (itemList[0] == self.botName or itemList[0] == self.boundChannel):
+                    if (itemList[0].lower() == self.botName.lower() or itemList[0].lower() == self.boundChannel.lower()):
                         tempUserLevel = 'Owner'
                         tempUserGroups = {'owner':'0'}
                     else:
@@ -1518,11 +1515,11 @@ class ai:
                                             tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0))
                             return([2,tempResponse])
 
-                    return [31,None]
+                    return [None]
                 except:
-                    return [31,None]
-            return [31,None]
-            #return [31,None]
+                    return [None]
+            return [None]
+            #return [None]
 
         def compareHelper(self,itemList,tempDict,remainderList):
             if itemList:
@@ -1594,20 +1591,20 @@ class ai:
                 try:
                     self.makeNewEntry(self.parseForNewCommand(chatData[3],chatData[1]))
                     ##self.updateCommandDict(self.
-                    return([31,None])
+                    return([None])
                 except:
                     pass
             elif (chatData[3][:6].lower() == 'delcom'):
                 self.deleteCommand2(chatData)
-                return([31,None])
+                return([None])
             elif (chatData[3][:9].lower() == '!addquote'):
                 if chatData[1] in self.userDict:
                     if self.userDict[chatData[1]]['LEVEL'] == 'Moderator':
                         self.addQuote(chatData[3],chatData[1])
-                return([31,None])
+                return([None])
             elif (chatData[3][:9].lower() == '!delquote'):
                 self.delQuote(chatData[3])
-                return([31,None])
+                return([None])
             elif (chatData[3][:6].lower() == '!quote'):
                 if (time() - self.lastQuote > 5):
                     response = self.getQuote()
@@ -1629,8 +1626,9 @@ class ai:
                     print('Delete Timer Exception', e)
             else:
                 tempResponse = self.compareForCommands([chatData[1],chatData[3]])
-                if tempResponse[1]:
-                    return tempResponse
+                if (len(tempResponse) > 1):
+                    if tempResponse[1]:
+                        return tempResponse
             pass
 
         def openUserDict(self,pathName):
@@ -1781,7 +1779,7 @@ class spamFilter():
 
 class unitTest:
     def startup(self,data):
-        self.session = {'channels':{'sirrujak':{'groups':{'owner':{'sirrujak':'0'}}}}}
+        self.session = {'channels':{'SirRujak':{'groups':{'owner':{'sirrujak':'0'}}}}}
         self.config = data
         self.module = ai()
         tempResponse = self.module.startup(self)
@@ -1807,7 +1805,7 @@ if __name__ == "__main__":
         userDict = {}
         testDirectory = home + '\\Documents\\SirBotTest'
         testName = 'CoolName'
-        botName = 'sirrujak'
+        botName = 'SirRujak'
         configFile = {'Twitch Accounts':{'automated account':{'name':botName}},'Twitch Channels':{'default channel':botName},'path':testDirectory}
         testData = [0,'SirRujak','timePlaceholder','',0,0]
         testDelete = False
@@ -1881,7 +1879,6 @@ if __name__ == "__main__":
         test = unitTest()
         tempResponse = test.startup(configFile)
         ##tempResponse = test.startup(configFile, userDict)
-        print("Startup response: ", tempResponse)
         for i in range(len(userTest)):
             tempResponse = test.tick(userTest[i])
             if (tempResponse[0] == 2):
