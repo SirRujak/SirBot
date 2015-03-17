@@ -41,7 +41,8 @@ class baseTimer():
                 #             None]
                 # tempContainer = chatDataMessage(tempList)
                 # self.chatHandler.enQueue(tempContainer)
-                tempList2 = [2,[self.chatHandler.boundChannel,self.commandData]]
+                tempList2 = [[1,[self.chatHandler.boundChannel,self.commandData]],
+                             [0,[self.chatHandler.boundChannel,self.commandData]]]
                 self.chatHandler.addToOutputQueue(tempList2)
                 self.holderLoopBack.reQueue()
 
@@ -340,7 +341,7 @@ class ai:
                 configFile = loopBack.config
                 botName = configFile['Twitch Accounts']['automated account']['name'].lower()
                 channelName = configFile['Twitch Channels']['default channel']
-                userDict = loopBack.session['channels'][channelName]
+                userDict = loopBack.session['users']['channels'][channelName]
                 basePath = configFile['path']
                 self.botName = botName
                 self.currentLine = 0
@@ -434,11 +435,12 @@ class ai:
                                 self.saveCommands = False
                         if tempResponse:
                             if (len(tempResponse) > 1):
-                                if tempResponse[1]:
-                                    tempList = [tempResponse[0],[]]
-                                    tempList[1].append(self.boundChannel)
-                                    tempList[1].append(tempResponse[1])
-                                    tempOutPut.append(tempList)
+                                for item in range(len(tempResponse)):
+                                    if tempResponse[item][1]:
+                                        tempList = [tempResponse[item][0],[]]
+                                        tempList[1].append(self.boundChannel)
+                                        tempList[1].append(tempResponse[item][1])
+                                        tempOutPut.append(tempList)
                     elif (initData[0] == 2):
                         ## initData should be of the form:
                         ## [2, [TYPE, [USERNAME, LEVEL]], [EXTRA-ARGS]]
@@ -471,9 +473,12 @@ class ai:
                             self.saveUsers = True
                 if (self.outputQueue.qsize() > 0):
                     tempItem = self.outputQueue.get()
-                    tempOutPut.append(tempItem)
+                    tempOutPut.extend(tempItem)
                 if not tempOutPut:
                     tempOutPut.append(None)
+                else:
+                    for item in range(len(tempOutPut)):
+                        tempOutPut[item].append('ai')
                 return(tempOutPut)
 
         def idletick(self, data):
@@ -1513,7 +1518,7 @@ class ai:
                                             tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0),1)
                                         else:
                                             tempResponse = tempResponse.replace(usernameList[item],tempUserName.pop(0))
-                            return([2,tempResponse])
+                            return([[1,tempResponse],[0,tempResponse]])
 
                     return [None]
                 except:
@@ -1573,9 +1578,9 @@ class ai:
 
         def getQuote(self):
             if self.quoteDict['QUOTES']:
-                return([2,choice(self.quoteDict['QUOTELIST'])])
+                return([[1,choice(self.quoteDict['QUOTELIST'])],[0,choice(self.quoteDict['QUOTELIST'])]])
             else:
-                return([2,'What are quotes? ~SirRujak'])
+                return([[1,'What are quotes? ~SirRujak'],[0,'What are quotes? ~SirRujak']])
 
         ## Command Level is optional, None give all levels.
         def listCommands(self, commandLevel):
@@ -1611,7 +1616,7 @@ class ai:
                     self.lastQuote = time()
                     return(response)
             elif chatData[3][:4].lower() in modChangeList:
-                return([2,'/mods'])
+                return([1,'/mods'])
 
             ## tempMessage = [type, name, [HH, MM, SS], command, startsActive]
             elif (chatData[3][:8].lower() == 'addtimer'):
@@ -1779,7 +1784,7 @@ class spamFilter():
 
 class unitTest:
     def startup(self,data):
-        self.session = {'channels':{'SirRujak':{'groups':{'owner':{'sirrujak':'0'}}}}}
+        self.session = {'users':{'channels':{'SirRujak':{'groups':{'owner':{'sirrujak':'0'}}}}}}
         self.config = data
         self.module = ai()
         tempResponse = self.module.startup(self)
@@ -1881,12 +1886,12 @@ if __name__ == "__main__":
         ##tempResponse = test.startup(configFile, userDict)
         for i in range(len(userTest)):
             tempResponse = test.tick(userTest[i])
-            if (tempResponse[0] == 2):
+            if (tempResponse[0] == 1):
                 print(tempResponse)
         if testCreate:
             for i in range(len(eneijaTest)):
                     tempResponse = test.tick(eneijaTest[i])
-                    if (tempResponse[0] == 2):
+                    if (tempResponse[0] == 1):
                         print(tempResponse)
                     test.idletick(eneijaTest[i])
         if runCommandTest:
@@ -1895,7 +1900,7 @@ if __name__ == "__main__":
                 for item2 in range(len(tempResponse)):
                     if tempResponse:
                         if (tempResponse[item2]):
-                            if (tempResponse[item2][0] == 2):
+                            if (tempResponse[item2][0] == 1):
                                 print(tempResponse)
         if runInfiniComs:
             for item in range(100):
@@ -1915,21 +1920,21 @@ if __name__ == "__main__":
         if testDelete:
             for i in range(len(delcomTest)):
                 tempResponse = test.tick(delcomTest[i])
-                if (tempResponse[0] == 2):
+                if (tempResponse[0] == 1):
                     print(tempResponse)
         if runQuoteTest:
             for i in range(len(makeQuoteTest)):
                 tempResponse = test.tick(makeQuoteTest[i])
-                if (tempResponse[0] == 2):
+                if (tempResponse[0] == 1):
                     print(tempResponse)
             for i in range(10):
                 tempResponse = test.tick(runQuoteTest[0])
-                if (tempResponse[0] == 2):
+                if (tempResponse[0] == 1):
                     print(tempResponse)
             print(test.module.quoteDict)
             for i in range(len(delQuoteTest)):
                 tempResponse = test.tick(delQuoteTest[i])
-                if (tempResponse[0] == 2):
+                if (tempResponse[0] == 1):
                     print(tempResponse)
         fullResponse = 0
         if (fullResponse != 1):
