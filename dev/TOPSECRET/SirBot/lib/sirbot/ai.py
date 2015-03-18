@@ -479,7 +479,8 @@ class ai:
                 else:
                     for item in range(len(tempOutPut)):
                         tempOutPut[item].append('ai')
-                return(tempOutPut)
+                finalOutPut = [8,tempOutPut]
+                return(finalOutPut)
 
         def idletick(self, data):
             tempOutPut = []
@@ -1897,10 +1898,10 @@ if __name__ == "__main__":
         if runCommandTest:
             for item in range(len(runComsTest)):
                 tempResponse = test.tick(runComsTest[item])
-                for item2 in range(len(tempResponse)):
-                    if tempResponse:
-                        if (tempResponse[item2]):
-                            if (tempResponse[item2][0] == 1):
+                for item2 in range(len(tempResponse[1])):
+                    if tempResponse[1][0]:
+                        if (tempResponse[1][item2]):
+                            if (tempResponse[1][item2][0] == 1):
                                 print(tempResponse)
         if runInfiniComs:
             for item in range(100):
