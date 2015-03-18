@@ -448,6 +448,9 @@ class application():
 ###################################################################################
         
 class dummy():
+    def __init__(self):
+        self.name = """dummy"""
+        
     def startup(self,config=None,session=None):
         return(None)
 
@@ -459,6 +462,8 @@ class dummy():
 
     def shutdown(self,data=None):
         return(None)
+
+class 
     
 
     #channel,timestamp,sender,message
@@ -471,5 +476,7 @@ class dummy():
 #6 ai
 #7 config alterations
 #8 dispatcher
-#9-19 <reserved>
+#9 logger
+#10 settings
+#11-19 <reserved>
 #20+ for plugins

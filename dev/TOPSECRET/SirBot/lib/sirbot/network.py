@@ -1,5 +1,41 @@
 # -*- coding: utf-8 -*-
 
+####network tick() doesn't return data until type setting is set
+####
+####
+####irc twitch connect command is in irc client module
+####
+####
+####irc join twitch channel is in irc client
+####
+####
+####irc client has different "profiles". one of which is 'twitch'
+####
+####
+####network reads raw data from socket on tick()
+####
+####tick() returns raw socket data
+####
+####if stream type is set to 3, data is sent to irc client (module in slot 3)
+####
+####irc client stores and parses data, splitting on \r\n
+####
+####if data doesn't end in \r\n, cache it and try to append it to the beginning of next message
+####
+####if ping is detected, send pong to network
+####
+####if raw chat is off, parse messages
+####
+####if interface is on, send to interface
+####
+####if ai commands are enabled, send to ai by way of dispatcher
+####
+####if chat logging is enabled, send to logger by way of dispatcher
+
+
+
+
+
 #class for handling all data transmission over networks
 
 
@@ -20,6 +56,22 @@ class stream():
         self.createsocket()
 
     buffer_length = 4096
+
+    def startup(self,master):
+        
+        pass
+
+    def tick(self,data):
+        #[0,<host>,<port>] connect to the given host:port combo
+        #[1,<message>] send the message
+        #[2,<setting>] apply setting
+        pass
+
+    def idletick(self):
+        pass
+
+    def shutdown(self):
+        pass
 
     def createsocket(self,blocking=False):
         self.connection = socket(AF_INET,SOCK_STREAM)
@@ -78,6 +130,7 @@ class stream():
         self.send("JOIN #" + channel)
 
     def twitchConnectv(self,username,token,retries):
+        #elevate
         for i in range(retries):
             self.twitchConnect(username,token)
             if(self.verifyConnection(username)==True):
@@ -107,10 +160,11 @@ class stream():
         self.send("PART #" + channel)
 
     def update(self):
-        #run actions for API
+        #deprecated
         pass
 
     def pong(self):
+        #elevate? maybe? probably.
         self.send("PONG")
 
     def chooseTwitchClient(self,choice):
@@ -133,6 +187,18 @@ class secureStream(stream):
         self.contxt = SSLContext(PROTOCOL_TLSv1_2)
         self.contxt.verify_mode = CERT_REQUIRED
         self.contxt.load_default_certs()
+
+    def startup(self,master):
+        pass
+
+    def tick(self,data):
+        pass
+
+    def idletick(self):
+        pass
+
+    def shutdown(self):
+        pass
 
     def connect(self,host,port):
         self.connection.settimeout(15)

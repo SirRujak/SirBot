@@ -21,12 +21,20 @@ class irc():
         self.lastID='Info'
         self.lastChannel = 'Error'
 
-    def tick(self):
+    def startup(self,master):
+        pass
+
+    def tick(self,data):
         now = time()
         if(now - self.delta > 22):
             self.delta = now
             self.twitchUsersUpdate()
 
+    def idletick(self):
+        pass
+
+    def shutdown(self):
+        pass
 
     def timeStamp(self):
         times = asctime(localtime(time()))
