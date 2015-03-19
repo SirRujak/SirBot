@@ -18,6 +18,7 @@ from time import time
 
 class twitch():
     def __init__(self,user):
+        self.name = """twitch"""
         self.initialized = 0
         self.state = 0
         self.intaketries = 0
@@ -40,11 +41,20 @@ class twitch():
         #webserver.start()
         #######################
 
+    def startup(self,master):
+        pass
+
+    def idletick(self):
+        pass
+
+    def shutdown(self):
+        pass
+
     def getFollowersInfo(self):
         url = 'https://api.twitch.tv/kraken/channels/'+self.user+'/follows?limit=10'
         self.outputqueue.put([7,[1,url]])
 
-    def tick(self):
+    def tick(self,data=None):
         if(self.state==0):
             self.request()
         elif(self.state==1):

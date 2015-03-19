@@ -7,6 +7,7 @@ from queue import Queue
 
 class irc():
     def __init__(self,config):
+        self.name = """irc"""
         self.config = config
         self.users = {}
         self.channels = []
