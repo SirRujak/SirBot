@@ -18,7 +18,7 @@
 ####
 ####if stream type is set to 3, data is sent to irc client (module in slot 3)
 ####
-####irc client stores and parses data, splitting on \r\n
+####irc client stores data, splitting on \r\n
 ####
 ####if data doesn't end in \r\n, cache it and try to append it to the beginning of next message
 ####
@@ -39,7 +39,7 @@
 #class for handling all data transmission over networks
 
 
-from socket import socket,AF_INET,SOCK_STREAM,SHUT_RDWR
+from socket import socket,AF_INET,SOCK_STREAM,SHUT_RDWR,getaddrinfo
 from ssl import SSLContext,PROTOCOL_TLSv1_2,PROTOCOL_SSLv3,CERT_REQUIRED,SSLError
 from urllib.request import urlopen
 from queue import Queue
@@ -52,14 +52,17 @@ class request():
 class stream():
     """Class for creating streaming connections, i.e., IRC threads."""
     def __init__(self):
-        self.inputqueue = Queue()#this could be leaving
-        self.createsocket()
+        self.name = """stream"""
+        self.mode = 0
+        self.data = []
+        self.ip = None
+        self.inputqueue = Queue()#this will be leaving
 
     buffer_length = 4096
 
     def startup(self,master):
+        self.createsocket()
         
-        pass
 
     def tick(self,data):
         #[0,<host>,<port>] connect to the given host:port combo
@@ -89,7 +92,7 @@ class stream():
         self.connection.sendall(data)
 
     def send(self,message):
-        #elevate
+        #elevate to irc
         if len(message) > 0:
             self.transmit(message + "\r\n")
             #print(message+'\n')#temporary
@@ -115,11 +118,12 @@ class stream():
 
     def close(self):
         #elevate
-        self.send("QUIT")
+        self.transmit("QUIT\r\n")
         self.connection.shutdown(SHUT_RDWR)
         self.connection = None
 
     def getInput(self):
+        #remove
         try:
             return(self.inputqueue.get_nowait())
         except queue.Empty:

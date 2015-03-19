@@ -23,7 +23,8 @@ class irc():
         self.lastChannel = 'Error'
 
     def startup(self,master):
-        pass
+        self.network = 1
+        self.dispatcher = 8
 
     def tick(self,data):
         now = time()
@@ -42,6 +43,11 @@ class irc():
         times = times[11:19]
         times = '['+times+']'
         return(times)
+
+    def send(self.message):
+        #needs work
+        item = [self.network,['tx',message+"\r\n"],self.name]
+        self.workingqueue.put(item)
 
     def styleChat(self,data):
         #deprecated
