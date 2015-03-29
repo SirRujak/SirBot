@@ -13,7 +13,7 @@ def createConfigFile():
         configDict["SPAM-INFO"] = {"SPAM-LEVEL":None, "SPAM-FILE-NAME":None}
         configDict["PREFRENCES"] = {}
         moduleDir=dirname(__file__)
-        moduleDir=moduleDir.rsplit('/',3)[0]
+        moduleDir=moduleDir.replace('\\','/').rsplit('/',3)[0]
         configPath=molduleDir+'/config/sirbot/config'
         configFile = open(configPath, 'w')
         dump(configDict, configFile)

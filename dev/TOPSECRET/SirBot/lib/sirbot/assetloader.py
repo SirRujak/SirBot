@@ -7,8 +7,8 @@ from os.path import dirname
 class assetloader():
     def __init__(self):
         self.moduleDir=dirname(__file__)
-        self.moduleDir=self.moduleDir.rsplit('\\',2)[0]
-        self.assetPath=self.moduleDir+'\\resources\\sirbot\\'
+        self.moduleDir=self.moduleDir.replacle('\\','/').rsplit('/',2)[0]
+        self.assetPath=self.moduleDir+'/resources/sirbot/'
 
 #        try:
         filename = self.assetPath+'Sirbot.gif'

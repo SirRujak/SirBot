@@ -860,14 +860,14 @@ class interface():
 
 
 
-if __name__ == "__main__":
-    temp1=queue.Queue()
-    temp2=queue.Queue()
-    cfg={}
-    #
-    app=interface(cfg,assets,temp1,temp2)
-    app.MainWindow.mainloop()
-
+##if __name__ == "__main__":
+##    temp1=queue.Queue()
+##    temp2=queue.Queue()
+##    cfg={}
+##    #
+##    app=interface(cfg,assets,temp1,temp2)
+##    app.MainWindow.mainloop()
+##
 
 #tags:
 #input/*username*/server/console/channel

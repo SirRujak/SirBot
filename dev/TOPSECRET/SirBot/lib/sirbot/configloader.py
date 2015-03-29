@@ -9,8 +9,8 @@ from os.path import dirname
 
 def configloader():
     moduleDir=dirname(__file__)
-    moduleDir=moduleDir.rsplit('\\',2)[0]
-    configPath=moduleDir+'\\config\\sirbot\\config'
+    moduleDir=moduleDir.replace('\\','/').rsplit('/',2)[0]
+    configPath=moduleDir+'/config/sirbot/config'
 
     try:
         configFile = open(configPath,"rb+")

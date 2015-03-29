@@ -520,19 +520,19 @@ class ai:
                               pass
 
         def makeDictPathName(self, basePath, channelName):
-                self.pathCommandName = basePath + '//data//sirbot//commands//' + channelName + '//commands.json'
-                self.pathDefaultCommandName = basePath + '//data//sirbot//commands//defaultCommands//commands.json'
-                self.pathCommandFolders = basePath + '//data//sirbot//commands//' + channelName
-                self.pathUserName = basePath + '//data//sirbot//users//' + channelName + '//users.json'
-                self.pathDefaultUsers = basePath + '//data//sirbot//users//defaultUsers//users.json'
-                self.pathUsersFolders = basePath + '//data//sirbot//users//' + channelName
-                self.pathQuotes = basePath + '//data//sirbot//quotes//' + channelName + '//quotes.json'
-                self.pathDefaultQuotes = basePath + '//data//sirbot//quotes//defaultQuotes//quotes.json'
-                self.pathQuotesFolders = basePath + '//data//sirbot//quotes//' + channelName
-                self.pathTimerName = basePath + '//data//sirbot//timers//' + channelName + '//timers.json'
-                self.pathDefaultTimerName = basePath + '//data//sirbot//timers//defaultTimers//timers.json'
-                self.pathTimerFolders = basePath + '//data//sirbot//timers//' + channelName
-                self.pathTwitchName = basePath + '//data//sirbot//twitchcommands//twitchcommands.json'
+                self.pathCommandName = basePath + '/data/sirbot/commands/' + channelName + '/commands.json'
+                self.pathDefaultCommandName = basePath + '/data/sirbot/commands/defaultCommands/commands.json'
+                self.pathCommandFolders = basePath + '/data/sirbot/commands/' + channelName
+                self.pathUserName = basePath + '/data/sirbot/users/' + channelName + '/users.json'
+                self.pathDefaultUsers = basePath + '/data/sirbot/users/defaultUsers/users.json'
+                self.pathUsersFolders = basePath + '/data/sirbot/users/' + channelName
+                self.pathQuotes = basePath + '/data/sirbot/quotes/' + channelName + '/quotes.json'
+                self.pathDefaultQuotes = basePath + '/data/sirbot/quotes/defaultQuotes/quotes.json'
+                self.pathQuotesFolders = basePath + '/data/sirbot/quotes/' + channelName
+                self.pathTimerName = basePath + '/data/sirbot/timers/' + channelName + '/timers.json'
+                self.pathDefaultTimerName = basePath + '/data/sirbot/timers/defaultTimers/timers.json'
+                self.pathTimerFolders = basePath + '/data/sirbot/timers/' + channelName
+                self.pathTwitchName = basePath + '/data/sirbot/twitchcommands/twitchcommands.json'
 
         ## Base functions that must be in the API. ##
         ## Skip this one for now

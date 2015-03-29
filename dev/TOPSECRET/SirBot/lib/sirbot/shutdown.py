@@ -16,7 +16,7 @@ def shutdown(config,interinput=None,interoutput=None):
     if(config['first run'] == 1):
         config['first run'] = 0
         
-    configPath = config['path']+'\\config\\sirbot\\config'    
+    configPath = config['path']+'/config/sirbot/config'    
     configFile = open(configPath,"wb+")
     configData = dumps(config)
     configFile.write(configData)

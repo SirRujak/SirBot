@@ -12,8 +12,8 @@ class splash():
 #    try:
     def __init__(self):
         moduleDir = dirname(__file__)
-        moduleDir = moduleDir.rsplit('\\',2)[0]
-        image = moduleDir+'\\resources\\sirbot\\splash.gif'
+        moduleDir = moduleDir.replace('\\','/').rsplit('/')[0]
+        image = moduleDir+'/resources/sirbot/splash.gif'
         self.root = Tk()
         self.root.withdraw()
         self.loadingSplash = Toplevel()
