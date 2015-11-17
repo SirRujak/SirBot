@@ -12,7 +12,7 @@ if(SPLASH == 1):
     splash = initialize.splashing()
     root = splash.root()
 
-#import configurations 
+#import configurations
 from lib.sirbot.configloader import configloader
 
 config = configloader()
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     if(SPLASH == True):
         sleep(1)
         splash.destroySplash()
-    
+
     #runtime loop - single thread
     idle = 0.01
     if(config['GUI'] == 1):
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
         app.shutdown()
         inter.shutdown()
-        
+
     else:
         app.begin()#temporary
         while(ON):
