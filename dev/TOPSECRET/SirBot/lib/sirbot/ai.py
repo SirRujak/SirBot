@@ -37,8 +37,8 @@ class baseTimer():
                 else:
                         return 0
         def doAction(self):
-                # tempList = [0,self.channel,self.currTime,self.commandData,True,
-                #             None]
+                # tempList = [0,self.channel,self.currTime,self.commandData,
+                #             True,None]
                 # tempContainer = chatDataMessage(tempList)
                 # self.chatHandler.enQueue(tempContainer)
                 tempList2 = [2,[self.chatHandler.boundChannel,self.commandData]]
@@ -1123,8 +1123,40 @@ class ai:
             else:
                 return 0
 
+        def parseForCommandSegments(self, commandString):
+            ## Returns 1 if too many of one marker.
+            ## Look for the number of occurences of the markers:
+            ## -cmd:, -response:, -level:, -linelim:, -timelim:, -conditions:,
+            ## -access:, -users:, -globallim:
+            ##
+            ## If more than one of any exists discard the message.
+            ## Else clean out helper items.
+            ## Then split string by all existing markers at the same time.
+            tempList2=[]
+            tempList = ['-cmd:','-response:','-level:','-active','-linelim:',
+                        '-timelim:','-conditions:','-access:','-users:',
+                        '-globallim']
+            for item in tempList:
+                tempCount = commandString.count(item)
+                if tempCount > 1:
+                    return(1)
+                else:
+                    tempList2.append(tempCount)
+            if tempList2[0] == 0 or tempList2[1] == 0:
+                return(2)
+            commandString = commandString.replace('addcom','',1)
+            commandString = commandString.strip()
+            commandList =re.split(r'(-cmd:+|-response:+|-level:+|-active:+|
+                            -linelim:+|-timelim:+|-conditions:+|-access:+|
+                            -users:+|-globallim:+)', commandString)
+            del commandString[0]
+
+
+
+            pass
 
         def parseForNewCommand(self, commandString, userName):
+            tempCommandList2 = this.parseForCommandSegments(commandString)
             tempCommandList = commandString.split(' -')
             tempItems = []
             for i in range(len(tempCommandList)):
