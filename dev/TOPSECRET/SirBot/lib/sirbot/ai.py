@@ -7,6 +7,7 @@ import json
 from time import time, sleep
 import queue
 from os import makedirs
+from re import split
 
 class baseTimer():
         def __init__(self, currTime, timerLen,
@@ -1146,7 +1147,7 @@ class ai:
                 return(2)
             commandString = commandString.replace('addcom','',1)
             commandString = commandString.strip()
-            commandList =re.split(r'(-cmd:+|-response:+|-level:+|-active:+|
+            commandList = split(r'(-cmd:+|-response:+|-level:+|-active:+|
                             -linelim:+|-timelim:+|-conditions:+|-access:+|
                             -users:+|-globallim:+)', commandString)
             del commandString[0]
