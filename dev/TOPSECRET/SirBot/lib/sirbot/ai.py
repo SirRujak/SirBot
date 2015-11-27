@@ -9,7 +9,7 @@ import queue
 from os import makedirs
 from re import split
 
-class baseTimer():
+class baseTimer:
         def __init__(self, currTime, timerLen,
                      chatHandler, commandData,
                      channel, holderLoopBack,
@@ -46,7 +46,7 @@ class baseTimer():
                 self.chatHandler.addToOutputQueue(tempList2)
                 self.holderLoopBack.reQueue()
 
-class timerHolder():
+class timerHolder:
         def __init__(self, chatHandler, channel, timerDictFile):
                 self.activeTimerList = []
                 self.activeTimerListDeactKey = set()
@@ -356,7 +356,7 @@ class ai:
                             makedirs(self.pathQuotesFolders)
                             self.updateQuoteDict(self.pathQuotes)
                     except Exception as e:
-                            return([32,e])
+                            return([32,e, self.pathQuotes])
                 try:
                         self.openUserDict(self.pathUserName)
                 except:
@@ -520,7 +520,7 @@ class ai:
                 self.pathUserName = basePath + '//data//sirbot//users//' + channelName + '//users.json'
                 self.pathDefaultUsers = basePath + '//data//sirbot//users//defaultUsers//users.json'
                 self.pathUsersFolders = basePath + '//data//sirbot//users//' + channelName
-                self.pathQuotes = basePath + '//data//sirbot//quotes//' + channelName + '//quotes.json'
+                self.pathQuotes = basePath + '//data//sirbot/quotes//' + channelName + '//quotes.json'
                 self.pathDefaultQuotes = basePath + '//data//sirbot//quotes//defaultQuotes//quotes.json'
                 self.pathQuotesFolders = basePath + '//data//sirbot//quotes//' + channelName
                 self.pathTimerName = basePath + '//data//sirbot//timers//' + channelName + '//timers.json'
@@ -1124,7 +1124,8 @@ class ai:
             else:
                 return 0
 
-        def parseForCommandSegments(self, commandString):
+        def parseForNewCommand(self, commandString, userName):
+##        def parseForCommandSegments(self, commandString, userName):
             ## Returns 1 if too many of one marker.
             ## Look for the number of occurences of the markers:
             ## -cmd:, -response:, -level:, -linelim:, -timelim:, -conditions:,
@@ -1147,17 +1148,100 @@ class ai:
                 return(2)
             commandString = commandString.replace('addcom','',1)
             commandString = commandString.strip()
-            commandList = split(r'(-cmd:+|-response:+|-level:+|-active:+|
-                            -linelim:+|-timelim:+|-conditions:+|-access:+|
-                            -users:+|-globallim:+)', commandString)
-            del commandString[0]
+            commandList = split(r'(-cmd:+|-response:+|-level:+|-active:+|-linelim:+|-timelim:+|-conditions:+|-access:+|-users:+|-globallim:+)', commandString)
+            del commandList[0]
 
+            for j in range(len(commandList)):
+                commandList[j] = commandList[j].strip()
+            tempItems = []
 
+            for item in range(len(commandList)):
+                if commandList[item] in tempList:
+                    if commandList[item + 1] not in tempList:
+                        tempItems.append([commandList[item],
+                                          commandList[item + 1]])
+                    else:
+                        return(3)
+
+            finalList = [None]*11
+            for i in range(len(tempItems)):
+                if (tempItems[i][0] == '-cmd:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[0] = None
+                    else:
+                        finalList[0] = tempItems[i][1]
+                elif (tempItems[i][0] == '-response:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[1] = None
+                    else:
+                        if (len(tempItems[i][1]) == 1):
+                            finalList[1] = [tempItems[i][1]]
+                        else:
+                            tempList = tempItems[i][1].split('\%')
+                            finalList[1] = tempList
+                elif (tempItems[i][0] == '-level:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[2] = None
+                    else:
+                        finalList[2] = [tempItems[i][1]]
+                elif (tempItems[i][0] == '-active:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[4] = None
+                    else:
+                        finalList[4] = tempItems[i][1]
+                elif (tempItems[i][0] == '-timelim:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[5] = None
+                    else:
+                        finalList[5] = tempItems[i][1]
+                elif (tempItems[i][0] == '-linelim:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[6] = None
+                    else:
+                        finalList[6] = tempItems[i][1]
+                elif (tempItems[i][0] == '-conditions:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[7] = None
+                    else:
+                        tempConditions = tempItems[i][1].split(',')
+                        tempIndividualConditions = []
+                        for i in range(len(tempConditions)):
+                            tempIndividualConditions.append(tempConditions[i].split('&'))
+                        finalConditions = []
+                        for i in range(len(tempIndividualConditions)):
+                            if (len(tempIndividualConditions[i]) == 2):
+                                for j in range(len(tempIndividualConditions[i])):
+                                    if (len(tempIndividualConditions[i][j]) == 2):
+                                        finalConditions.append([tempIndividualConditions[i][j][0],tempIndividualConditions[i][j][1]])
+                            elif (len(tempIndividualConditions[i]) == 1):
+                                for j in range(len(tempIndividualConditions[i])):
+                                    if (len(tempIndividualConditions[i][j]) == 2):
+                                        finalConditions.append([tempIndividualConditions[i][j][0],tempIndividualConditions[i][j][1]])
+                        finalList[7] = finalConditions
+                elif (tempItems[i][0] == '-access:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[8] = None
+                    else:
+                        finalList[8] = tempItems[i][1]
+                elif (tempItems[i][0] == '-users:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[9] = None
+                    else:
+                        finalList[9] = tempItems[i][1]
+                elif (tempItems[i][0] == '-globallim:'):
+                    if (tempItems[i][1] == ''):
+                        finalList[10] = None
+                    elif (tempItems[i][1].lower() == 'true'):
+                        finalList[10] = 1
+                    elif (tempItems[i][1].lower() == 'false'):
+                        finalList[10] = 0
+            finalList[3] = userName
+            return(finalList)
 
             pass
 
-        def parseForNewCommand(self, commandString, userName):
-            tempCommandList2 = this.parseForCommandSegments(commandString)
+        def parseForNewCommand2(self, commandString, userName):
+            ##tempCommandList2 = this.parseForCommandSegments(commandString)
             tempCommandList = commandString.split(' -')
             tempItems = []
             for i in range(len(tempCommandList)):
@@ -1440,7 +1524,7 @@ class ai:
                     tempData = tempResponse[1][0]
                     tempRemainder = tempResponse[1][1]
                     remainderString = ''
-                    print(tempRemainder)
+                    ##print(tempRemainder)
                     for item in range(len(tempRemainder)):
                         if (item == len(tempRemainder) - 1):
                             remainderString += tempRemainder[item]
@@ -1785,7 +1869,7 @@ class channelData:
 
 
 
-class spamFilter():
+class spamFilter:
         def __init__(self, currentLevel, filterHolder = {'zero':[]}):
                 self.currentLevel = currentLevel
                 self.filterHolder = filterHolder
@@ -1821,7 +1905,7 @@ if __name__ == "__main__":
                     #'Avoloc':{'INFO':{'GROUPS':{'default':'0'}},'LEVEL':'User'},
                     #'Eneija':{'INFO':{'GROUPS':{'default':'0','talkers':'0'}},'LEVEL':'Moderator'}}
         userDict = {}
-        testDirectory = home + '\\Documents\\SirBotTest'
+        testDirectory = home + '/Documents/SirBotTest'
         testName = 'CoolName'
         botName = 'SirRujak'
         configFile = {'Twitch Accounts':{'automated account':{'name':botName}},'Twitch Channels':{'default channel':botName},'path':testDirectory}
@@ -1913,19 +1997,19 @@ if __name__ == "__main__":
                     if tempResponse:
                         if (tempResponse[item2]):
                             if (tempResponse[item2][0] == 2):
-                                print(tempResponse)
+                                print('CommandTest: ',tempResponse)
         if runInfiniComs:
             for item in range(100):
                 tempResponse = test.tick(infiniComsTest)
         if testTimer:
             for item in range(len(timerTest)):
                 tempResponse = test.tick(timerTest[item])
-                print(tempResponse)
+                print('TimerTest: ',tempResponse)
         for item in range(2):
             sleep(0.101)
             for item in range(2):
                 tempResponse = test.tick(runQuoteTest[0])
-                print('timer test',tempResponse)
+                print('TimerTest: ',tempResponse)
         if testTimer:
             for item in range(len(delTimerTest)):
                 tempResponse = test.tick(delTimerTest[item])
@@ -1933,21 +2017,21 @@ if __name__ == "__main__":
             for i in range(len(delcomTest)):
                 tempResponse = test.tick(delcomTest[i])
                 if (tempResponse[0] == 2):
-                    print(tempResponse)
+                    print('DeleteTest: ',tempResponse)
         if runQuoteTest:
             for i in range(len(makeQuoteTest)):
                 tempResponse = test.tick(makeQuoteTest[i])
                 if (tempResponse[0] == 2):
-                    print(tempResponse)
+                    print('CreateQuoteTest: ',tempResponse)
             for i in range(10):
                 tempResponse = test.tick(runQuoteTest[0])
                 if (tempResponse[0] == 2):
-                    print(tempResponse)
+                    print('RunQuoteTest: ',tempResponse)
             print(test.quoteDict)
             for i in range(len(delQuoteTest)):
                 tempResponse = test.tick(delQuoteTest[i])
                 if (tempResponse[0] == 2):
-                    print(tempResponse)
+                    print('DeleteQuoteTest: ',tempResponse)
         fullResponse = 0
         if (fullResponse != 1):
             try:
@@ -1956,7 +2040,7 @@ if __name__ == "__main__":
                 print('Error converting to JSON.')
         else:
             try:
-                print(json.dumps(test.commandDictionary, sort_keys=True, indent=4))
+                print('PrintingJSON: ',json.dumps(test.commandDictionary, sort_keys=True, indent=4))
                 pass
             except:
                 print('Error converting to JSON.')
