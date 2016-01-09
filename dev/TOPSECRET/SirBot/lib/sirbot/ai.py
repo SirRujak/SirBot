@@ -301,6 +301,7 @@ class ai:
         ## Base functions are timeout, ban, promote to level, demote to level,
         ## Needs channelName, temp, modList, spamLevel, spamFilter variables where temp is the message
         def __init__(self):
+                self.moduleName = 'ai'
                 self.boundChannel = ''
                 self.botName = ''
                 self.commandDictionaryFile = None
