@@ -1,7 +1,0 @@
-﻿>start timer when privmsg is sent to channel to see if message is received by client after server processing - if not may have lost connection
->need a ping timer
->add 'learn' mode: bot joins channel and listens to commands/responses of existing bots and "learns" them
->add timer on chatcache in application.py to make sure messages don't fall dormant if no new ones come to flush them out. 10-30 secs?
->put timestamp in chatcache
->TIMERS!!!
->specifically, timers to control userlist formats, streamdata requests, check for new followers, socket send cap,
