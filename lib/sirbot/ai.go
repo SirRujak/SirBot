@@ -66,8 +66,7 @@ type pathHolder struct {
 
 // Startup is the constructor for AI. It returns a pointer to the generated
 // AI system.
-func Startup(c *Config, ud *CommandDict) (*AI, error) {
-	var a AI
+func (a *AI) Startup(c *Config, ud *CommandDict) error {
 	a.config = c
 	a.botName = c.twAccounts.automatedAccount.name
 	a.channelName = c.twChannels.defalutChannel
@@ -82,9 +81,9 @@ func Startup(c *Config, ud *CommandDict) (*AI, error) {
 	a.paths.makeDictPathName(a.channelName)
 	err := a.loadData()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &a, nil
+	return nil
 }
 
 func (a *AI) getCurrentTime() {
